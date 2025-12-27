@@ -1,12 +1,18 @@
 {
   "name": "@moluoxixi/create-app",
-  "version": "1.0.0",
+  "version": "2.0.1",
   "type": "module",
   "description": "Create Vue/React projects with atomic layered architecture",
   "main": "dist/index.js",
   "bin": {
     "create-mox": "./dist/index.js"
   },
+  "files": [
+    "LICENSE.txt",
+    "README.md",
+    "dist",
+    "templates"
+  ],
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc",
@@ -16,7 +22,19 @@
     "lint:eslint": "eslint . --fix",
     "prepare": "node .husky/install.mjs",
     "lint-staged": "lint-staged",
-    "commit": "git add . && git-cz"
+    "commit": "git add . && git-cz",
+    "version:patch": "pnpm version patch --no-git-tag-version",
+    "version:minor": "pnpm version minor --no-git-tag-version",
+    "version:major": "pnpm version major --no-git-tag-version",
+    "version:patch:git": "pnpm version patch",
+    "version:minor:git": "pnpm version minor",
+    "version:major:git": "pnpm version major",
+    "publish:public": "pnpm build && pnpm publish --access public",
+    "publish:beta": "pnpm build && pnpm publish --tag beta --access public",
+    "publish:dry-run": "pnpm build && pnpm publish --dry-run",
+    "release:patch": "pnpm version:patch && pnpm publish:public",
+    "release:minor": "pnpm version:minor && pnpm publish:public",
+    "release:major": "pnpm version:major && pnpm publish:public"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
