@@ -3,9 +3,9 @@
  * 定义项目配置、模板层级等核心类型
  */
 
-export * from './ejs'
-export * from './features'
-export * from './viteConfig'
+export * from './ejs.ts'
+export * from './features.ts'
+export * from './viteConfig.ts'
 
 /**
  * 框架类型

@@ -2,7 +2,7 @@
  * EJS 模板渲染工具
  */
 
-import type { EjsDataType } from '../types'
+import type { EjsDataType } from '../types/index.js'
 
 import fs from 'node:fs'
 import path from 'node:path'

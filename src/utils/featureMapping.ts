@@ -3,10 +3,10 @@
  * 统一管理配置项到 feature 目录的映射关系
  */
 
-import type { FrameworkType } from '../types'
+import type { FrameworkType } from '../types/index.js'
 import fs from 'fs-extra'
 import path from 'node:path'
-import { getTemplatesDir } from './file'
+import { getTemplatesDir } from './file.js'
 
 /**
  * 扫描所有 features（框架的 + 公共的）

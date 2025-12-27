@@ -2,4 +2,4 @@
  * 命令导出
  */
 
-export * from './create'
+export * from './create.ts'

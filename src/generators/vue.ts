@@ -3,16 +3,15 @@
  * 采用物理路径合并 + EJS 模板 + 数据驱动配置
  */
 
-import type { ProjectConfigType } from '../types'
+import type { ProjectConfigType } from '../types/index.ts'
 
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { renderEjsToFile } from '../utils/ejs'
-import { getTemplatesDir } from '../utils/file'
-import { renderCommonFeatures, renderFrameworkFeatures } from '../utils/renderFeatures'
-import { renderTemplate } from '../utils/renderTemplate'
-import { renderViteConfig } from '../utils/viteConfigRender'
+import { renderEjsToFile } from '../utils/ejs.ts'
+import { getTemplatesDir } from '../utils/file.ts'
+import { renderCommonFeatures, renderFrameworkFeatures } from '../utils/renderFeatures.ts'
+import { renderTemplate, renderViteConfig } from '../utils/index.ts'
 
 /**
  * 生成 Vue 项目

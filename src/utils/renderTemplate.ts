@@ -3,8 +3,8 @@ import path from 'node:path'
 
 import yaml from 'yaml'
 
-import { deepMerge } from './deepMerge'
-import { sortDependencies } from './sortDependencies'
+import { deepMerge } from './deepMerge.ts'
+import { sortDependencies } from './sortDependencies.ts'
 
 /**
  * 渲染模板到目标目录

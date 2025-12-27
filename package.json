@@ -1,6 +1,6 @@
 {
   "name": "@moluoxixi/create-app",
-  "version": "2.0.1",
+  "version": "2.0.400",
   "type": "module",
   "description": "Create Vue/React projects with atomic layered architecture",
   "main": "dist/index.js",
@@ -34,7 +34,8 @@
     "publish:dry-run": "pnpm build && pnpm publish --dry-run",
     "release:patch": "pnpm version:patch && pnpm publish:public",
     "release:minor": "pnpm version:minor && pnpm publish:public",
-    "release:major": "pnpm version:major && pnpm publish:public"
+    "release:major": "pnpm version:major && pnpm publish:public",
+    "test:local": "pnpm build && node dist/index.js"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

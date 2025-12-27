@@ -9,6 +9,7 @@ pnpm-debug.log*
 # 构建产物
 dist
 *.local
+*.tsbuildinfo
 
 # 测试产物
 test

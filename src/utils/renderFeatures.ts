@@ -64,7 +64,7 @@ export function renderCommonFeatures(config: ProjectConfigType, targetDir: strin
 
   for (const [configKey, featureName] of Object.entries(commonFeatureMap)) {
     if (config[configKey as keyof ProjectConfigType] === true) {
-      const featurePath = path.join(templatesDir, 'common', 'features', featureName)
+      const featurePath = path.join(templatesDir, 'common', 'features', featureName!)
       renderTemplate(featurePath, targetDir)
     }
   }

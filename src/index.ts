@@ -7,7 +7,7 @@
 
 import { Command } from 'commander'
 
-import { createProject } from './commands/create'
+import { createProject } from './commands/index.ts'
 
 const program = new Command()
 

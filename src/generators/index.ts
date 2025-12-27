@@ -2,6 +2,6 @@
  * 生成器导出
  */
 
-export * from './project'
-export * from './react'
-export * from './vue'
+export * from './project.ts'
+export * from './react.ts'
+export * from './vue.ts'
