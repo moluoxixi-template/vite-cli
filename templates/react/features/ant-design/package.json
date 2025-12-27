@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@ant-design/icons": "catalog:build",
+    "antd": "catalog:build"
+  }
+}
+

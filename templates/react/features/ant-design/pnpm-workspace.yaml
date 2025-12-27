@@ -1,0 +1,5 @@
+catalogs:
+  build:
+    "@ant-design/icons": ^5.5.1
+    antd: ^5.22.0
+

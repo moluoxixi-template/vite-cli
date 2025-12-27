@@ -1,0 +1,3 @@
+catalogs:
+  build:
+    zustand: ^5.0.0

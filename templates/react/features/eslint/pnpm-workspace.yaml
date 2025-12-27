@@ -1,0 +1,6 @@
+catalogs:
+  dev:
+    '@moluoxixi/eslint-config': latest
+    eslint: ^9.22.0
+    eslint-plugin-format: ^1.0.1
+

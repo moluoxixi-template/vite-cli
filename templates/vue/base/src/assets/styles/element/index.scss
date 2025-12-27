@@ -1,0 +1,27 @@
+/**
+ * Element Plus 样式定制
+ * 自定义 Element Plus 主题
+ */
+
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  $colors: (
+    'primary': (
+      'base': #409eff,
+    ),
+    'success': (
+      'base': #67c23a,
+    ),
+    'warning': (
+      'base': #e6a23c,
+    ),
+    'danger': (
+      'base': #f56c6c,
+    ),
+    'info': (
+      'base': #909399,
+    ),
+  ),
+);
+
+@use 'element-plus/theme-chalk/src/index.scss' as *;
+

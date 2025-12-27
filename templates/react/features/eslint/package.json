@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "@moluoxixi/eslint-config": "catalog:dev",
+    "eslint": "catalog:dev",
+    "eslint-plugin-format": "catalog:dev"
+  }
+}

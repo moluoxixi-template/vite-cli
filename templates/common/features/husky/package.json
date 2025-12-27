@@ -1,0 +1,28 @@
+{
+  "scripts": {
+    "prepare": "node .husky/install.mjs",
+    "lint-staged": "lint-staged",
+    "commit": "git add . && git-cz"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue,css,scss,less}": [
+      "eslint --fix --no-warn-ignored"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-customizable"
+    },
+    "cz-customizable": {
+      "config": ".cz-config.cjs"
+    }
+  },
+  "devDependencies": {
+    "@commitlint/cli": "catalog:dev",
+    "@commitlint/config-conventional": "catalog:dev",
+    "commitizen": "catalog:dev",
+    "cz-customizable": "catalog:dev",
+    "husky": "catalog:dev",
+    "lint-staged": "catalog:dev"
+  }
+}

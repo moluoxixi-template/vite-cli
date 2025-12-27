@@ -1,0 +1,4 @@
+catalogs:
+  build:
+    pinia: ^2.3.0
+    pinia-plugin-persistedstate: ^4.2.0

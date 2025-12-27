@@ -1,0 +1,56 @@
+{
+  "name": "project",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20.18.0"
+  },
+  "packageManager": "pnpm@10.8.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --mode production",
+    "build:zip": "vite build --mode production && tsx scripts/build.mts",
+    "preview": "vite preview",
+    "lint:eslint": "eslint . --fix"
+  },
+  "postcss": {
+    "plugins": {
+      "tailwindcss": {},
+      "autoprefixer": {}
+    }
+  },
+  "dependencies": {
+    "@moluoxixi/ajax-package": "catalog:build",
+    "@moluoxixi/class-names": "catalog:build",
+    "crypto-js": "catalog:build",
+    "dayjs": "catalog:build",
+    "lodash-es": "catalog:build",
+    "radash": "catalog:build",
+    "uuid": "catalog:build"
+  },
+  "devDependencies": {
+    "@moluoxixi/ajax-package": "catalog:dev",
+    "@moluoxixi/css-module-global-root-plugin": "catalog:dev",
+    "@moluoxixi/vite-config": "catalog:dev",
+    "@types/crypto-js": "catalog:type",
+    "@types/lodash-es": "catalog:type",
+    "@types/node": "catalog:type",
+    "@types/uuid": "catalog:type",
+    "autoprefixer": "catalog:dev",
+    "compressing": "catalog:dev",
+    "dotenv": "catalog:dev",
+    "jiti": "catalog:dev",
+    "postcss": "catalog:dev",
+    "sass": "catalog:dev",
+    "sass-embedded": "catalog:dev",
+    "sass-loader": "catalog:dev",
+    "tailwindcss": "catalog:dev",
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:dev"
+  },
+  "author": "",
+  "license": "MIT"
+}
+

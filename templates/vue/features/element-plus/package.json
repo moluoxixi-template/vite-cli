@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@element-plus/icons-vue": "catalog:build",
+    "element-plus": "catalog:build"
+  }
+}
+

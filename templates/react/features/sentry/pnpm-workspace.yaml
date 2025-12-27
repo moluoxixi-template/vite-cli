@@ -1,0 +1,5 @@
+catalogs:
+  build:
+    "@sentry/react": ^9.27.0
+    "@sentry/vite-plugin": ^3.5.0
+

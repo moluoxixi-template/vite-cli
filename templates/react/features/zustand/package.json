@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "zustand": "catalog:build"
+  }
+}

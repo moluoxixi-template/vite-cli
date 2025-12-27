@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@sentry/react": "catalog:build",
+    "@sentry/vite-plugin": "catalog:build"
+  }
+}
+

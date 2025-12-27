@@ -1,0 +1,13 @@
+{
+  "name": "vue-project",
+  "scripts": {
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "vue": "catalog:build"
+  },
+  "devDependencies": {
+    "@vue-macros/volar": "catalog:dev",
+    "vue-tsc": "catalog:dev"
+  }
+}

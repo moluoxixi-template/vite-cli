@@ -1,0 +1,100 @@
+/**
+ * 应用入口文件
+ * 初始化 Vue 应用并挂载到 DOM
+ */
+
+<% if (qiankun) { -%>
+import type { QiankunProps } from 'vite-plugin-qiankun/dist/helper'
+import { qiankunWindow, renderWithQiankun } from 'vite-plugin-qiankun/dist/helper'
+<% } -%>
+import { createApp } from 'vue'
+import directives from '@/directives'
+<% if (i18n) { -%>
+import i18n from '@/locales'
+<% } -%>
+<% if (sentry) { -%>
+import { initSentry } from '@/utils/sentry'
+<% } -%>
+import { store } from '@/stores'
+import App from './App.vue'
+import getRouter from './router'
+
+// 导入样式文件
+<% if (uiLibrary === 'element-plus') { -%>
+import '@/assets/styles/element/index.scss'
+<% } -%>
+import '@/assets/styles/main.scss'
+import '@/assets/fonts/index.css'
+
+<% if (qiankun) { -%>
+let app: ReturnType<typeof createApp> | null = null
+
+async function render(props: QiankunProps = {}): Promise<void> {
+  const { container } = props
+  app = createApp(App)
+
+  directives(app)
+  const router = getRouter(props)
+
+<% if (sentry) { -%>
+  initSentry(app, router, {
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    environment: import.meta.env.MODE,
+  })
+
+<% } -%>
+  app.use(store)
+<% if (i18n) { -%>
+  app.use(i18n)
+<% } -%>
+  app.use(router)
+  app.config.warnHandler = () => null
+
+  if (container) {
+    const root = container.querySelector('#app')
+    app.mount(root)
+  }
+  else {
+    app.mount('#app')
+  }
+}
+
+if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
+  render({})
+}
+else {
+  renderWithQiankun({
+    async mount(props: QiankunProps) {
+      await render(props)
+    },
+    bootstrap() {},
+    unmount() {
+      app?.unmount()
+      app = null
+    },
+    update() {},
+  })
+}
+<% } else { -%>
+const app = createApp(App)
+
+directives(app)
+const router = getRouter({})
+
+<% if (sentry) { -%>
+initSentry(app, router, {
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.MODE,
+})
+
+<% } -%>
+app.use(store)
+<% if (i18n) { -%>
+app.use(i18n)
+<% } -%>
+app.use(router)
+app.config.warnHandler = () => null
+
+app.mount('#app')
+<% } -%>
+

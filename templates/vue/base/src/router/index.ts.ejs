@@ -1,0 +1,39 @@
+/**
+ * 路由配置
+ */
+
+<% if (qiankun) { -%>
+import type { QiankunProps } from 'vite-plugin-qiankun/dist/helper'
+import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
+<% } -%>
+import { createRouter, createWebHistory } from 'vue-router'
+<% if (routeMode === 'file-system') { -%>
+import routes from '~pages'
+<% } else { -%>
+import { routes } from './routes'
+<% } -%>
+
+<% if (qiankun) { -%>
+export default function getRouter(props: QiankunProps = {}) {
+  const router = createRouter({
+    history: createWebHistory(
+      qiankunWindow.__POWERED_BY_QIANKUN__
+        ? '/sub-app/'
+        : import.meta.env.BASE_URL,
+    ),
+    routes,
+  })
+
+  return router
+}
+<% } else { -%>
+export default function getRouter(_props: Record<string, unknown> = {}) {
+  const router = createRouter({
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes,
+  })
+
+  return router
+}
+<% } -%>
+

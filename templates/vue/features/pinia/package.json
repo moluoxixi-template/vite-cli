@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "pinia": "catalog:build",
+    "pinia-plugin-persistedstate": "catalog:build"
+  }
+}

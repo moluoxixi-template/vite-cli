@@ -1,0 +1,76 @@
+{
+  "name": "@moluoxixi/create-app",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Create Vue/React projects with atomic layered architecture",
+  "main": "dist/index.js",
+  "bin": {
+    "create-mox": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "test": "tsx src/test.ts --min",
+    "test:all": "tsx src/test.ts",
+    "type-check": "tsc --noEmit",
+    "lint:eslint": "eslint . --fix",
+    "prepare": "node .husky/install.mjs",
+    "lint-staged": "lint-staged",
+    "commit": "git add . && git-cz"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix --no-warn-ignored"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-customizable"
+    },
+    "cz-customizable": {
+      "config": ".cz-config.cjs"
+    }
+  },
+  "keywords": [
+    "vite",
+    "vue",
+    "react",
+    "template",
+    "cli",
+    "scaffold",
+    "create-vue"
+  ],
+  "author": "1983531544@qq.com",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "catalog:build",
+    "commander": "catalog:build",
+    "ejs": "catalog:build",
+    "fs-extra": "catalog:build",
+    "inquirer": "catalog:build",
+    "jiti": "catalog:dev",
+    "lodash-es": "catalog:build",
+    "ora": "catalog:build",
+    "yaml": "catalog:build"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "catalog:dev",
+    "@commitlint/config-conventional": "catalog:dev",
+    "@moluoxixi/eslint-config": "latest",
+    "@types/ejs": "catalog:type",
+    "@types/fs-extra": "catalog:type",
+    "@types/inquirer": "catalog:type",
+    "@types/lodash-es": "catalog:type",
+    "@types/node": "catalog:type",
+    "commitizen": "catalog:dev",
+    "cz-customizable": "catalog:dev",
+    "eslint": "catalog:dev",
+    "husky": "catalog:dev",
+    "lint-staged": "catalog:dev",
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev"
+  },
+  "engines": {
+    "node": ">=20.18.0"
+  }
+}
