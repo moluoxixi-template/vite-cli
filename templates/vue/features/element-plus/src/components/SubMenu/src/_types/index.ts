@@ -2,5 +2,5 @@
  * SubMenu 类型导出
  */
 
-export * from './props';
+export * from './props'
 

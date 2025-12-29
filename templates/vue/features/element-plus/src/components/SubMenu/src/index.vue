@@ -3,9 +3,9 @@
  * SubMenu 子菜单组件
  * 递归渲染菜单
  */
-import type { SubMenuProps } from './_types';
+import type { SubMenuProps } from './_types'
 
-defineProps<SubMenuProps>();
+defineProps<SubMenuProps>()
 </script>
 
 <template>

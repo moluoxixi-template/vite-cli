@@ -1,36 +1,47 @@
-import type { UserInfoType } from '@/apis/types/user'
+/**
+ * 用户状态管理
+ */
 
+import type { UserInfo } from '@/apis/types'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useUserStore = defineStore(
   'user',
   () => {
-    const token = ref('')
-    const userInfo = ref<UserInfoType | null>(null)
+    /** 用户信息 */
+    const userInfo = ref<UserInfo | null>(null)
 
+    /** token */
+    const token = ref<string>('')
+
+    /** 设置用户信息 */
+    function setUserInfo(info: UserInfo | null): void {
+      userInfo.value = info
+    }
+
+    /** 设置 token */
     function setToken(value: string): void {
       token.value = value
     }
 
-    function setUserInfo(value: UserInfoType): void {
-      userInfo.value = value
-    }
-
-    function logout(): void {
-      token.value = ''
+    /** 清除用户信息 */
+    function clearUser(): void {
       userInfo.value = null
+      token.value = ''
     }
 
     return {
-      token,
       userInfo,
-      setToken,
+      token,
       setUserInfo,
-      logout,
+      setToken,
+      clearUser,
     }
   },
   {
-    persist: true,
+    persist: {
+      pick: ['token'],
+    },
   },
 )

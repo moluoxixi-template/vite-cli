@@ -1,7 +1,5 @@
 /**
  * 布局组件导出
+ * 注意：具体的布局组件在对应的 UI 库 feature 中
  */
-
-export { default as ElementLayout } from './element.vue';
-export { default as AntDesignLayout } from './AntDesign.vue';
 
