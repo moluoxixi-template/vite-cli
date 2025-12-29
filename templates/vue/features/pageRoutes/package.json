@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "vite-plugin-pages": "catalog:build"
+    "vite-plugin-pages": "^0.32.5"
   }
 }

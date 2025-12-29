@@ -12,5 +12,8 @@
     "allowImportingTsExtensions": true,
     "composite": true
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "templates/**/vite.config.ts"
+  ]
 }

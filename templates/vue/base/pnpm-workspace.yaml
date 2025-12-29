@@ -1,6 +1,0 @@
-catalogs:
-  build:
-    vue: ^3.5.13
-  dev:
-    "@vue-macros/volar": ^3.0.0-beta.15
-    vue-tsc: ^2.2.8

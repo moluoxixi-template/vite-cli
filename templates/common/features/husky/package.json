@@ -18,11 +18,11 @@
     }
   },
   "devDependencies": {
-    "@commitlint/cli": "catalog:dev",
-    "@commitlint/config-conventional": "catalog:dev",
-    "commitizen": "catalog:dev",
-    "cz-customizable": "catalog:dev",
-    "husky": "catalog:dev",
-    "lint-staged": "catalog:dev"
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "commitizen": "^4.3.1",
+    "cz-customizable": "^7.4.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.1"
   }
 }

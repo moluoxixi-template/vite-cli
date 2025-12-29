@@ -73,6 +73,7 @@
     "yaml": "catalog:build"
   },
   "devDependencies": {
+    "vite": "catalog:dev",
     "@commitlint/cli": "catalog:dev",
     "@commitlint/config-conventional": "catalog:dev",
     "@moluoxixi/eslint-config": "latest",
@@ -80,6 +81,7 @@
     "@types/fs-extra": "catalog:type",
     "@types/inquirer": "catalog:type",
     "@types/lodash-es": "catalog:type",
+    "@vue-macros/volar": "catalog:type",
     "@types/node": "catalog:type",
     "commitizen": "catalog:dev",
     "cz-customizable": "catalog:dev",

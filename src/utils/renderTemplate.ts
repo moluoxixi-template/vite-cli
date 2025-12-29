@@ -1,8 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import yaml from 'yaml'
-
 import { deepMerge } from './deepMerge.ts'
 import { sortDependencies } from './sortDependencies.ts'
 
@@ -45,9 +43,8 @@ export function renderTemplate(src: string, dest: string): void {
     return
   }
 
-  // 处理 pnpm-workspace.yaml - 深度合并
+  // 跳过 pnpm-workspace.yaml（不再使用）
   if (filename === 'pnpm-workspace.yaml') {
-    renderPnpmWorkspace(src, dest)
     return
   }
 
@@ -80,29 +77,6 @@ function renderPackageJson(src: string, dest: string): void {
   else {
     fs.mkdirSync(path.dirname(dest), { recursive: true })
     fs.writeFileSync(dest, `${JSON.stringify(newPackage, null, 2)}\n`)
-  }
-}
-
-/**
- * 渲染 pnpm-workspace.yaml - 深度合并
- */
-function renderPnpmWorkspace(src: string, dest: string): void {
-  const newWorkspace = yaml.parse(fs.readFileSync(src, 'utf-8')) || {}
-
-  if (fs.existsSync(dest)) {
-    const existingWorkspace = yaml.parse(fs.readFileSync(dest, 'utf-8')) || {}
-    const merged = deepMerge(existingWorkspace, newWorkspace)
-    // 排序 catalogs 中的依赖
-    if (merged.catalogs) {
-      for (const key of Object.keys(merged.catalogs)) {
-        merged.catalogs[key] = sortDependencies(merged.catalogs[key])
-      }
-    }
-    fs.writeFileSync(dest, yaml.stringify(merged))
-  }
-  else {
-    fs.mkdirSync(path.dirname(dest), { recursive: true })
-    fs.writeFileSync(dest, yaml.stringify(newWorkspace))
   }
 }
 

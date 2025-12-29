@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 import fs from 'fs-extra'
 
-import { generateProject } from './generators/project.ts'
+import { generateProject } from './generators/index.ts'
 import { featureToConfig, scanAllFeatures } from './utils/featureMapping.ts'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -244,7 +244,7 @@ async function generateTestProjects(minimalOnly = false): Promise<void> {
 }
 
 /**
- * 检查 package.json 中是否有直接版本号
+ * 检查 package.json 中是否有 catalog 引用（应该已经全部替换为实际版本号）
  */
 function checkPackageJsonVersions(projectDir: string): boolean {
   const packageJsonPath = path.join(projectDir, 'package.json')
@@ -256,33 +256,28 @@ function checkPackageJsonVersions(projectDir: string): boolean {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
   let hasError = false
 
-  // 检查 dependencies
+  // 检查 dependencies 中是否还有 catalog 引用
   if (packageJson.dependencies) {
     for (const [dep, version] of Object.entries(packageJson.dependencies)) {
-      if (typeof version === 'string' && /^[\^~]?\d/.test(version)) {
-        console.log(chalk.red(`  ❌ dependencies.${dep}: "${version}" 应该使用 catalog:build`))
+      if (typeof version === 'string' && version.startsWith('catalog:')) {
+        console.log(chalk.red(`  ❌ dependencies.${dep}: "${version}" 应该使用实际版本号`))
         hasError = true
       }
     }
   }
 
-  // 检查 devDependencies
+  // 检查 devDependencies 中是否还有 catalog 引用
   if (packageJson.devDependencies) {
     for (const [dep, version] of Object.entries(packageJson.devDependencies)) {
-      if (typeof version === 'string' && /^[\^~]?\d/.test(version)) {
-        console.log(chalk.red(`  ❌ devDependencies.${dep}: "${version}" 应该使用 catalog:dev 或 catalog:type`))
-        hasError = true
-      }
-      // 检查 latest
-      if (version === 'latest' && !dep.includes('@moluoxixi')) {
-        console.log(chalk.yellow(`  ⚠️  devDependencies.${dep}: "latest" 应该使用 catalog:dev`))
+      if (typeof version === 'string' && version.startsWith('catalog:')) {
+        console.log(chalk.red(`  ❌ devDependencies.${dep}: "${version}" 应该使用实际版本号`))
         hasError = true
       }
     }
   }
 
   if (!hasError) {
-    console.log(chalk.green(`  ✅ package.json 版本号检查通过`))
+    console.log(chalk.green(`  ✅ package.json 版本号检查通过（无 catalog 引用）`))
   }
 
   return !hasError
@@ -310,7 +305,6 @@ async function auditMoluoxixiDeps(minimalOnly = false): Promise<void> {
       : path.join(TEST_OUTPUT_DIR, 'react')
     const projectDir = path.join(frameworkOutputDir, name)
     const packageJsonPath = path.join(projectDir, 'package.json')
-    const workspacePath = path.join(projectDir, 'pnpm-workspace.yaml')
 
     console.log(chalk.cyan(`📋 检查 ${name}...`))
 
@@ -343,25 +337,6 @@ async function auditMoluoxixiDeps(minimalOnly = false): Promise<void> {
       hasError = true
     }
 
-    // 检查 pnpm-workspace.yaml
-    if (fs.existsSync(workspacePath)) {
-      const workspaceContent = fs.readFileSync(workspacePath, 'utf-8')
-
-      for (const dep of depsToCheck) {
-        if (!workspaceContent.includes(dep)) {
-          console.log(chalk.red(`  ❌ pnpm-workspace.yaml 缺少 ${dep}`))
-          hasError = true
-        }
-        else {
-          console.log(chalk.green(`  ✅ pnpm-workspace.yaml 包含 ${dep}`))
-        }
-      }
-    }
-    else {
-      console.log(chalk.red(`  ❌ pnpm-workspace.yaml 不存在`))
-      hasError = true
-    }
-
     // 检查可选特性文件
     if (!config.eslint) {
       const eslintConfig = path.join(projectDir, 'eslint.config.ts')
@@ -385,7 +360,7 @@ async function auditMoluoxixiDeps(minimalOnly = false): Promise<void> {
       }
     }
 
-    // 检查 package.json 版本号
+    // 检查 package.json 版本号（确保没有 catalog 引用）
     console.log(chalk.cyan(`  🔍 检查 package.json 版本号...`))
     const packageJsonOk = checkPackageJsonVersions(projectDir)
     if (!packageJsonOk) {

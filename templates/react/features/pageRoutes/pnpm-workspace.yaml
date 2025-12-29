@@ -1,4 +1,0 @@
-catalogs:
-  build:
-    vite-plugin-pages: ^0.32.4
-

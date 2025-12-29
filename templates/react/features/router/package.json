@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "react-router-dom": "catalog:build"
+    "react-router-dom": "^7.1.3"
   }
 }

@@ -1,7 +1,6 @@
 {
   "dependencies": {
-    "@ant-design/icons-vue": "catalog:build",
-    "ant-design-vue": "catalog:build"
+    "@ant-design/icons-vue": "^7.0.1",
+    "ant-design-vue": "^4.2.1"
   }
 }
-
