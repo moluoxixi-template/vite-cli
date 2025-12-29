@@ -2,6 +2,7 @@
   "name": "@moluoxixi/create-app",
   "version": "2.0.400",
   "type": "module",
+  "packageManager": "pnpm@10.8.0",
   "description": "Create Vue/React projects with atomic layered architecture",
   "main": "dist/index.js",
   "bin": {

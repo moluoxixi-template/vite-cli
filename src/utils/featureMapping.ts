@@ -72,7 +72,10 @@ export function getUILibraryFeature(uiLibrary: string): string {
 /**
  * Feature 名称转换为配置键和值（用于测试用例生成）
  */
-export function featureToConfig(feature: string, framework: FrameworkType): { key: string, value: any } | null {
+export function featureToConfig(
+  feature: string,
+  framework: FrameworkType,
+): { key: string, value: string | boolean } | null {
   // 路由模式
   if (feature === 'manualRoutes')
     return { key: 'routeMode', value: 'manual' }

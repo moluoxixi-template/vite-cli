@@ -5,6 +5,7 @@
 export * from './deepMerge.ts'
 export * from './ejs.ts'
 export * from './file.ts'
+export * from './generateFrameworkProject.ts'
 export * from './install.ts'
 export * from './npmConfig.ts'
 export * from './prompts.ts'

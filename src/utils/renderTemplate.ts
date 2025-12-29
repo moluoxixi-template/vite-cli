@@ -57,6 +57,22 @@ export function renderTemplate(src: string, dest: string): void {
 }
 
 /**
+ * 对 package.json 的依赖进行排序
+ */
+function sortPackageJsonDependencies(packageJson: Record<string, unknown>): void {
+  if (packageJson.dependencies) {
+    packageJson.dependencies = sortDependencies(
+      packageJson.dependencies as Record<string, string>,
+    )
+  }
+  if (packageJson.devDependencies) {
+    packageJson.devDependencies = sortDependencies(
+      packageJson.devDependencies as Record<string, string>,
+    )
+  }
+}
+
+/**
  * 渲染 package.json - 深度合并
  */
 function renderPackageJson(src: string, dest: string): void {
@@ -65,13 +81,7 @@ function renderPackageJson(src: string, dest: string): void {
   if (fs.existsSync(dest)) {
     const existingPackage = JSON.parse(fs.readFileSync(dest, 'utf-8'))
     const merged = deepMerge(existingPackage, newPackage)
-    // 排序依赖
-    if (merged.dependencies) {
-      merged.dependencies = sortDependencies(merged.dependencies)
-    }
-    if (merged.devDependencies) {
-      merged.devDependencies = sortDependencies(merged.devDependencies)
-    }
+    sortPackageJsonDependencies(merged)
     fs.writeFileSync(dest, `${JSON.stringify(merged, null, 2)}\n`)
   }
   else {
@@ -109,12 +119,7 @@ export function updatePackageJsonMetadata(
   }
 
   // 排序依赖
-  if (packageJson.dependencies) {
-    packageJson.dependencies = sortDependencies(packageJson.dependencies)
-  }
-  if (packageJson.devDependencies) {
-    packageJson.devDependencies = sortDependencies(packageJson.devDependencies)
-  }
+  sortPackageJsonDependencies(packageJson)
 
   fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
 }

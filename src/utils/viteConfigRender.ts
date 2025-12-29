@@ -11,6 +11,7 @@ import path from 'node:path'
 
 import { createJiti } from 'jiti'
 
+import { getRouteModeFeature, getUILibraryFeature } from './featureMapping.ts'
 import { getTemplatesDir } from './file.ts'
 
 /** Jiti 实例，用于动态加载 TypeScript 配置文件 */
@@ -39,24 +40,31 @@ function readViteConfigData(framework: string, feature: string): ViteConfigData 
 
 /**
  * 收集所有启用的 feature 的 vite.config.data
+ * 只收集那些有 vite.config.data.ts 文件的 features
  */
 export function collectViteConfigData(config: ProjectConfigType): ViteConfigData[] {
   const framework = config.framework
   const dataList: ViteConfigData[] = []
 
   // 根据配置收集各 feature 的配置数据
+  // 注意：只收集那些有 vite.config.data.ts 文件的 features
   const enabledFeatures: string[] = []
 
+  // Sentry feature
   if (config.sentry) {
     enabledFeatures.push('sentry')
   }
 
+  // 路由模式 feature（只有 file-system 模式有 vite.config.data.ts）
   if (config.routeMode === 'file-system') {
-    enabledFeatures.push('pageRoutes')
+    const routeModeFeature = getRouteModeFeature(config.routeMode)
+    enabledFeatures.push(routeModeFeature)
   }
 
+  // UI 库 feature（只有 element-plus 有 vite.config.data.ts）
   if (framework === 'vue' && config.uiLibrary === 'element-plus') {
-    enabledFeatures.push('element-plus')
+    const uiLibraryFeature = getUILibraryFeature(config.uiLibrary)
+    enabledFeatures.push(uiLibraryFeature)
   }
 
   for (const feature of enabledFeatures) {

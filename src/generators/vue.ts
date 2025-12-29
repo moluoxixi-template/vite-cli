@@ -5,64 +5,16 @@
 
 import type { ProjectConfigType } from '../types/index.ts'
 
-import fs from 'node:fs'
-import path from 'node:path'
-
-import { renderEjsToFile } from '../utils/ejs.ts'
-import { getTemplatesDir } from '../utils/file.ts'
-import { renderCommonFeatures, renderFrameworkFeatures } from '../utils/renderFeatures.ts'
-import { renderTemplate, renderViteConfig, updatePackageJsonMetadata } from '../utils/index.ts'
+import { generateFrameworkProject } from '../utils/index.ts'
 
 /**
  * 生成 Vue 项目
  */
 export async function generateVueProject(config: ProjectConfigType): Promise<void> {
-  const { targetDir } = config
-  const templatesDir = getTemplatesDir()
-
-  // 1. 渲染 L0 公共基础模板
-  renderTemplate(path.join(templatesDir, 'common', 'base'), targetDir)
-
-  // 2. 渲染公共特性模板
-  renderCommonFeatures(config, targetDir)
-
-  // 3. 渲染 L1 Vue 基础模板
-  renderTemplate(path.join(templatesDir, 'vue', 'base'), targetDir)
-
-  // 4. 渲染 L2 特性模板（统一处理）
-  renderFrameworkFeatures(config, targetDir)
-
-  // 5. 渲染 EJS 模板（main.ts, router）
-  const ejsData = {
-    i18n: config.i18n,
-    sentry: config.sentry,
-    qiankun: config.qiankun,
-    routeMode: config.routeMode,
-    uiLibrary: config.uiLibrary,
-  }
-
-  renderEjsToFile(
-    path.join(templatesDir, 'vue', 'base', 'src', 'main.ts.ejs'),
-    path.join(targetDir, 'src', 'main.ts'),
-    ejsData,
-  )
-
-  renderEjsToFile(
-    path.join(templatesDir, 'vue', 'base', 'src', 'router', 'index.ts.ejs'),
-    path.join(targetDir, 'src', 'router', 'index.ts'),
-    ejsData,
-  )
-
-  // 6. 数据驱动生成 vite.config.ts
-  const viteConfigContent = renderViteConfig(config)
-  fs.writeFileSync(path.join(targetDir, 'vite.config.ts'), viteConfigContent)
-
-  // 7. 更新 package.json 的元数据字段
-  const packageJsonPath = path.join(targetDir, 'package.json')
-  updatePackageJsonMetadata(
-    packageJsonPath,
-    config.projectName,
-    config.description,
-    config.author,
-  )
+  generateFrameworkProject(config, {
+    mainTemplate: 'src/main.ts.ejs',
+    mainOutput: 'src/main.ts',
+    routerTemplate: 'src/router/index.ts.ejs',
+    routerOutput: 'src/router/index.ts',
+  })
 }
