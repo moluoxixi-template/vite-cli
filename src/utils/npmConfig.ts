@@ -12,7 +12,12 @@ import { execSync } from 'node:child_process'
  */
 function getNpmConfig(key: string): string | null {
   try {
-    const value = execSync(`npm config get ${key}`, { encoding: 'utf-8' }).trim()
+    // 使用 stdio: 'pipe' 并只读取 stdout，忽略 stderr 中的警告
+    const result = execSync(`npm config get ${key}`, {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'], // stdin: ignore, stdout: pipe, stderr: ignore
+    })
+    const value = result.trim()
     // npm config get 返回 "undefined" 字符串表示未设置
     if (value === 'undefined' || value === '') {
       return null
@@ -83,4 +88,3 @@ export function getDefaultAuthor(): string {
 export function getDefaultLicense(): string {
   return getNpmConfig('init-license') || 'MIT'
 }
-
