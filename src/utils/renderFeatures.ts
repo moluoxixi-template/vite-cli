@@ -3,18 +3,18 @@
  * 统一处理 features 的渲染逻辑
  */
 
-import type { ProjectConfigType } from '../types'
+import type { ProjectConfigType } from '../types/index.ts'
 
 import path from 'node:path'
 
-import { getTemplatesDir } from './file'
-import { renderTemplate } from './renderTemplate'
+import { getTemplatesDir } from './file.ts'
+import { renderTemplate } from './renderTemplate.ts'
 import {
   getCommonFeatureMap,
   getConfigToFeatureMap,
   getRouteModeFeature,
   getUILibraryFeature,
-} from './featureMapping'
+} from './featureMapping.ts'
 
 /**
  * 渲染框架特定的 features

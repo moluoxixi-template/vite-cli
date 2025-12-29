@@ -7,7 +7,7 @@
  *   pnpm test --minimal    # 只生成全量和最小配置
  */
 
-import type { ProjectConfigType } from './types'
+import type { ProjectConfigType } from './types/index.ts'
 
 import path from 'node:path'
 import process from 'node:process'
@@ -16,8 +16,8 @@ import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 import fs from 'fs-extra'
 
-import { generateProject } from './generators/project'
-import { featureToConfig, scanAllFeatures } from './utils/featureMapping'
+import { generateProject } from './generators/project.ts'
+import { featureToConfig, scanAllFeatures } from './utils/featureMapping.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

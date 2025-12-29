@@ -9,7 +9,7 @@ import type {
   ProjectConfigType,
   RouteModeType,
   UILibraryType,
-} from '../types'
+} from '../types/index.ts'
 
 import process from 'node:process'
 

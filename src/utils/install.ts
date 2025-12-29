@@ -3,7 +3,7 @@
  * 执行包管理器安装依赖
  */
 
-import type { PackageManagerType } from '../types'
+import type { PackageManagerType } from '../types/index.ts'
 
 import { execSync } from 'node:child_process'
 
