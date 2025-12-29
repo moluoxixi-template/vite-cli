@@ -20,6 +20,7 @@ import { getDefaultAuthor } from './npmConfig.ts'
 /**
  * 收集项目配置信息
  * @param projectName 项目名称（可选）
+ * @returns 项目配置对象
  */
 export async function collectProjectConfig(
   projectName?: string,
@@ -188,6 +189,7 @@ export async function collectProjectConfig(
 /**
  * 确认覆盖目录
  * @param dirPath 目录路径
+ * @returns 是否确认覆盖
  */
 export async function confirmOverwrite(dirPath: string): Promise<boolean> {
   const { confirm } = await inquirer.prompt([

@@ -17,9 +17,45 @@ import {
 } from './featureMapping.ts'
 
 /**
+ * 检查 UI 库是否适用于指定框架
+ * @param framework 框架类型
+ * @param uiLibrary UI 库类型
+ * @returns 是否适用
+ */
+function isUILibrarySupported(framework: string, uiLibrary: string): boolean {
+  if (framework === 'vue') {
+    return uiLibrary === 'element-plus' || uiLibrary === 'ant-design-vue'
+  }
+  if (framework === 'react') {
+    return uiLibrary === 'ant-design'
+  }
+  return false
+}
+
+/**
+ * 渲染 UI 库特性模板
+ * @param config 项目配置
+ * @param targetDir 目标目录
+ * @param templatesDir 模板目录
+ * @throws {Error} 如果路径不安全或模板渲染失败
+ */
+function renderUILibraryFeature(
+  config: ProjectConfigType,
+  targetDir: string,
+  templatesDir: string,
+): void {
+  const { framework, uiLibrary } = config
+  if (isUILibrarySupported(framework, uiLibrary)) {
+    const uiLibraryFeature = getUILibraryFeature(uiLibrary)
+    renderTemplate(path.join(templatesDir, framework, 'features', uiLibraryFeature), targetDir)
+  }
+}
+
+/**
  * 渲染框架特定的 features
  * @param config 项目配置
  * @param targetDir 目标目录
+ * @throws {Error} 如果路径不安全或模板渲染失败
  */
 export function renderFrameworkFeatures(config: ProjectConfigType, targetDir: string): void {
   const templatesDir = getTemplatesDir()
@@ -38,25 +74,15 @@ export function renderFrameworkFeatures(config: ProjectConfigType, targetDir: st
   const routeModeFeature = getRouteModeFeature(config.routeMode)
   renderTemplate(path.join(templatesDir, framework, 'features', routeModeFeature), targetDir)
 
-  // UI 库（保持原有的条件判断，因为不是所有 UI 库都适用于所有框架）
-  if (framework === 'vue') {
-    if (config.uiLibrary === 'element-plus' || config.uiLibrary === 'ant-design-vue') {
-      const uiLibraryFeature = getUILibraryFeature(config.uiLibrary)
-      renderTemplate(path.join(templatesDir, framework, 'features', uiLibraryFeature), targetDir)
-    }
-  }
-  else if (framework === 'react') {
-    if (config.uiLibrary === 'ant-design') {
-      const uiLibraryFeature = getUILibraryFeature(config.uiLibrary)
-      renderTemplate(path.join(templatesDir, framework, 'features', uiLibraryFeature), targetDir)
-    }
-  }
+  // UI 库
+  renderUILibraryFeature(config, targetDir, templatesDir)
 }
 
 /**
  * 渲染公共 features
  * @param config 项目配置
  * @param targetDir 目标目录
+ * @throws {Error} 如果路径不安全或模板渲染失败
  */
 export function renderCommonFeatures(config: ProjectConfigType, targetDir: string): void {
   const templatesDir = getTemplatesDir()

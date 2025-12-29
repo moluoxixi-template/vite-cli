@@ -9,6 +9,9 @@ import { generateFrameworkProject } from '../utils/index.ts'
 
 /**
  * 生成 React 项目
+ * @param config 项目配置
+ * @returns Promise<void>
+ * @throws {Error} 如果项目生成失败
  */
 export async function generateReactProject(config: ProjectConfigType): Promise<void> {
   generateFrameworkProject(config, {

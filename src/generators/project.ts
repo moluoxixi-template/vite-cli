@@ -12,6 +12,8 @@ import { generateVueProject } from './vue.ts'
 /**
  * 生成项目
  * @param config 项目配置
+ * @returns Promise<void>
+ * @throws {Error} 如果框架不支持或项目生成失败
  */
 export async function generateProject(config: ProjectConfigType): Promise<void> {
   // 清空并创建项目根目录（确保干净的构建环境）

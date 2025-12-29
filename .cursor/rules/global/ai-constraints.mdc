@@ -1,6 +1,5 @@
 ---
 description: AI 行为约束规则，严格控制 AI 的响应方式和代码修改行为
-globs: 
 alwaysApply: true
 ---
 

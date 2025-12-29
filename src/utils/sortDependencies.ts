@@ -1,6 +1,8 @@
 /**
  * 对依赖对象进行排序
- * 按字母顺序排列
+ * 按字母顺序排列，@ 开头的包放在前面
+ * @param dependencies 依赖对象
+ * @returns 排序后的依赖对象
  */
 export function sortDependencies(
   dependencies: Record<string, string>,

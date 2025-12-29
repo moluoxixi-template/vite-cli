@@ -16,6 +16,12 @@ const rootPath = path.resolve();
 const distPath = path.join(rootPath, 'dist');
 const outputPath = path.join(rootPath, `${appCode}.zip`);
 
+/**
+ * 构建 ZIP 压缩包
+ * 将 dist 目录压缩为 zip 文件
+ * @returns Promise<void>
+ * @throws {Error} 如果压缩失败
+ */
 async function buildZip(): Promise<void> {
   try {
     console.log(`📦 Compressing ${distPath} to ${outputPath}...`);

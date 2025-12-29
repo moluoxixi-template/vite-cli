@@ -19,6 +19,10 @@ const jiti = createJiti(import.meta.url)
 
 /**
  * 从 feature 目录读取 vite.config.data.ts
+ * @param framework 框架类型
+ * @param feature 特性名称
+ * @returns ViteConfigData 配置数据，如果文件不存在则返回 null
+ * @throws {Error} 如果文件存在但加载失败
  */
 function readViteConfigData(framework: string, feature: string): ViteConfigData | null {
   const templatesDir = getTemplatesDir()
@@ -33,14 +37,20 @@ function readViteConfigData(framework: string, feature: string): ViteConfigData 
     return module.default
   }
   catch (error) {
-    console.error(`Failed to load ${dataPath}:`, error)
-    return null
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    throw new Error(
+      `无法加载 vite.config.data.ts: ${dataPath}\n错误: ${errorMessage}`,
+      { cause: error },
+    )
   }
 }
 
 /**
  * 收集所有启用的 feature 的 vite.config.data
  * 只收集那些有 vite.config.data.ts 文件的 features
+ * @param config 项目配置
+ * @returns ViteConfigData 数组
+ * @throws {Error} 如果加载配置文件失败
  */
 export function collectViteConfigData(config: ProjectConfigType): ViteConfigData[] {
   const framework = config.framework
@@ -79,6 +89,8 @@ export function collectViteConfigData(config: ProjectConfigType): ViteConfigData
 
 /**
  * 合并 ViteConfigData 数组
+ * @param dataList ViteConfigData 数组
+ * @returns 合并后的 ViteConfigData 对象
  */
 export function mergeViteConfigData(dataList: ViteConfigData[]): ViteConfigData {
   const merged: ViteConfigData = {
@@ -107,6 +119,9 @@ export function mergeViteConfigData(dataList: ViteConfigData[]): ViteConfigData 
 
 /**
  * 生成 vite.config.ts 内容
+ * @param config 项目配置
+ * @returns vite.config.ts 文件的字符串内容
+ * @throws {Error} 如果收集配置数据失败
  */
 export function renderViteConfig(config: ProjectConfigType): string {
   const dataList = collectViteConfigData(config)

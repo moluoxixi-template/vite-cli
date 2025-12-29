@@ -6,6 +6,7 @@
 /**
  * 延迟执行
  * @param ms 延迟毫秒数
+ * @returns Promise，在指定时间后 resolve
  */
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -14,6 +15,7 @@ export function sleep(ms: number): Promise<void> {
 /**
  * 深拷贝
  * @param obj 要拷贝的对象
+ * @returns 深拷贝后的新对象
  */
 export function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
@@ -22,7 +24,8 @@ export function deepClone<T>(obj: T): T {
 /**
  * 防抖函数
  * @param fn 要防抖的函数
- * @param delay 延迟时间
+ * @param delay 延迟时间（毫秒）
+ * @returns 防抖后的函数
  */
 export function debounce<T extends (...args: unknown[]) => unknown>(
   fn: T,
@@ -42,7 +45,8 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
 /**
  * 节流函数
  * @param fn 要节流的函数
- * @param delay 间隔时间
+ * @param delay 间隔时间（毫秒）
+ * @returns 节流后的函数
  */
 export function throttle<T extends (...args: unknown[]) => unknown>(
   fn: T,
@@ -60,8 +64,9 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
 
 /**
  * 格式化日期
- * @param date 日期
- * @param format 格式
+ * @param date 日期（Date 对象、时间戳或日期字符串）
+ * @param format 格式字符串，默认为 'YYYY-MM-DD HH:mm:ss'
+ * @returns 格式化后的日期字符串
  */
 export function formatDate(date: Date | string | number, format = 'YYYY-MM-DD HH:mm:ss'): string {
   const d = new Date(date);

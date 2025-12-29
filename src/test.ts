@@ -7,7 +7,12 @@
  *   pnpm test --minimal    # 只生成全量和最小配置
  */
 
-import type { ProjectConfigType } from './types/index.ts'
+import type {
+  FrameworkType,
+  ProjectConfigType,
+  RouteModeType,
+  UILibraryType,
+} from './types/index.ts'
 
 import path from 'node:path'
 import process from 'node:process'
@@ -99,10 +104,10 @@ function generateTestConfigs(minimalOnly = false): Array<{ name: string, config:
       const combinations = [allFalse, allTrue]
 
       for (const combination of combinations) {
-        const config: any = {
+        const config: Partial<ProjectConfigType> = {
           framework,
-          uiLibrary: uiLibrary as any,
-          routeMode: featureToConfig(routeModeFeature, framework)!.value,
+          uiLibrary: uiLibrary as UILibraryType,
+          routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
           packageManager: 'pnpm',
         }
 
@@ -112,7 +117,7 @@ function generateTestConfigs(minimalOnly = false): Array<{ name: string, config:
           const enabled = combination[i]
           const featureConfig = featureToConfig(feature, framework)
           if (featureConfig && featureConfig.key !== 'uiLibrary' && featureConfig.key !== 'routeMode') {
-            config[featureConfig.key] = enabled
+            config[featureConfig.key as keyof ProjectConfigType] = enabled as never
           }
         }
 
@@ -132,10 +137,10 @@ function generateTestConfigs(minimalOnly = false): Array<{ name: string, config:
           const combinations = generateAllCombinations(booleanFeatures)
 
           for (const combination of combinations) {
-            const config: any = {
+            const config: Partial<ProjectConfigType> = {
               framework,
-              uiLibrary: uiLibrary as any,
-              routeMode: featureToConfig(routeModeFeature, framework)!.value,
+              uiLibrary: uiLibrary as UILibraryType,
+              routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
               packageManager: 'pnpm',
             }
 
@@ -145,7 +150,7 @@ function generateTestConfigs(minimalOnly = false): Array<{ name: string, config:
               const enabled = combination[i]
               const featureConfig = featureToConfig(feature, framework)
               if (featureConfig && featureConfig.key !== 'uiLibrary' && featureConfig.key !== 'routeMode') {
-                config[featureConfig.key] = enabled
+                config[featureConfig.key as keyof ProjectConfigType] = enabled as never
               }
             }
 
@@ -169,8 +174,18 @@ function generateTestConfigs(minimalOnly = false): Array<{ name: string, config:
 
 /**
  * 创建测试配置的辅助函数
+ * @param framework 框架类型
+ * @param uiLibrary UI 库名称
+ * @param suffix 后缀名称
+ * @param overrides 配置覆盖项
+ * @returns 测试配置对象
  */
-function createTestConfig(framework: 'vue' | 'react', uiLibrary: string, suffix: string, overrides: any) {
+function createTestConfig(
+  framework: FrameworkType,
+  uiLibrary: string,
+  suffix: string,
+  overrides: Partial<ProjectConfigType>,
+): { name: string, config: Partial<ProjectConfigType> } {
   const name = `${framework}-${uiLibrary}-${suffix}`
   return {
     name,

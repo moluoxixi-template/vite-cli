@@ -10,6 +10,8 @@ import { getTemplatesDir } from './file.ts'
 
 /**
  * 扫描所有 features（框架的 + 公共的）
+ * @param framework 框架类型
+ * @returns 所有 feature 名称数组
  */
 export function scanAllFeatures(framework: FrameworkType): string[] {
   const frameworkDir = path.join(getTemplatesDir(), framework, 'features')
@@ -34,6 +36,8 @@ export function scanAllFeatures(framework: FrameworkType): string[] {
 
 /**
  * 配置项到 feature 目录的映射（从 renderFeatures 提取）
+ * @param framework 框架类型
+ * @returns 配置键到 feature 名称的映射对象
  */
 export function getConfigToFeatureMap(framework: FrameworkType): Record<string, string> {
   return {
@@ -48,6 +52,7 @@ export function getConfigToFeatureMap(framework: FrameworkType): Record<string, 
 
 /**
  * 公共 features 映射
+ * @returns 公共配置键到 feature 名称的映射对象
  */
 export function getCommonFeatureMap(): Record<string, string> {
   return {
@@ -57,6 +62,8 @@ export function getCommonFeatureMap(): Record<string, string> {
 
 /**
  * 路由模式映射
+ * @param routeMode 路由模式（'manual' 或 'file-system'）
+ * @returns feature 名称
  */
 export function getRouteModeFeature(routeMode: string): string {
   return routeMode === 'manual' ? 'manualRoutes' : 'pageRoutes'
@@ -64,6 +71,8 @@ export function getRouteModeFeature(routeMode: string): string {
 
 /**
  * UI 库映射
+ * @param uiLibrary UI 库名称
+ * @returns feature 名称（通常与 UI 库名称相同）
  */
 export function getUILibraryFeature(uiLibrary: string): string {
   return uiLibrary
@@ -71,6 +80,9 @@ export function getUILibraryFeature(uiLibrary: string): string {
 
 /**
  * Feature 名称转换为配置键和值（用于测试用例生成）
+ * @param feature feature 名称
+ * @param framework 框架类型
+ * @returns 配置键值对，如果无法映射则返回 null
  */
 export function featureToConfig(
   feature: string,

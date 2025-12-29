@@ -1,5 +1,13 @@
+/**
+ * 路由配置
+ * 手动配置路由表
+ */
+
 import Layout from './layout.vue'
 
+/**
+ * 路由配置数组
+ */
 export const routes = [
   {
     path: '/',

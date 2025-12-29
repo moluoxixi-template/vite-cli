@@ -14,7 +14,8 @@ import { renderCommonFeatures, renderFrameworkFeatures } from './renderFeatures.
 import { renderTemplate, renderViteConfig, updatePackageJsonMetadata } from './index.ts'
 
 /**
- * EJS 模板配置
+ * EJS 模板配置接口
+ * 定义框架项目生成所需的模板路径配置
  */
 interface EjsTemplateConfig {
   /** 主入口文件模板路径（相对于框架 base 目录） */
@@ -31,6 +32,7 @@ interface EjsTemplateConfig {
  * 生成框架项目的通用函数
  * @param config 项目配置
  * @param ejsConfig EJS 模板配置
+ * @throws {Error} 如果模板渲染失败、文件写入失败或配置生成失败
  */
 export function generateFrameworkProject(
   config: ProjectConfigType,

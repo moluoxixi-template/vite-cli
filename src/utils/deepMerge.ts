@@ -3,6 +3,9 @@
  * - 对象会递归合并
  * - 数组会合并并去重
  * - 基本类型后者覆盖前者
+ * @param target 目标对象
+ * @param source 源对象
+ * @returns 合并后的对象
  */
 export function deepMerge<T extends Record<string, unknown>>(
   target: T,
@@ -38,6 +41,11 @@ export function deepMerge<T extends Record<string, unknown>>(
   return result
 }
 
+/**
+ * 判断值是否为对象（非数组、非 null）
+ * @param val 待判断的值
+ * @returns 是否为对象
+ */
 function isObject(val: unknown): val is Record<string, unknown> {
   return val !== null && typeof val === 'object' && !Array.isArray(val)
 }

@@ -16,6 +16,8 @@ import { collectProjectConfig, confirmOverwrite } from '../utils/prompts.ts'
 /**
  * 创建项目
  * @param projectName 项目名称（可选）
+ * @returns Promise<void>
+ * @throws {Error} 如果项目创建过程中发生错误
  */
 export async function createProject(projectName?: string): Promise<void> {
   try {
@@ -61,10 +63,10 @@ export async function createProject(projectName?: string): Promise<void> {
     // 安装依赖
     const installSpinner = ora('正在安装依赖...').start()
     try {
-      installDependencies(config.packageManager, config.targetDir)
+      await installDependencies(config.packageManager, config.targetDir, 1)
       installSpinner.succeed('依赖安装成功!')
     }
-    catch {
+    catch (error) {
       installSpinner.fail('依赖安装失败')
       console.log(
         chalk.yellow('\n⚠️  项目已创建，但依赖安装失败。'),
@@ -72,12 +74,15 @@ export async function createProject(projectName?: string): Promise<void> {
       console.log(
         chalk.yellow(`   请手动运行 "${config.packageManager} install"\n`),
       )
+      if (error instanceof Error) {
+        console.log(chalk.gray(`   错误详情: ${error.message}`))
+      }
     }
 
     // 初始化 Git
     const gitSpinner = ora('正在初始化 Git...').start()
     try {
-      initGit(config.targetDir)
+      await initGit(config.targetDir)
       gitSpinner.succeed('Git 初始化成功!')
     }
     catch {

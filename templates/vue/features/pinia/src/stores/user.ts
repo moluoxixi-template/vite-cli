@@ -15,17 +15,26 @@ export const useUserStore = defineStore(
     /** token */
     const token = ref<string>('')
 
-    /** 设置用户信息 */
+    /**
+     * 设置用户信息
+     * @param info 用户信息，为 null 时清空
+     */
     function setUserInfo(info: UserInfo | null): void {
       userInfo.value = info
     }
 
-    /** 设置 token */
+    /**
+     * 设置 token
+     * @param value token 值
+     */
     function setToken(value: string): void {
       token.value = value
     }
 
-    /** 清除用户信息 */
+    /**
+     * 清除用户信息
+     * 清空用户信息和 token
+     */
     function clearUser(): void {
       userInfo.value = null
       token.value = ''

@@ -14,6 +14,7 @@ import ejs from 'ejs'
  * @param templatePath 模板文件路径
  * @param data 模板数据
  * @returns 渲染后的字符串内容
+ * @throws {Error} 如果模板文件不存在或渲染失败
  */
 export function renderEjsFile(templatePath: string, data: EjsDataType): string {
   const template = fs.readFileSync(templatePath, 'utf-8')
@@ -27,6 +28,7 @@ export function renderEjsFile(templatePath: string, data: EjsDataType): string {
  * @param templatePath 模板文件路径
  * @param targetPath 目标文件路径
  * @param data 模板数据
+ * @throws {Error} 如果模板文件不存在、渲染失败或写入失败
  */
 export function renderEjsToFile(
   templatePath: string,
