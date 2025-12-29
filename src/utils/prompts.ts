@@ -15,6 +15,8 @@ import process from 'node:process'
 
 import inquirer from 'inquirer'
 
+import { getDefaultAuthor } from './npmConfig.ts'
+
 /**
  * 收集项目配置信息
  * @param projectName 项目名称（可选）
@@ -22,6 +24,9 @@ import inquirer from 'inquirer'
 export async function collectProjectConfig(
   projectName?: string,
 ): Promise<ProjectConfigType> {
+  // 获取默认作者信息
+  const defaultAuthor = getDefaultAuthor()
+
   const answers = await inquirer.prompt([
     // 项目名称
     {
@@ -51,7 +56,7 @@ export async function collectProjectConfig(
       type: 'input',
       name: 'author',
       message: '作者:',
-      default: '',
+      default: defaultAuthor,
     },
     // 框架选择
     {

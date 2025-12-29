@@ -81,6 +81,45 @@ function renderPackageJson(src: string, dest: string): void {
 }
 
 /**
+ * 更新 package.json 的元数据字段（name, description, author）
+ * @param packageJsonPath package.json 文件路径
+ * @param projectName 项目名称
+ * @param description 项目描述
+ * @param author 作者
+ */
+export function updatePackageJsonMetadata(
+  packageJsonPath: string,
+  projectName: string,
+  description: string,
+  author: string,
+): void {
+  if (!fs.existsSync(packageJsonPath)) {
+    return
+  }
+
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+
+  // 更新元数据字段
+  packageJson.name = projectName
+  if (description) {
+    packageJson.description = description
+  }
+  if (author) {
+    packageJson.author = author
+  }
+
+  // 排序依赖
+  if (packageJson.dependencies) {
+    packageJson.dependencies = sortDependencies(packageJson.dependencies)
+  }
+  if (packageJson.devDependencies) {
+    packageJson.devDependencies = sortDependencies(packageJson.devDependencies)
+  }
+
+  fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
+}
+
+/**
  * 重命名特殊文件
  * 某些文件不能以 . 开头存在于模板中，需要特殊处理
  */

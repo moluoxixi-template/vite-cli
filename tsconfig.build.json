@@ -10,8 +10,7 @@
     "rootDir": "./src",
     "noEmit": false,
     "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true,
-    "composite": true
+    "rewriteRelativeImportExtensions": true
   },
   "include": [
     "src/**/*.ts"

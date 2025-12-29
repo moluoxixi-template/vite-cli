@@ -11,7 +11,7 @@ import path from 'node:path'
 import { renderEjsToFile } from '../utils/ejs.ts'
 import { getTemplatesDir } from '../utils/file.ts'
 import { renderCommonFeatures, renderFrameworkFeatures } from '../utils/renderFeatures.ts'
-import { renderTemplate, renderViteConfig } from '../utils/index.ts'
+import { renderTemplate, renderViteConfig, updatePackageJsonMetadata } from '../utils/index.ts'
 
 /**
  * 生成 React 项目
@@ -55,4 +55,13 @@ export async function generateReactProject(config: ProjectConfigType): Promise<v
   // 6. 数据驱动生成 vite.config.ts
   const viteConfigContent = renderViteConfig(config)
   fs.writeFileSync(path.join(targetDir, 'vite.config.ts'), viteConfigContent)
+
+  // 7. 更新 package.json 的元数据字段
+  const packageJsonPath = path.join(targetDir, 'package.json')
+  updatePackageJsonMetadata(
+    packageJsonPath,
+    config.projectName,
+    config.description,
+    config.author,
+  )
 }

@@ -11,7 +11,7 @@ import path from 'node:path'
 import { renderEjsToFile } from '../utils/ejs.ts'
 import { getTemplatesDir } from '../utils/file.ts'
 import { renderCommonFeatures, renderFrameworkFeatures } from '../utils/renderFeatures.ts'
-import { renderTemplate, renderViteConfig } from '../utils/index.ts'
+import { renderTemplate, renderViteConfig, updatePackageJsonMetadata } from '../utils/index.ts'
 
 /**
  * 生成 Vue 项目
@@ -32,7 +32,7 @@ export async function generateVueProject(config: ProjectConfigType): Promise<voi
   // 4. 渲染 L2 特性模板（统一处理）
   renderFrameworkFeatures(config, targetDir)
 
-  // 5. 渲染 EJS 模板（main.ts, router/index.ts）
+  // 5. 渲染 EJS 模板（main.ts, router）
   const ejsData = {
     i18n: config.i18n,
     sentry: config.sentry,
@@ -56,4 +56,13 @@ export async function generateVueProject(config: ProjectConfigType): Promise<voi
   // 6. 数据驱动生成 vite.config.ts
   const viteConfigContent = renderViteConfig(config)
   fs.writeFileSync(path.join(targetDir, 'vite.config.ts'), viteConfigContent)
+
+  // 7. 更新 package.json 的元数据字段
+  const packageJsonPath = path.join(targetDir, 'package.json')
+  updatePackageJsonMetadata(
+    packageJsonPath,
+    config.projectName,
+    config.description,
+    config.author,
+  )
 }
