@@ -16,8 +16,6 @@ import process from 'node:process'
 
 import inquirer from 'inquirer'
 
-import { PROJECT_CONSTANTS } from '../constants/index.ts'
-
 import { getDefaultAuthor } from './npmConfig.ts'
 
 /**
@@ -37,22 +35,37 @@ export async function collectProjectConfig(
       type: 'input',
       name: 'projectName',
       message: '项目名称:',
-      default: projectName || PROJECT_CONSTANTS.DEFAULT_PROJECT_NAME,
+      default: projectName || 'my-project',
       validate: (input: string) => {
         const trimmed = input.trim()
         if (!trimmed) {
           return '项目名称不能为空'
         }
-        if (
-          trimmed.length < PROJECT_CONSTANTS.MIN_PROJECT_NAME_LENGTH
-          || trimmed.length > PROJECT_CONSTANTS.MAX_PROJECT_NAME_LENGTH
-        ) {
-          return `项目名称长度必须在 ${PROJECT_CONSTANTS.MIN_PROJECT_NAME_LENGTH}-${PROJECT_CONSTANTS.MAX_PROJECT_NAME_LENGTH} 个字符之间`
+        const minLength = 1
+        const maxLength = 214
+        if (trimmed.length < minLength || trimmed.length > maxLength) {
+          return `项目名称长度必须在 ${minLength}-${maxLength} 个字符之间`
         }
         if (!/^[\w-]+$/.test(trimmed)) {
           return '项目名称只能包含字母、数字、连字符和下划线'
         }
-        if (PROJECT_CONSTANTS.RESERVED_NAMES.includes(trimmed.toLowerCase())) {
+        const reservedNames = [
+          'node',
+          'npm',
+          'test',
+          'lib',
+          'api',
+          'www',
+          'admin',
+          'root',
+          'config',
+          'build',
+          'dist',
+          'src',
+          'public',
+          'private',
+        ]
+        if (reservedNames.includes(trimmed.toLowerCase())) {
           return `项目名称不能使用保留名称: ${trimmed}`
         }
         // 检查目标目录是否已存在且不为空
@@ -79,7 +92,7 @@ export async function collectProjectConfig(
       type: 'input',
       name: 'description',
       message: '项目描述:',
-      default: PROJECT_CONSTANTS.DEFAULT_DESCRIPTION,
+      default: 'A Vite project',
     },
     // 作者
     {

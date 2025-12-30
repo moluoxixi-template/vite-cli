@@ -15,7 +15,7 @@ import path from 'node:path'
 
 import { createJiti } from 'jiti'
 
-import { FILE_CONSTANTS, VITE_CONFIG_CONSTANTS } from '../constants/index.ts'
+import { FILE_CONSTANTS } from '../constants/index.ts'
 
 import { getRouteModeFeature, getUILibraryFeature } from './featureMapping.ts'
 import { getTemplatesDir } from './file.ts'
@@ -218,9 +218,9 @@ function generateViteConfigSection(merged: ViteConfigData): string[] {
   lines.push('        ],')
   lines.push('        server: {')
   lines.push('          proxy: {')
-  lines.push(`            '${VITE_CONFIG_CONSTANTS.API_PROXY_PATH}': {`)
+  lines.push(`            '/api': {`)
   lines.push('              changeOrigin: true,')
-  lines.push(`              target: '${VITE_CONFIG_CONSTANTS.DEV_SERVER_TARGET}',`)
+  lines.push(`              target: 'http://localhost:3000',`)
   lines.push('            },')
   lines.push('          },')
   lines.push('        },')
@@ -232,8 +232,8 @@ function generateViteConfigSection(merged: ViteConfigData): string[] {
   lines.push('          },')
   lines.push('          preprocessorOptions: {')
   lines.push('            scss: {')
-  lines.push(`              silenceDeprecations: ['${VITE_CONFIG_CONSTANTS.SCSS_DEPRECATION}'],`)
-  lines.push(`              api: '${VITE_CONFIG_CONSTANTS.SCSS_API_MODE}',`)
+  lines.push(`              silenceDeprecations: ['legacy-js-api'],`)
+  lines.push(`              api: 'modern-compiler',`)
 
   // 添加 CSS additionalData
   if (merged.css?.additionalData) {

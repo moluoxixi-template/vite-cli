@@ -1,11 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import {
-  FILE_CONSTANTS,
-  FILE_RENAME_CONSTANTS,
-  PACKAGE_MANAGER_CONSTANTS,
-} from '../constants/index.ts'
+import { FILE_CONSTANTS } from '../constants/index.ts'
 import type { PackageJson } from '../types/packageJson.ts'
 
 import { validatePath } from './file.ts'
@@ -142,11 +138,12 @@ function renderPackageJson(src: string, dest: string): void {
  * @returns 包管理器版本字符串
  */
 function getPackageManagerVersion(packageManager: string): string {
-  return (
-    PACKAGE_MANAGER_CONSTANTS.VERSIONS[
-      packageManager as keyof typeof PACKAGE_MANAGER_CONSTANTS.VERSIONS
-    ] || PACKAGE_MANAGER_CONSTANTS.VERSIONS[PACKAGE_MANAGER_CONSTANTS.DEFAULT]
-  )
+  const versions: Record<string, string> = {
+    pnpm: '10.8.0',
+    npm: '10.9.0',
+    yarn: '4.1.0',
+  }
+  return versions[packageManager] || versions.pnpm
 }
 
 /**
@@ -213,8 +210,8 @@ export function updatePackageJsonMetadata(
  */
 function renameFile(name: string): string {
   // _开头的文件转换为.开头
-  if (name.startsWith(FILE_RENAME_CONSTANTS.RENAME_PREFIX)) {
-    return `${FILE_RENAME_CONSTANTS.RENAMED_PREFIX}${name.slice(1)}`
+  if (name.startsWith('_')) {
+    return `.${name.slice(1)}`
   }
   return name
 }

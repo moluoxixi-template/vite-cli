@@ -21,7 +21,7 @@
     "test:all": "tsx src/test.ts",
     "type-check": "tsc --noEmit",
     "lint:eslint": "eslint . --fix",
-    "prepare": "node .husky/install.mjs",
+    "prepare": "git submodule update --init --recursive && node .husky/install.mjs",
     "lint-staged": "lint-staged",
     "commit": "git add . && git-cz",
     "version:patch": "pnpm version patch --no-git-tag-version",

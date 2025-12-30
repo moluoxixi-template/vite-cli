@@ -8,7 +8,12 @@ import type { PackageManagerType } from '../types/index.ts'
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
 
+import { validatePath } from './file.ts'
+
 const execAsync = promisify(exec)
+
+/** 重试延迟基数（毫秒） */
+const RETRY_DELAY_BASE_MS = 1000
 
 /**
  * 验证命令参数安全性
@@ -24,9 +29,7 @@ function validateInstallParams(packageManager: PackageManagerType, cwd: string):
   }
 
   // 验证工作目录路径（防止路径遍历攻击）
-  if (cwd.includes('..') || cwd.includes('~')) {
-    throw new Error(`不安全的工作目录路径: ${cwd}`)
-  }
+  validatePath(cwd)
 }
 
 /**
@@ -65,8 +68,8 @@ export async function installDependencies(
     catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
       if (attempt < retries) {
-        // 等待后重试
-        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)))
+        // 等待后重试（指数退避）
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_BASE_MS * (attempt + 1)))
       }
     }
   }
@@ -88,9 +91,7 @@ export async function installDependencies(
 export async function initGit(cwd: string): Promise<void> {
   try {
     // 验证路径安全性
-    if (cwd.includes('..') || cwd.includes('~')) {
-      throw new Error(`不安全的工作目录路径: ${cwd}`)
-    }
+    validatePath(cwd)
 
     await execAsync('git init', { cwd })
     await execAsync('git add .', { cwd })
