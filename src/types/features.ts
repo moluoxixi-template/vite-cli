@@ -39,6 +39,7 @@ export const REACT_FEATURES = [
   'eslint',
   'i18n',
   'sentry',
+  'qiankun',
   'ant-design',
 ] as const
 
