@@ -13,6 +13,7 @@ interface PackageJson {
   version?: string
   description?: string
   author?: string
+  packageManager?: string
   dependencies?: Record<string, string>
   devDependencies?: Record<string, string>
   [key: string]: unknown
@@ -116,11 +117,26 @@ function renderPackageJson(src: string, dest: string): void {
 }
 
 /**
- * 更新 package.json 的元数据字段（name, description, author）
+ * 获取包管理器的默认版本号
+ * @param packageManager 包管理器类型
+ * @returns 包管理器版本字符串
+ */
+function getPackageManagerVersion(packageManager: string): string {
+  const versions: Record<string, string> = {
+    pnpm: '10.8.0',
+    npm: '10.9.0',
+    yarn: '4.1.0',
+  }
+  return versions[packageManager] || versions.pnpm
+}
+
+/**
+ * 更新 package.json 的元数据字段（name, description, author, packageManager）
  * @param packageJsonPath package.json 文件路径
  * @param projectName 项目名称
  * @param description 项目描述
  * @param author 作者
+ * @param packageManager 包管理器类型
  * @throws {Error} 如果文件读取失败、JSON 解析失败或写入失败
  */
 export function updatePackageJsonMetadata(
@@ -128,6 +144,7 @@ export function updatePackageJsonMetadata(
   projectName: string,
   description: string,
   author: string,
+  packageManager: string,
 ): void {
   if (!fs.existsSync(packageJsonPath)) {
     return
@@ -143,6 +160,9 @@ export function updatePackageJsonMetadata(
   if (author) {
     packageJson.author = author
   }
+
+  // 更新 packageManager 字段
+  packageJson.packageManager = `${packageManager}@${getPackageManagerVersion(packageManager)}`
 
   // 排序依赖
   sortPackageJsonDependencies(packageJson)

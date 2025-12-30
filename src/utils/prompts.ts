@@ -149,18 +149,18 @@ export async function collectProjectConfig(
       message: '是否启用 Git Hooks (husky + commitlint)?',
       default: true,
     },
-    // 包管理器 - 仅提供 pnpm
-    // {
-    //   type: 'list',
-    //   name: 'packageManager',
-    //   message: '选择包管理器:',
-    //   choices: [
-    //     { name: 'pnpm (推荐)', value: 'pnpm' },
-    //     { name: 'npm', value: 'npm' },
-    //     { name: 'yarn', value: 'yarn' },
-    //   ],
-    //   default: 'pnpm',
-    // },
+    // 包管理器选择
+    {
+      type: 'list',
+      name: 'packageManager',
+      message: '选择包管理器:',
+      choices: [
+        { name: 'pnpm (推荐)', value: 'pnpm' },
+        { name: 'npm', value: 'npm' },
+        { name: 'yarn', value: 'yarn' },
+      ],
+      default: 'pnpm',
+    },
   ])
 
   const targetDir = `${process.cwd()}/${answers.projectName}`
@@ -179,9 +179,7 @@ export async function collectProjectConfig(
     sentry: answers.sentry,
     eslint: answers.eslint,
     gitHooks: answers.gitHooks,
-    // 包管理器固定为 pnpm
-    packageManager: 'pnpm' as PackageManagerType,
-    // packageManager: answers.packageManager as PackageManagerType,
+    packageManager: answers.packageManager as PackageManagerType,
     targetDir,
   }
 }

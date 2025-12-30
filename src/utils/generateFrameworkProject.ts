@@ -87,5 +87,6 @@ export function generateFrameworkProject(
     config.projectName,
     config.description,
     config.author,
+    config.packageManager,
   )
 }

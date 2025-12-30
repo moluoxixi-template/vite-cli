@@ -9,6 +9,7 @@
 
 import type {
   FrameworkType,
+  PackageManagerType,
   ProjectConfigType,
   RouteModeType,
   UILibraryType,
@@ -103,27 +104,31 @@ function generateTestConfigs(minimalOnly = false): Array<{ name: string, config:
       const allTrue = Array.from({ length: booleanFeatures.length }, () => true)
       const combinations = [allFalse, allTrue]
 
-      for (const combination of combinations) {
-        const config: Partial<ProjectConfigType> = {
-          framework,
-          uiLibrary: uiLibrary as UILibraryType,
-          routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
-          packageManager: 'pnpm',
-        }
-
-        // 应用布尔 features 的组合
-        for (let i = 0; i < booleanFeatures.length; i++) {
-          const feature = booleanFeatures[i]
-          const enabled = combination[i]
-          const featureConfig = featureToConfig(feature, framework)
-          if (featureConfig && featureConfig.key !== 'uiLibrary' && featureConfig.key !== 'routeMode') {
-            config[featureConfig.key as keyof ProjectConfigType] = enabled as never
+      // 为每种包管理器生成测试用例
+      const packageManagers: PackageManagerType[] = ['pnpm', 'npm', 'yarn']
+      for (const packageManager of packageManagers) {
+        for (const combination of combinations) {
+          const config: Partial<ProjectConfigType> = {
+            framework,
+            uiLibrary: uiLibrary as UILibraryType,
+            routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
+            packageManager,
           }
-        }
 
-        // 生成测试用例名称
-        const suffix = combination.every(v => !v) ? 'minimal' : 'full'
-        configs.push(createTestConfig(framework, uiLibrary, suffix, config))
+          // 应用布尔 features 的组合
+          for (let i = 0; i < booleanFeatures.length; i++) {
+            const feature = booleanFeatures[i]
+            const enabled = combination[i]
+            const featureConfig = featureToConfig(feature, framework)
+            if (featureConfig && featureConfig.key !== 'uiLibrary' && featureConfig.key !== 'routeMode') {
+              config[featureConfig.key as keyof ProjectConfigType] = enabled as never
+            }
+          }
+
+          // 生成测试用例名称（包含包管理器）
+          const suffix = combination.every(v => !v) ? 'minimal' : 'full'
+          configs.push(createTestConfig(framework, uiLibrary, `${packageManager}-${suffix}`, config))
+        }
       }
     }
     else {
@@ -136,33 +141,37 @@ function generateTestConfigs(minimalOnly = false): Array<{ name: string, config:
           // 生成所有布尔 features 的组合（2^n 种）
           const combinations = generateAllCombinations(booleanFeatures)
 
-          for (const combination of combinations) {
-            const config: Partial<ProjectConfigType> = {
-              framework,
-              uiLibrary: uiLibrary as UILibraryType,
-              routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
-              packageManager: 'pnpm',
-            }
-
-            // 应用布尔 features 的组合
-            for (let i = 0; i < booleanFeatures.length; i++) {
-              const feature = booleanFeatures[i]
-              const enabled = combination[i]
-              const featureConfig = featureToConfig(feature, framework)
-              if (featureConfig && featureConfig.key !== 'uiLibrary' && featureConfig.key !== 'routeMode') {
-                config[featureConfig.key as keyof ProjectConfigType] = enabled as never
+          // 为每种包管理器生成测试用例
+          const packageManagers: PackageManagerType[] = ['pnpm', 'npm', 'yarn']
+          for (const packageManager of packageManagers) {
+            for (const combination of combinations) {
+              const config: Partial<ProjectConfigType> = {
+                framework,
+                uiLibrary: uiLibrary as UILibraryType,
+                routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
+                packageManager,
               }
+
+              // 应用布尔 features 的组合
+              for (let i = 0; i < booleanFeatures.length; i++) {
+                const feature = booleanFeatures[i]
+                const enabled = combination[i]
+                const featureConfig = featureToConfig(feature, framework)
+                if (featureConfig && featureConfig.key !== 'uiLibrary' && featureConfig.key !== 'routeMode') {
+                  config[featureConfig.key as keyof ProjectConfigType] = enabled as never
+                }
+              }
+
+              // 生成测试用例名称（包含包管理器）
+              const enabledFeatures = booleanFeatures.filter((_, i) => combination[i])
+              const suffix = enabledFeatures.length === 0
+                ? 'minimal'
+                : enabledFeatures.length === booleanFeatures.length
+                  ? 'full'
+                  : enabledFeatures.join('-')
+
+              configs.push(createTestConfig(framework, uiLibrary, `${packageManager}-${routeModeFeature}-${suffix}`, config))
             }
-
-            // 生成测试用例名称
-            const enabledFeatures = booleanFeatures.filter((_, i) => combination[i])
-            const suffix = enabledFeatures.length === 0
-              ? 'minimal'
-              : enabledFeatures.length === booleanFeatures.length
-                ? 'full'
-                : enabledFeatures.join('-')
-
-            configs.push(createTestConfig(framework, uiLibrary, `${routeModeFeature}-${suffix}`, config))
           }
         }
       }
