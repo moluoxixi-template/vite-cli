@@ -13,8 +13,6 @@ export const FILE_CONSTANTS = {
   PACKAGE_JSON: 'package.json',
   /** .ejs 文件扩展名 */
   EJS_EXTENSION: '.ejs',
-  /** vite.config.data.ts 文件名 */
-  VITE_CONFIG_DATA: 'vite.config.data.ts',
   /** pnpm-workspace.yaml 文件名 */
   PNPM_WORKSPACE_YAML: 'pnpm-workspace.yaml',
 } as const

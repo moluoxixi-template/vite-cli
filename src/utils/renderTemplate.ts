@@ -50,11 +50,6 @@ export function renderTemplate(src: string, dest: string): void {
       return
     }
 
-    // 跳过 vite.config.data.ts 文件（用于数据驱动合并）
-    if (filename === FILE_CONSTANTS.VITE_CONFIG_DATA) {
-      return
-    }
-
     // 处理 package.json - 深度合并
     if (filename === FILE_CONSTANTS.PACKAGE_JSON) {
       renderPackageJson(src, dest)

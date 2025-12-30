@@ -5,7 +5,6 @@
 
 import type { ProjectConfigType } from '../types/index.ts'
 
-import fs from 'node:fs'
 import path from 'node:path'
 
 import { FILE_CONSTANTS } from '../constants/index.ts'

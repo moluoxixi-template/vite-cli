@@ -3,7 +3,9 @@ import process from 'node:process'
 import cssModuleGlobalRootPlugin from '@moluoxixi/css-module-global-root-plugin'
 import { ViteConfig, wrapperEnv } from '@moluoxixi/vite-config'
 import { loadEnv } from 'vite'
-<%- imports %>
+<% if (sentry) { -%>
+import { sentryVitePlugin } from '@sentry/vite-plugin'
+<% } -%>
 
 export default ViteConfig(
   ({ mode }) => {
@@ -19,12 +21,50 @@ export default ViteConfig(
       appTitle,
       appCode,
       port,
-      <%- topLevelConfig %>,
+<% if (framework === 'vue') { -%>
+      vue: true,
+      autoComponent: true,
+<% } else if (framework === 'react') { -%>
+      react: true,
+<% } -%>
+<% if (routeMode === 'file-system') { -%>
+      pageRoutes: true,
+<% } -%>
       viteConfig: {
-        plugins: [ <%- plugins.join(',\n          ') %> ],
-        <%- mergedConfigBody %>
+        plugins: [
+          cssModuleGlobalRootPlugin() as any,
+<% if (sentry) { -%>
+          viteEnv.VITE_SENTRY && mode === 'production' && sentryVitePlugin({
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            org: 'f1f562b9b82f',
+            project: 'javascript-<%= framework %>',
+            sourcemaps: {
+              assets: './dist/**',
+              ignore: ['node_modules'],
+            },
+            release: {
+              name: viteEnv.VITE_APP_VERSION || 'unknown',
+            },
+          }),
+<% } -%>
+        ],
+        server: {
+          proxy: {
+            '/api': {
+              changeOrigin: true,
+              target: 'http://localhost:3000',
+            },
+          },
+        },
+        css: {
+          preprocessorOptions: {
+            scss: {
+              silenceDeprecations: ['legacy-js-api'],
+              api: 'modern-compiler',
+            },
+          },
+        },
       },
     }
   },
 )
-

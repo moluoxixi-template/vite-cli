@@ -5,7 +5,6 @@
 
 export * from './ejs.ts'
 export * from './features.ts'
-export * from './viteConfig.ts'
 
 /**
  * 框架类型
