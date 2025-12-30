@@ -9,9 +9,18 @@ import path from 'node:path'
 import { getTemplatesDir } from './file.ts'
 
 /**
+ * UI 库优先级顺序（用于排序，确保默认选择）
+ */
+const UI_LIBRARY_PRIORITY: Record<string, number> = {
+  'element-plus': 1,
+  'ant-design-vue': 2,
+  'ant-design': 1,
+}
+
+/**
  * 扫描所有 features（框架的 + 公共的）
  * @param framework 框架类型
- * @returns 所有 feature 名称数组
+ * @returns 所有 feature 名称数组（UI 库按优先级排序）
  */
 export function scanAllFeatures(framework: FrameworkType): string[] {
   const frameworkDir = path.join(getTemplatesDir(), framework, 'features')
@@ -31,7 +40,16 @@ export function scanAllFeatures(framework: FrameworkType): string[] {
     ))
   }
 
-  return features
+  // 对 UI 库进行排序，确保 element-plus 优先（优先级数字越小越靠前）
+  return features.sort((a, b) => {
+    const priorityA = UI_LIBRARY_PRIORITY[a] ?? 999
+    const priorityB = UI_LIBRARY_PRIORITY[b] ?? 999
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB
+    }
+    // 相同优先级时保持字母顺序
+    return a.localeCompare(b)
+  })
 }
 
 /**

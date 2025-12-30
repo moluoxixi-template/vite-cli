@@ -12,7 +12,8 @@ import { FILE_CONSTANTS } from '../constants/index.ts'
 import { renderEjsToFile } from './ejs.ts'
 import { getTemplatesDir } from './file.ts'
 import { renderCommonFeatures, renderFrameworkFeatures } from './renderFeatures.ts'
-import { renderTemplate, renderViteConfig, updatePackageJsonMetadata } from './index.ts'
+import { renderTemplate, updatePackageJsonMetadata } from './index.ts'
+import { getViteConfigEjsData } from './viteConfigRender.ts'
 
 /**
  * EJS 模板配置接口
@@ -77,9 +78,14 @@ export function generateFrameworkProject(
     ejsData,
   )
 
-  // 6. 数据驱动生成 vite.config.ts
-  const viteConfigContent = renderViteConfig(config)
-  fs.writeFileSync(path.join(targetDir, 'vite.config.ts'), viteConfigContent)
+  // 6. 数据驱动生成 vite.config.ts（使用 EJS 模板）
+  const viteConfigEjsData = getViteConfigEjsData(config)
+  const commonBasePath = path.join(templatesDir, 'common', 'base')
+  renderEjsToFile(
+    path.join(commonBasePath, 'vite.config.ts.ejs'),
+    path.join(targetDir, 'vite.config.ts'),
+    viteConfigEjsData,
+  )
 
   // 7. 更新 package.json 的元数据字段
   const packageJsonPath = path.join(targetDir, FILE_CONSTANTS.PACKAGE_JSON)

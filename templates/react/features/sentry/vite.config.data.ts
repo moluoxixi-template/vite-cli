@@ -2,7 +2,7 @@ import type { ViteConfigData } from '../../../../src/types/viteConfig'
 
 const data: ViteConfigData = {
   imports: [
-    'import { sentryVitePlugin } from \'@sentry/vite-plugin\'',
+    "import { sentryVitePlugin } from '@sentry/vite-plugin'",
   ],
   plugins: [
     `viteEnv.VITE_SENTRY && mode === 'production' && sentryVitePlugin({
