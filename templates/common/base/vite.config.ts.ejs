@@ -32,7 +32,6 @@ export default ViteConfig(
 <% } -%>
       viteConfig: {
         plugins: [
-          cssModuleGlobalRootPlugin() as any,
 <% if (sentry) { -%>
           viteEnv.VITE_SENTRY && mode === 'production' && sentryVitePlugin({
             authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -62,6 +61,11 @@ export default ViteConfig(
               silenceDeprecations: ['legacy-js-api'],
               api: 'modern-compiler',
             },
+            postcss: {
+              plugins: [
+                cssModuleGlobalRootPlugin() as any,
+              ]
+            }
           },
         },
       },

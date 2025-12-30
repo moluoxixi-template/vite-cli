@@ -1,16 +1,3 @@
-<script setup lang="ts">
-/**
- * Ant Design Vue 布局组件
- */
-import { ref } from 'vue';
-
-const sidebarCollapsed = ref(false);
-
-function toggleSidebar(): void {
-  sidebarCollapsed.value = !sidebarCollapsed.value;
-}
-</script>
-
 <template>
   <a-layout class="layout-container">
     <a-layout-sider
@@ -43,6 +30,19 @@ function toggleSidebar(): void {
     </a-layout>
   </a-layout>
 </template>
+
+<script setup lang="ts">
+/**
+ * Ant Design Vue 布局组件
+ */
+import { ref } from 'vue'
+
+const sidebarCollapsed = ref(false)
+
+function toggleSidebar(): void {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+}
+</script>
 
 <style scoped lang="scss">
 .layout-container {
@@ -83,4 +83,3 @@ function toggleSidebar(): void {
   min-height: 280px;
 }
 </style>
-

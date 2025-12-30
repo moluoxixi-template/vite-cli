@@ -10,7 +10,6 @@ export const store = createPinia()
 // 使用持久化插件
 store.use(piniaPluginPersistedstate)
 
+export * from './system'
 // 导出 store 模块
 export * from './user'
-export * from './system'
-

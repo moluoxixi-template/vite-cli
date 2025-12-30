@@ -9,7 +9,7 @@ export const STORAGE_KEYS = {
   USER_INFO: 'userInfo',
   LANGUAGE: 'language',
   THEME: 'theme',
-} as const;
+} as const
 
 /** 响应码 */
 export const RESPONSE_CODE = {
@@ -18,12 +18,11 @@ export const RESPONSE_CODE = {
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   SERVER_ERROR: 500,
-} as const;
+} as const
 
 /** 分页默认配置 */
 export const PAGINATION = {
   DEFAULT_PAGE: 1,
   DEFAULT_PAGE_SIZE: 10,
   PAGE_SIZE_OPTIONS: [10, 20, 50, 100],
-} as const;
-
+} as const

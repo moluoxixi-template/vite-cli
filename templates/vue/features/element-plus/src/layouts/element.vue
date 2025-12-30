@@ -1,16 +1,3 @@
-<script setup lang="ts">
-/**
- * Element Plus 布局组件
- */
-import { ref } from 'vue';
-
-const sidebarCollapsed = ref(false);
-
-function toggleSidebar(): void {
-  sidebarCollapsed.value = !sidebarCollapsed.value;
-}
-</script>
-
 <template>
   <el-container class="layout-container">
     <el-aside :width="sidebarCollapsed ? '64px' : '200px'" class="layout-aside">
@@ -23,10 +10,14 @@ function toggleSidebar(): void {
         class="layout-menu"
       >
         <el-menu-item index="1">
-          <template #title>首页</template>
+          <template #title>
+            首页
+          </template>
         </el-menu-item>
         <el-menu-item index="2">
-          <template #title>关于</template>
+          <template #title>
+            关于
+          </template>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -42,6 +33,19 @@ function toggleSidebar(): void {
     </el-container>
   </el-container>
 </template>
+
+<script setup lang="ts">
+/**
+ * Element Plus 布局组件
+ */
+import { ref } from 'vue'
+
+const sidebarCollapsed = ref(false)
+
+function toggleSidebar(): void {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+}
+</script>
 
 <style scoped lang="scss">
 .layout-container {
@@ -78,4 +82,3 @@ function toggleSidebar(): void {
   background-color: #f0f2f5;
 }
 </style>
-

@@ -24,4 +24,3 @@ i18n.use(initReactI18next).init({
 })
 
 export default i18n
-

@@ -6,4 +6,3 @@ import SubMenu from './src/index.vue'
 
 export { SubMenu }
 export default SubMenu
-

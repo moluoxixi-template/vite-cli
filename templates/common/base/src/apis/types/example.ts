@@ -27,4 +27,3 @@ export type CreateExampleParamsType = Omit<ExampleItemType, 'id' | 'createdAt'>
  * 所有字段可选
  */
 export type UpdateExampleParamsType = Partial<ExampleItemType>
-

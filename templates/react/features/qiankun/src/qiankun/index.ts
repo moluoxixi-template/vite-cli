@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import type { Router } from '@remix-run/router'
 import {
-  renderWithQiankun,
   qiankunWindow,
+  renderWithQiankun,
 } from 'vite-plugin-qiankun/dist/helper'
 
 let root: ReturnType<typeof import('react-dom/client').createRoot> | null = null
@@ -77,4 +77,3 @@ export function setupQiankun(options: RenderOptions): void {
 export function isQiankun(): boolean {
   return qiankunWindow.__POWERED_BY_QIANKUN__ || false
 }
-

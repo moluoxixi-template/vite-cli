@@ -9,7 +9,7 @@
  * @returns Promise，在指定时间后 resolve
  */
 export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
@@ -18,7 +18,7 @@ export function sleep(ms: number): Promise<void> {
  * @returns 深拷贝后的新对象
  */
 export function deepClone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
+  return JSON.parse(JSON.stringify(obj))
 }
 
 /**
@@ -29,17 +29,17 @@ export function deepClone<T>(obj: T): T {
  */
 export function debounce<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
-  let timer: ReturnType<typeof setTimeout> | null = null;
+  let timer: ReturnType<typeof setTimeout> | null = null
   return function (this: unknown, ...args: Parameters<T>) {
     if (timer) {
-      clearTimeout(timer);
+      clearTimeout(timer)
     }
     timer = setTimeout(() => {
-      fn.apply(this, args);
-    }, delay);
-  };
+      fn.apply(this, args)
+    }, delay)
+  }
 }
 
 /**
@@ -50,16 +50,16 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
  */
 export function throttle<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
-  let lastTime = 0;
+  let lastTime = 0
   return function (this: unknown, ...args: Parameters<T>) {
-    const now = Date.now();
+    const now = Date.now()
     if (now - lastTime >= delay) {
-      lastTime = now;
-      fn.apply(this, args);
+      lastTime = now
+      fn.apply(this, args)
     }
-  };
+  }
 }
 
 /**
@@ -69,13 +69,13 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
  * @returns 格式化后的日期字符串
  */
 export function formatDate(date: Date | string | number, format = 'YYYY-MM-DD HH:mm:ss'): string {
-  const d = new Date(date);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  const seconds = String(d.getSeconds()).padStart(2, '0');
+  const d = new Date(date)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const hours = String(d.getHours()).padStart(2, '0')
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+  const seconds = String(d.getSeconds()).padStart(2, '0')
 
   return format
     .replace('YYYY', String(year))
@@ -83,6 +83,5 @@ export function formatDate(date: Date | string | number, format = 'YYYY-MM-DD HH
     .replace('DD', day)
     .replace('HH', hours)
     .replace('mm', minutes)
-    .replace('ss', seconds);
+    .replace('ss', seconds)
 }
-

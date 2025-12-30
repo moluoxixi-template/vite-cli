@@ -1,15 +1,15 @@
-<script setup lang="ts">
-/**
- * 关于页面
- */
-</script>
-
 <template>
   <div class="about-page">
     <h1>关于</h1>
     <p>这是关于页面</p>
   </div>
 </template>
+
+<script setup lang="ts">
+/**
+ * 关于页面
+ */
+</script>
 
 <style scoped lang="scss">
 .about-page {
@@ -28,4 +28,3 @@
   }
 }
 </style>
-

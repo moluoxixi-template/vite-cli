@@ -19,4 +19,3 @@ export interface UserStateType {
   /** 登出 */
   logout: () => void
 }
-

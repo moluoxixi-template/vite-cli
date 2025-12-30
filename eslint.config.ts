@@ -6,7 +6,10 @@
 import eslintConfig from '@moluoxixi/eslint-config'
 
 export default eslintConfig({
-  ignores: ['dist', 'templates'],
+  ignores: [
+    'dist',
+    '*/.husky',
+  ],
   rules: {
     'perfectionist/sort-imports': 'off',
     'jsonc/sort-keys': 'off',

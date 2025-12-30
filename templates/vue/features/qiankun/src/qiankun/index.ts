@@ -1,8 +1,8 @@
 import type { App } from 'vue'
 import type { Router } from 'vue-router'
 import {
-  renderWithQiankun,
   qiankunWindow,
+  renderWithQiankun,
 } from 'vite-plugin-qiankun/dist/helper'
 
 let app: App | null = null
@@ -72,4 +72,3 @@ export function setupQiankun(options: RenderOptions): void {
 export function isQiankun(): boolean {
   return qiankunWindow.__POWERED_BY_QIANKUN__ || false
 }
-

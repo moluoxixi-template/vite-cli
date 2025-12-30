@@ -4,6 +4,7 @@
  */
 
 import type { RouteObject } from 'react-router-dom'
+import type { ReactNode } from 'react'
 import { lazy, Suspense } from 'react'
 
 const Home = lazy(() => import('@/pages/home'))
@@ -11,10 +12,11 @@ const About = lazy(() => import('@/pages/about'))
 
 /**
  * 懒加载包装组件
- * @param children 要懒加载的子组件
+ * @param params
+ * @param params.children 要懒加载的子组件
  * @returns 带 Suspense 的组件
  */
-function LazyLoad({ children }: { children: React.ReactNode }) {
+function LazyLoad({ children }: { children: ReactNode }) {
   return <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
 }
 
@@ -31,4 +33,3 @@ export const routes: RouteObject[] = [
     element: <LazyLoad><About /></LazyLoad>,
   },
 ]
-

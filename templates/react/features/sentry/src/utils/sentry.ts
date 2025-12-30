@@ -37,4 +37,3 @@ export function initSentry(config: SentryConfig): void {
     replaysOnErrorSampleRate: 1.0,
   })
 }
-

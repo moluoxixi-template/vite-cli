@@ -42,4 +42,3 @@ export function initSentry(app: App, router: Router, config: SentryConfig): void
     replaysOnErrorSampleRate: 1.0,
   })
 }
-

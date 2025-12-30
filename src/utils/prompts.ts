@@ -128,7 +128,14 @@ export async function collectProjectConfig(
         }
       },
     },
-    // 路由模式
+    // 是否启用路由
+    {
+      type: 'confirm',
+      name: 'router',
+      message: '是否启用路由 (vue-router/react-router-dom)?',
+      default: true,
+    },
+    // 路由模式（仅在启用路由时询问）
     {
       type: 'list',
       name: 'routeMode',
@@ -137,13 +144,7 @@ export async function collectProjectConfig(
         { name: '文件系统路由 (vite-plugin-pages)', value: 'file-system' },
         { name: '手动配置路由', value: 'manual' },
       ],
-    },
-    // 是否启用路由
-    {
-      type: 'confirm',
-      name: 'router',
-      message: '是否启用路由 (vue-router/react-router-dom)?',
-      default: true,
+      when: (answers: Record<string, unknown>) => answers.router === true,
     },
     // 是否启用状态管理
     {
@@ -213,7 +214,7 @@ export async function collectProjectConfig(
     author: answers.author,
     framework: answers.framework as FrameworkType,
     uiLibrary: answers.uiLibrary as UILibraryType,
-    routeMode: answers.routeMode as RouteModeType,
+    routeMode: (answers.routeMode as RouteModeType) || 'manual',
     router: answers.router,
     stateManagement: answers.stateManagement,
     i18n: answers.i18n,

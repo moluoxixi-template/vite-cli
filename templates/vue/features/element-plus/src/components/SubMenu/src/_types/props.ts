@@ -8,4 +8,3 @@ export interface SubMenuProps {
   /** 菜单列表 */
   menuList: RouteRecordRaw[]
 }
-
