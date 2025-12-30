@@ -11,9 +11,12 @@ import type {
   UILibraryType,
 } from '../types/index.ts'
 
+import fs from 'node:fs'
 import process from 'node:process'
 
 import inquirer from 'inquirer'
+
+import { PROJECT_CONSTANTS } from '../constants/index.ts'
 
 import { getDefaultAuthor } from './npmConfig.ts'
 
@@ -34,13 +37,39 @@ export async function collectProjectConfig(
       type: 'input',
       name: 'projectName',
       message: '项目名称:',
-      default: projectName || 'my-project',
+      default: projectName || PROJECT_CONSTANTS.DEFAULT_PROJECT_NAME,
       validate: (input: string) => {
-        if (!input.trim()) {
+        const trimmed = input.trim()
+        if (!trimmed) {
           return '项目名称不能为空'
         }
-        if (!/^[\w-]+$/.test(input)) {
+        if (
+          trimmed.length < PROJECT_CONSTANTS.MIN_PROJECT_NAME_LENGTH
+          || trimmed.length > PROJECT_CONSTANTS.MAX_PROJECT_NAME_LENGTH
+        ) {
+          return `项目名称长度必须在 ${PROJECT_CONSTANTS.MIN_PROJECT_NAME_LENGTH}-${PROJECT_CONSTANTS.MAX_PROJECT_NAME_LENGTH} 个字符之间`
+        }
+        if (!/^[\w-]+$/.test(trimmed)) {
           return '项目名称只能包含字母、数字、连字符和下划线'
+        }
+        if (PROJECT_CONSTANTS.RESERVED_NAMES.includes(trimmed.toLowerCase())) {
+          return `项目名称不能使用保留名称: ${trimmed}`
+        }
+        // 检查目标目录是否已存在且不为空
+        const targetDir = `${process.cwd()}/${trimmed}`
+        if (fs.existsSync(targetDir)) {
+          try {
+            const stats = fs.statSync(targetDir)
+            if (stats.isDirectory()) {
+              const files = fs.readdirSync(targetDir)
+              if (files.length > 0) {
+                return `目录 ${targetDir} 已存在且不为空，请选择其他名称或先清空该目录`
+              }
+            }
+          }
+          catch {
+            // 忽略检查错误，让后续流程处理
+          }
         }
         return true
       },
@@ -50,7 +79,7 @@ export async function collectProjectConfig(
       type: 'input',
       name: 'description',
       message: '项目描述:',
-      default: 'A Vite project',
+      default: PROJECT_CONSTANTS.DEFAULT_DESCRIPTION,
     },
     // 作者
     {

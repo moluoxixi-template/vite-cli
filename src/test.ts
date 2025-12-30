@@ -22,6 +22,8 @@ import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 import fs from 'fs-extra'
 
+import { FILE_CONSTANTS } from './constants/index.ts'
+
 import { generateProject } from './generators/index.ts'
 import { featureToConfig, scanAllFeatures } from './utils/featureMapping.ts'
 
@@ -271,7 +273,7 @@ async function generateTestProjects(minimalOnly = false): Promise<void> {
  * 检查 package.json 中是否有 catalog 引用（应该已经全部替换为实际版本号）
  */
 function checkPackageJsonVersions(projectDir: string): boolean {
-  const packageJsonPath = path.join(projectDir, 'package.json')
+  const packageJsonPath = path.join(projectDir, FILE_CONSTANTS.PACKAGE_JSON)
   if (!fs.existsSync(packageJsonPath)) {
     console.log(chalk.red(`  ❌ package.json 不存在`))
     return false
@@ -328,7 +330,7 @@ async function auditMoluoxixiDeps(minimalOnly = false): Promise<void> {
       ? path.join(TEST_OUTPUT_DIR, 'vue')
       : path.join(TEST_OUTPUT_DIR, 'react')
     const projectDir = path.join(frameworkOutputDir, name)
-    const packageJsonPath = path.join(projectDir, 'package.json')
+    const packageJsonPath = path.join(projectDir, FILE_CONSTANTS.PACKAGE_JSON)
 
     console.log(chalk.cyan(`📋 检查 ${name}...`))
 
@@ -448,7 +450,7 @@ async function printFileTree(dir: string, indent: string): Promise<void> {
   const items = fs.readdirSync(dir).sort()
 
   for (const item of items) {
-    if (item === 'node_modules')
+    if (item === FILE_CONSTANTS.NODE_MODULES)
       continue
 
     const itemPath = path.join(dir, item)

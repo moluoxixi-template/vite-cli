@@ -8,6 +8,7 @@ import type { ProjectConfigType } from '../types/index.ts'
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { FILE_CONSTANTS } from '../constants/index.ts'
 import { renderEjsToFile } from './ejs.ts'
 import { getTemplatesDir } from './file.ts'
 import { renderCommonFeatures, renderFrameworkFeatures } from './renderFeatures.ts'
@@ -81,7 +82,7 @@ export function generateFrameworkProject(
   fs.writeFileSync(path.join(targetDir, 'vite.config.ts'), viteConfigContent)
 
   // 7. 更新 package.json 的元数据字段
-  const packageJsonPath = path.join(targetDir, 'package.json')
+  const packageJsonPath = path.join(targetDir, FILE_CONSTANTS.PACKAGE_JSON)
   updatePackageJsonMetadata(
     packageJsonPath,
     config.projectName,

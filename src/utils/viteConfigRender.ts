@@ -4,12 +4,18 @@
  * 从各 feature 的 vite.config.data.ts 中读取配置
  */
 
-import type { ProjectConfigType, ViteConfigData } from '../types/index.ts'
+import type {
+  FrameworkType,
+  ProjectConfigType,
+  ViteConfigData,
+} from '../types/index.ts'
 
 import fs from 'node:fs'
 import path from 'node:path'
 
 import { createJiti } from 'jiti'
+
+import { FILE_CONSTANTS, VITE_CONFIG_CONSTANTS } from '../constants/index.ts'
 
 import { getRouteModeFeature, getUILibraryFeature } from './featureMapping.ts'
 import { getTemplatesDir } from './file.ts'
@@ -26,7 +32,13 @@ const jiti = createJiti(import.meta.url)
  */
 function readViteConfigData(framework: string, feature: string): ViteConfigData | null {
   const templatesDir = getTemplatesDir()
-  const dataPath = path.join(templatesDir, framework, 'features', feature, 'vite.config.data.ts')
+  const dataPath = path.join(
+    templatesDir,
+    framework,
+    'features',
+    feature,
+    FILE_CONSTANTS.VITE_CONFIG_DATA,
+  )
 
   if (!fs.existsSync(dataPath)) {
     return null
@@ -39,7 +51,7 @@ function readViteConfigData(framework: string, feature: string): ViteConfigData 
   catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     throw new Error(
-      `无法加载 vite.config.data.ts: ${dataPath}\n错误: ${errorMessage}`,
+      `无法加载 ${FILE_CONSTANTS.VITE_CONFIG_DATA}: ${dataPath}\n错误: ${errorMessage}`,
       { cause: error },
     )
   }
@@ -118,22 +130,13 @@ export function mergeViteConfigData(dataList: ViteConfigData[]): ViteConfigData 
 }
 
 /**
- * 生成 vite.config.ts 内容
- * @param config 项目配置
- * @returns vite.config.ts 文件的字符串内容
- * @throws {Error} 如果收集配置数据失败
+ * 生成导入语句部分
+ * @param merged 合并后的配置数据
+ * @returns 导入语句数组
  */
-export function renderViteConfig(config: ProjectConfigType): string {
-  const dataList = collectViteConfigData(config)
-  const merged = mergeViteConfigData(dataList)
-
+function generateImports(merged: ViteConfigData): string[] {
   const lines: string[] = []
 
-  lines.push('/**')
-  lines.push(' * Vite 配置文件')
-  lines.push(' * 基于 @moluoxixi/vite-config 的配置')
-  lines.push(' */')
-  lines.push('')
   lines.push('import path from \'node:path\'')
   lines.push('import process from \'node:process\'')
   lines.push('import cssModuleGlobalRootPlugin from \'@moluoxixi/css-module-global-root-plugin\'')
@@ -147,7 +150,128 @@ export function renderViteConfig(config: ProjectConfigType): string {
   }
 
   lines.push('import { loadEnv } from \'vite\'')
+
+  return lines
+}
+
+/**
+ * 生成框架配置部分
+ * @param framework 框架类型
+ * @returns 框架配置代码行数组
+ */
+function generateFrameworkConfig(framework: FrameworkType): string[] {
+  const lines: string[] = []
+
+  if (framework === 'vue') {
+    lines.push('      vue: true,')
+  }
+  else {
+    lines.push('      react: true,')
+  }
+
+  lines.push('      autoComponent: true,')
+
+  return lines
+}
+
+/**
+ * 生成 feature options 配置部分
+ * @param options feature 选项配置
+ * @returns feature options 代码行数组
+ */
+function generateFeatureOptions(options: Record<string, unknown>): string[] {
+  const lines: string[] = []
+
+  for (const [key, value] of Object.entries(options)) {
+    if (typeof value === 'boolean') {
+      lines.push(`      ${key}: ${value},`)
+    }
+    else if (typeof value === 'string') {
+      lines.push(`      ${key}: '${value}',`)
+    }
+    else {
+      lines.push(`      ${key}: ${JSON.stringify(value)},`)
+    }
+  }
+
+  return lines
+}
+
+/**
+ * 生成 Vite 配置部分
+ * @param merged 合并后的配置数据
+ * @returns Vite 配置代码行数组
+ */
+function generateViteConfigSection(merged: ViteConfigData): string[] {
+  const lines: string[] = []
+
+  lines.push('      viteConfig: {')
+  lines.push('        plugins: [')
+
+  // 添加 feature plugins
+  if (merged.plugins && merged.plugins.length > 0) {
+    for (const plugin of merged.plugins) {
+      lines.push(`          ${plugin},`)
+    }
+  }
+
+  lines.push('        ],')
+  lines.push('        server: {')
+  lines.push('          proxy: {')
+  lines.push(`            '${VITE_CONFIG_CONSTANTS.API_PROXY_PATH}': {`)
+  lines.push('              changeOrigin: true,')
+  lines.push(`              target: '${VITE_CONFIG_CONSTANTS.DEV_SERVER_TARGET}',`)
+  lines.push('            },')
+  lines.push('          },')
+  lines.push('        },')
+  lines.push('        css: {')
+  lines.push('          postcss: {')
+  lines.push('            plugins: [')
+  lines.push('              cssModuleGlobalRootPlugin,')
+  lines.push('            ],')
+  lines.push('          },')
+  lines.push('          preprocessorOptions: {')
+  lines.push('            scss: {')
+  lines.push(`              silenceDeprecations: ['${VITE_CONFIG_CONSTANTS.SCSS_DEPRECATION}'],`)
+  lines.push(`              api: '${VITE_CONFIG_CONSTANTS.SCSS_API_MODE}',`)
+
+  // 添加 CSS additionalData
+  if (merged.css?.additionalData) {
+    lines.push(`              ${merged.css.additionalData}`)
+  }
+
+  lines.push('            },')
+  lines.push('          },')
+  lines.push('        },')
+  lines.push('      },')
+
+  return lines
+}
+
+/**
+ * 生成 vite.config.ts 内容
+ * @param config 项目配置
+ * @returns vite.config.ts 文件的字符串内容
+ * @throws {Error} 如果收集配置数据失败
+ */
+export function renderViteConfig(config: ProjectConfigType): string {
+  const dataList = collectViteConfigData(config)
+  const merged = mergeViteConfigData(dataList)
+
+  const lines: string[] = []
+
+  // 文件头注释
+  lines.push('/**')
+  lines.push(' * Vite 配置文件')
+  lines.push(' * 基于 @moluoxixi/vite-config 的配置')
+  lines.push(' */')
   lines.push('')
+
+  // 导入语句
+  lines.push(...generateImports(merged))
+  lines.push('')
+
+  // 主配置函数
   lines.push('export default ViteConfig(')
   lines.push('  ({ mode }) => {')
   lines.push('    const env = loadEnv(mode!, process.cwd())')
@@ -163,69 +287,16 @@ export function renderViteConfig(config: ProjectConfigType): string {
   lines.push('      port,')
 
   // 框架配置
-  if (config.framework === 'vue') {
-    lines.push('      vue: true,')
-  }
-  else {
-    lines.push('      react: true,')
-  }
-
-  lines.push('      autoComponent: true,')
+  lines.push(...generateFrameworkConfig(config.framework))
 
   // 添加 feature options
   if (merged.options) {
-    for (const [key, value] of Object.entries(merged.options)) {
-      if (typeof value === 'boolean') {
-        lines.push(`      ${key}: ${value},`)
-      }
-      else if (typeof value === 'string') {
-        lines.push(`      ${key}: '${value}',`)
-      }
-      else {
-        lines.push(`      ${key}: ${JSON.stringify(value)},`)
-      }
-    }
+    lines.push(...generateFeatureOptions(merged.options))
   }
 
-  lines.push('      viteConfig: {')
-  lines.push('        plugins: [')
+  // Vite 配置部分
+  lines.push(...generateViteConfigSection(merged))
 
-  // 添加 feature plugins
-  if (merged.plugins && merged.plugins.length > 0) {
-    for (const plugin of merged.plugins) {
-      lines.push(`          ${plugin},`)
-    }
-  }
-
-  lines.push('        ],')
-  lines.push('        server: {')
-  lines.push('          proxy: {')
-  lines.push('            \'/api\': {')
-  lines.push('              changeOrigin: true,')
-  lines.push('              target: \'http://localhost:3000\',')
-  lines.push('            },')
-  lines.push('          },')
-  lines.push('        },')
-  lines.push('        css: {')
-  lines.push('          postcss: {')
-  lines.push('            plugins: [')
-  lines.push('              cssModuleGlobalRootPlugin,')
-  lines.push('            ],')
-  lines.push('          },')
-  lines.push('          preprocessorOptions: {')
-  lines.push('            scss: {')
-  lines.push('              silenceDeprecations: [\'legacy-js-api\'],')
-  lines.push('              api: \'modern-compiler\',')
-
-  // 添加 CSS additionalData
-  if (merged.css?.additionalData) {
-    lines.push(`              ${merged.css.additionalData}`)
-  }
-
-  lines.push('            },')
-  lines.push('          },')
-  lines.push('        },')
-  lines.push('      },')
   lines.push('    }')
   lines.push('  },')
   lines.push(')')
