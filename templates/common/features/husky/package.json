@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "prepare": "node .husky/install.mjs",
+    "prepare": "pnpm submodule:update && node .husky/install.mjs",
     "lint-staged": "lint-staged",
     "commit": "git add . && git-cz"
   },

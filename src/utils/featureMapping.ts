@@ -54,17 +54,15 @@ export function scanAllFeatures(framework: FrameworkType): string[] {
 
 /**
  * 配置项到 feature 目录的映射（从 renderFeatures 提取）
- * @param framework 框架类型
+ * @param _framework 框架类型（已不再使用，保留以保持接口兼容性）
  * @returns 配置键到 feature 名称的映射对象
  */
-export function getConfigToFeatureMap(framework: FrameworkType): Record<string, string> {
+export function getConfigToFeatureMap(_framework: FrameworkType): Record<string, string> {
   return {
-    router: 'router',
-    stateManagement: framework === 'vue' ? 'pinia' : 'zustand',
+    // router、stateManagement、qiankun 已内置到 base，不再作为 feature
     eslint: 'eslint',
     i18n: 'i18n',
     sentry: 'sentry',
-    // qiankun 已内置到 base，不再作为 feature
   }
 }
 

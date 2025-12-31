@@ -358,6 +358,9 @@ importers:
       pinia:
         specifier: ^2.2.7
         version: 2.3.1(typescript@5.8.3)(vue@3.5.26(typescript@5.8.3))
+      pinia-plugin-persistedstate:
+        specifier: ^3.2.1
+        version: 3.2.3(pinia@2.3.1(typescript@5.8.3)(vue@3.5.26(typescript@5.8.3)))
       vite-plugin-qiankun:
         specifier: ^1.0.15
         version: 1.0.15(typescript@5.8.3)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
@@ -443,18 +446,6 @@ importers:
       vue-router:
         specifier: ^4.4.5
         version: 4.6.4(vue@3.5.26(typescript@5.8.3))
-
-  templates/vue/features/pinia:
-    dependencies:
-      pinia:
-        specifier: ^2.3.0
-        version: 2.3.1(typescript@5.8.3)(vue@3.5.26(typescript@5.8.3))
-      pinia-plugin-persistedstate:
-        specifier: ^3.2.1
-        version: 3.2.3(pinia@2.3.1(typescript@5.8.3)(vue@3.5.26(typescript@5.8.3)))
-      vue:
-        specifier: latest
-        version: 3.5.26(typescript@5.8.3)
 
   templates/vue/features/sentry:
     dependencies:
