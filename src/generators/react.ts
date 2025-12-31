@@ -17,7 +17,5 @@ export async function generateReactProject(config: ProjectConfigType): Promise<v
   generateFrameworkProject(config, {
     mainTemplate: 'src/main.tsx.ejs',
     mainOutput: 'src/main.tsx',
-    routerTemplate: 'src/router/index.tsx.ejs',
-    routerOutput: 'src/router/index.tsx',
   })
 }

@@ -1,3 +1,7 @@
+/**
+ * Qiankun 微前端配置
+ */
+
 import type { App } from 'vue'
 import type { Router } from 'vue-router'
 import {
@@ -72,3 +76,4 @@ export function setupQiankun(options: RenderOptions): void {
 export function isQiankun(): boolean {
   return qiankunWindow.__POWERED_BY_QIANKUN__ || false
 }
+

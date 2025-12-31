@@ -64,7 +64,7 @@ export function getConfigToFeatureMap(framework: FrameworkType): Record<string, 
     eslint: 'eslint',
     i18n: 'i18n',
     sentry: 'sentry',
-    qiankun: 'qiankun',
+    // qiankun 已内置到 base，不再作为 feature
   }
 }
 

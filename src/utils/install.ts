@@ -19,7 +19,7 @@ const RETRY_DELAY_BASE_MS = 1000
  * 验证命令参数安全性
  * @param packageManager 包管理器类型
  * @param cwd 工作目录
- * @throws {Error} 如果参数不安全
+ * @throws {Error} 如果包管理器类型不支持或路径不安全
  */
 function validateInstallParams(packageManager: PackageManagerType, cwd: string): void {
   // 验证包管理器类型

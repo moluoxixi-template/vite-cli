@@ -44,7 +44,6 @@ export async function createProject(projectName?: string): Promise<void> {
     console.log(chalk.gray(`  UI 组件库: ${chalk.white(config.uiLibrary)}`))
     console.log(chalk.gray(`  路由模式: ${chalk.white(config.routeMode)}`))
     console.log(chalk.gray(`  国际化: ${chalk.white(config.i18n ? '是' : '否')}`))
-    console.log(chalk.gray(`  微前端: ${chalk.white(config.qiankun ? '是' : '否')}`))
     console.log(chalk.gray(`  错误监控: ${chalk.white(config.sentry ? '是' : '否')}`))
     console.log(chalk.gray(`  包管理器: ${chalk.white(config.packageManager)}`))
     console.log('')

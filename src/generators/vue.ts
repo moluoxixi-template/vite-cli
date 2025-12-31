@@ -17,7 +17,5 @@ export async function generateVueProject(config: ProjectConfigType): Promise<voi
   generateFrameworkProject(config, {
     mainTemplate: 'src/main.ts.ejs',
     mainOutput: 'src/main.ts',
-    routerTemplate: 'src/router/index.ts.ejs',
-    routerOutput: 'src/router/index.ts',
   })
 }

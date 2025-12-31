@@ -44,7 +44,7 @@ export function deepMerge<T extends Record<string, unknown>>(
 /**
  * 判断值是否为对象（非数组、非 null）
  * @param val 待判断的值
- * @returns 是否为对象
+ * @returns 是否为对象，排除数组和 null
  */
 function isObject(val: unknown): val is Record<string, unknown> {
   return val !== null && typeof val === 'object' && !Array.isArray(val)

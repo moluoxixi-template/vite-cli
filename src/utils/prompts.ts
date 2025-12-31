@@ -128,14 +128,7 @@ export async function collectProjectConfig(
         }
       },
     },
-    // 是否启用路由
-    {
-      type: 'confirm',
-      name: 'router',
-      message: '是否启用路由 (vue-router/react-router-dom)?',
-      default: true,
-    },
-    // 路由模式（仅在启用路由时询问）
+    // 路由模式（路由已内置，只需选择模式）
     {
       type: 'list',
       name: 'routeMode',
@@ -144,18 +137,6 @@ export async function collectProjectConfig(
         { name: '文件系统路由 (vite-plugin-pages)', value: 'file-system' },
         { name: '手动配置路由', value: 'manual' },
       ],
-      when: (answers: Record<string, unknown>) => answers.router === true,
-    },
-    // 是否启用状态管理
-    {
-      type: 'confirm',
-      name: 'stateManagement',
-      message: (answers: Record<string, unknown>) => {
-        return answers.framework === 'vue'
-          ? '是否启用状态管理 (Pinia)?'
-          : '是否启用状态管理 (Zustand)?'
-      },
-      default: true,
     },
     // 是否启用国际化
     {
@@ -163,13 +144,6 @@ export async function collectProjectConfig(
       name: 'i18n',
       message: '是否启用国际化 (i18n)?',
       default: true,
-    },
-    // 是否启用微前端
-    {
-      type: 'confirm',
-      name: 'qiankun',
-      message: '是否启用微前端 (qiankun)?',
-      default: false,
     },
     // 是否启用错误监控
     {
@@ -215,10 +189,10 @@ export async function collectProjectConfig(
     framework: answers.framework as FrameworkType,
     uiLibrary: answers.uiLibrary as UILibraryType,
     routeMode: (answers.routeMode as RouteModeType) || 'manual',
-    router: answers.router,
-    stateManagement: answers.stateManagement,
+    router: true, // 路由已内置
+    stateManagement: true, // 状态管理已内置
     i18n: answers.i18n,
-    qiankun: answers.qiankun,
+    qiankun: true, // 微前端已内置
     sentry: answers.sentry,
     eslint: answers.eslint,
     gitHooks: answers.gitHooks,

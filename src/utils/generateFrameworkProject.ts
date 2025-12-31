@@ -23,10 +23,6 @@ interface EjsTemplateConfig {
   mainTemplate: string
   /** 主入口文件输出路径（相对于目标目录） */
   mainOutput: string
-  /** 路由文件模板路径（相对于框架 base 目录） */
-  routerTemplate: string
-  /** 路由文件输出路径（相对于目标目录） */
-  routerOutput: string
 }
 
 /**
@@ -71,11 +67,7 @@ export function generateFrameworkProject(
     ejsData,
   )
 
-  renderEjsToFile(
-    path.join(frameworkBasePath, ejsConfig.routerTemplate),
-    path.join(targetDir, ejsConfig.routerOutput),
-    ejsData,
-  )
+  // Router 已通过 feature 覆盖实现（manualRoutes/pageRoutes），不再使用 EJS
 
   // 6. 数据驱动生成 vite.config.ts（使用 EJS 模板）
   const viteConfigEjsData = getViteConfigEjsData(config)

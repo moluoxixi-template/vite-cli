@@ -130,7 +130,7 @@ function renderPackageJson(src: string, dest: string): void {
 /**
  * 获取包管理器的默认版本号
  * @param packageManager 包管理器类型
- * @returns 包管理器版本字符串
+ * @returns 包管理器版本字符串，如果未找到则返回 pnpm 的默认版本
  */
 function getPackageManagerVersion(packageManager: string): string {
   const versions: Record<string, string> = {
@@ -201,7 +201,7 @@ export function updatePackageJsonMetadata(
  * 重命名特殊文件
  * 某些文件不能以 . 开头存在于模板中，需要特殊处理
  * @param name 原始文件名
- * @returns 转换后的文件名
+ * @returns 转换后的文件名，_ 开头的文件会转换为 . 开头
  */
 function renameFile(name: string): string {
   // _开头的文件转换为.开头

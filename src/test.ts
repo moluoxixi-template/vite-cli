@@ -212,6 +212,7 @@ function createTestConfig(
 /**
  * 生成测试项目
  * @param minimalOnly 是否只生成全量和最小配置
+ * @returns Promise<void>
  */
 async function generateTestProjects(minimalOnly = false): Promise<void> {
   const mode = minimalOnly ? '（仅全量和最小配置）' : '（全部组合）'
@@ -271,6 +272,8 @@ async function generateTestProjects(minimalOnly = false): Promise<void> {
 
 /**
  * 检查 package.json 中是否有 catalog 引用（应该已经全部替换为实际版本号）
+ * @param projectDir 项目目录路径
+ * @returns 检查是否通过（true 表示通过，false 表示失败）
  */
 function checkPackageJsonVersions(projectDir: string): boolean {
   const packageJsonPath = path.join(projectDir, FILE_CONSTANTS.PACKAGE_JSON)
@@ -445,6 +448,9 @@ async function showFileTrees(): Promise<void> {
 
 /**
  * 打印文件树
+ * @param dir 目录路径
+ * @param indent 缩进字符串
+ * @returns Promise<void>
  */
 async function printFileTree(dir: string, indent: string): Promise<void> {
   const items = fs.readdirSync(dir).sort()
@@ -468,6 +474,8 @@ async function printFileTree(dir: string, indent: string): Promise<void> {
 
 /**
  * 主函数
+ * 执行测试项目生成、依赖审计和文件树显示
+ * @returns Promise<void>
  */
 async function main(): Promise<void> {
   const { minimalOnly } = parseArgs()

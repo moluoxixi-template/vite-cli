@@ -1,3 +1,7 @@
+/**
+ * Qiankun 微前端配置
+ */
+
 import type { ReactNode } from 'react'
 import type { Router } from '@remix-run/router'
 import {
