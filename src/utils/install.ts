@@ -86,16 +86,17 @@ export async function installDependencies(
 /**
  * 初始化 Git 仓库
  * @param cwd 工作目录
+ * @param projectName 项目名称，用于生成提交信息
  * @returns Promise<void>
  */
-export async function initGit(cwd: string): Promise<void> {
+export async function initGit(cwd: string, projectName: string): Promise<void> {
   try {
     // 验证路径安全性
     validatePath(cwd)
 
     await execAsync('git init', { cwd })
     await execAsync('git add .', { cwd })
-    await execAsync('git commit -m "chore: initial commit"', { cwd })
+    await execAsync(`git commit -m "feat: initialize ${projectName}"`, { cwd })
   }
   catch {
     // Git 初始化失败不影响项目创建，静默失败

@@ -59,6 +59,16 @@ export async function createProject(projectName?: string): Promise<void> {
       throw error
     }
 
+    // 初始化 Git
+    const gitSpinner = ora('正在初始化 Git...').start()
+    try {
+      await initGit(config.targetDir, config.projectName)
+      gitSpinner.succeed('Git 初始化成功!')
+    }
+    catch {
+      gitSpinner.warn('Git 初始化跳过')
+    }
+
     // 安装依赖
     const installSpinner = ora('正在安装依赖...').start()
     try {
@@ -76,16 +86,6 @@ export async function createProject(projectName?: string): Promise<void> {
       if (error instanceof Error) {
         console.log(chalk.gray(`   错误详情: ${error.message}`))
       }
-    }
-
-    // 初始化 Git
-    const gitSpinner = ora('正在初始化 Git...').start()
-    try {
-      await initGit(config.targetDir)
-      gitSpinner.succeed('Git 初始化成功!')
-    }
-    catch {
-      gitSpinner.warn('Git 初始化跳过')
     }
 
     // 显示成功信息
