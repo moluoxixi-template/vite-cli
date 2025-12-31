@@ -1,23 +1,60 @@
 <template>
-  <template v-for="item in menuList" :key="item.path">
-    <el-sub-menu v-if="item.children?.length" :index="item.path">
+  <template
+    v-for="(route, index) in props.routes"
+    :key="getRouteKey(route, index)"
+  >
+    <ElSubMenu
+      v-if="hasChildren(route)"
+      :teleported="false"
+      :index="getRouteIndex(route, index)"
+    >
       <template #title>
-        <span>{{ item.meta?.title }}</span>
+        {{ getRouteTitle(route) }}
       </template>
-      <SubMenu :menu-list="item.children" />
-    </el-sub-menu>
-    <el-menu-item v-else :index="item.path">
-      <span>{{ item.meta?.title }}</span>
-    </el-menu-item>
+      <div :style="`max-height: calc(100vh - ${props.menuHeight || 0}px - 30px);overflow: auto`">
+        <SubMenu :routes="route.children ?? []" />
+      </div>
+    </ElSubMenu>
+
+    <ElMenuItem
+      v-else
+      :index="getRouteIndex(route, index)"
+    >
+      {{ getRouteTitle(route) }}
+    </ElMenuItem>
   </template>
 </template>
 
 <script setup lang="ts">
-/**
- * SubMenu 子菜单组件
- * 递归渲染菜单
- */
-import type { SubMenuProps } from './_types'
+import type { propsType, subMenuRouteType } from './_types'
 
-defineProps<SubMenuProps>()
+import { ElMenuItem, ElSubMenu } from 'element-plus'
+
+defineOptions({
+  name: 'SubMenu',
+  inheritAttrs: false,
+})
+
+const props = withDefaults(defineProps<propsType>(), {
+  routes: () => [],
+  menuHeight: 60,
+})
+
+function getRouteKey(route: subMenuRouteType, index: number): string {
+  return route.path ?? `${index}`
+}
+
+function getRouteTitle(route: subMenuRouteType): string {
+  const fallback = route.name ?? ''
+  const metaTitle = route.meta?.title ?? ''
+  return metaTitle || fallback
+}
+
+function getRouteIndex(route: subMenuRouteType, index: number): string {
+  return route.path ?? `${index}`
+}
+
+function hasChildren(route: subMenuRouteType): boolean {
+  return Array.isArray(route.children) && route.children.length > 0
+}
 </script>

@@ -28,4 +28,3 @@ export function createRouter(config: RouterConfig = {}) {
 }
 
 export { routes }
-

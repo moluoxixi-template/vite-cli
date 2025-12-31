@@ -285,7 +285,7 @@ importers:
         version: 0.0.5
       '@moluoxixi/vite-config':
         specifier: latest
-        version: 0.0.29(@babel/parser@7.28.5)(@vue/compiler-sfc@3.5.26)(@vueuse/core@10.11.1(vue@3.5.26(typescript@5.8.3)))(rollup@4.54.0)(typescript@5.8.3)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.26(typescript@5.8.3))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.0)
+        version: 0.0.29(@babel/parser@7.28.5)(@vue/compiler-sfc@3.5.26)(@vueuse/core@10.11.1(vue@3.5.26(typescript@5.8.3)))(rollup@4.54.0)(typescript@5.8.3)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.26(typescript@5.8.3)))(vue@3.5.26(typescript@5.8.3))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.0)
       '@types/react':
         specifier: ^18.3.18
         version: 18.3.27
@@ -330,7 +330,7 @@ importers:
     dependencies:
       vite-plugin-pages:
         specifier: ^0.32.5
-        version: 0.32.5(@vue/compiler-sfc@3.5.26)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+        version: 0.32.5(@vue/compiler-sfc@3.5.26)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.26(typescript@5.8.3)))
 
   templates/react/features/router:
     dependencies:
@@ -355,19 +355,25 @@ importers:
 
   templates/vue/base:
     dependencies:
+      pinia:
+        specifier: ^2.2.7
+        version: 2.3.1(typescript@5.8.3)(vue@3.5.26(typescript@5.8.3))
       vite-plugin-qiankun:
         specifier: ^1.0.15
         version: 1.0.15(typescript@5.8.3)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       vue:
         specifier: ^3.5.13
         version: 3.5.26(typescript@5.8.3)
+      vue-router:
+        specifier: ^4.4.5
+        version: 4.6.4(vue@3.5.26(typescript@5.8.3))
     devDependencies:
       '@moluoxixi/css-module-global-root-plugin':
         specifier: latest
         version: 0.0.5
       '@moluoxixi/vite-config':
         specifier: latest
-        version: 0.0.29(@babel/parser@7.28.5)(@vue/compiler-sfc@3.5.26)(@vueuse/core@10.11.1(vue@3.5.26(typescript@5.8.3)))(rollup@4.54.0)(typescript@5.8.3)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.26(typescript@5.8.3))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.0)
+        version: 0.0.29(@babel/parser@7.28.5)(@vue/compiler-sfc@3.5.26)(@vueuse/core@10.11.1(vue@3.5.26(typescript@5.8.3)))(rollup@4.54.0)(typescript@5.8.3)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.26(typescript@5.8.3)))(vue@3.5.26(typescript@5.8.3))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.0)
       '@vue-macros/volar':
         specifier: ^3.0.0-beta.15
         version: 3.1.1(typescript@5.8.3)(vue-tsc@2.2.12(typescript@5.8.3))(vue@3.5.26(typescript@5.8.3))
@@ -411,11 +417,32 @@ importers:
         specifier: ^11.1.10
         version: 11.2.7(vue@3.5.26(typescript@5.8.3))
 
+  templates/vue/features/manualRoutes:
+    dependencies:
+      radash:
+        specifier: ^12.1.0
+        version: 12.1.1
+      vite-plugin-qiankun:
+        specifier: ^1.0.15
+        version: 1.0.15(typescript@5.8.3)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+      vue-router:
+        specifier: ^4.4.5
+        version: 4.6.4(vue@3.5.26(typescript@5.8.3))
+
   templates/vue/features/pageRoutes:
     dependencies:
+      radash:
+        specifier: ^12.1.0
+        version: 12.1.1
       vite-plugin-pages:
         specifier: ^0.32.5
-        version: 0.32.5(@vue/compiler-sfc@3.5.26)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+        version: 0.32.5(@vue/compiler-sfc@3.5.26)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.26(typescript@5.8.3)))
+      vite-plugin-qiankun:
+        specifier: ^1.0.15
+        version: 1.0.15(typescript@5.8.3)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+      vue-router:
+        specifier: ^4.4.5
+        version: 4.6.4(vue@3.5.26(typescript@5.8.3))
 
   templates/vue/features/pinia:
     dependencies:
@@ -428,12 +455,6 @@ importers:
       vue:
         specifier: latest
         version: 3.5.26(typescript@5.8.3)
-
-  templates/vue/features/router:
-    dependencies:
-      vue-router:
-        specifier: ^4.4.5
-        version: 4.6.4(vue@3.5.26(typescript@5.8.3))
 
   templates/vue/features/sentry:
     dependencies:
@@ -9534,7 +9555,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@moluoxixi/vite-config@0.0.29(@babel/parser@7.28.5)(@vue/compiler-sfc@3.5.26)(@vueuse/core@10.11.1(vue@3.5.26(typescript@5.8.3)))(rollup@4.54.0)(typescript@5.8.3)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.26(typescript@5.8.3))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.0)':
+  '@moluoxixi/vite-config@0.0.29(@babel/parser@7.28.5)(@vue/compiler-sfc@3.5.26)(@vueuse/core@10.11.1(vue@3.5.26(typescript@5.8.3)))(rollup@4.54.0)(typescript@5.8.3)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.26(typescript@5.8.3)))(vue@3.5.26(typescript@5.8.3))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.0)':
     dependencies:
       '@tailwindcss/postcss': 4.1.11
       '@vitejs/plugin-react': 4.7.0(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
@@ -9554,7 +9575,7 @@ snapshots:
       vite-plugin-compression: 0.5.1(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       vite-plugin-html: 3.2.2(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       vite-plugin-imagemin: 0.6.1(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
-      vite-plugin-pages: 0.33.2(@vue/compiler-sfc@3.5.26)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+      vite-plugin-pages: 0.33.2(@vue/compiler-sfc@3.5.26)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.26(typescript@5.8.3)))
       vite-plugin-pwa: 1.2.0(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(workbox-build@7.4.0(@types/babel__core@7.20.5))(workbox-window@7.4.0)
       vite-plugin-qiankun: 1.0.15(typescript@5.8.3)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       vite-plugin-vue-devtools: 7.7.7(rollup@4.54.0)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.26(typescript@5.8.3))
@@ -15935,7 +15956,7 @@ snapshots:
       - rollup
       - supports-color
 
-  vite-plugin-pages@0.32.5(@vue/compiler-sfc@3.5.26)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)):
+  vite-plugin-pages@0.32.5(@vue/compiler-sfc@3.5.26)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.26(typescript@5.8.3))):
     dependencies:
       '@types/debug': 4.1.12
       debug: 4.4.3
@@ -15949,10 +15970,11 @@ snapshots:
       yaml: 2.8.2
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.26
+      vue-router: 4.6.4(vue@3.5.26(typescript@5.8.3))
     transitivePeerDependencies:
       - supports-color
 
-  vite-plugin-pages@0.33.2(@vue/compiler-sfc@3.5.26)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)):
+  vite-plugin-pages@0.33.2(@vue/compiler-sfc@3.5.26)(vite@7.3.0(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.1)(sass-embedded@1.97.1)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.26(typescript@5.8.3))):
     dependencies:
       '@types/debug': 4.1.12
       debug: 4.4.3
@@ -15967,6 +15989,7 @@ snapshots:
       yaml: 2.8.2
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.26
+      vue-router: 4.6.4(vue@3.5.26(typescript@5.8.3))
     transitivePeerDependencies:
       - supports-color
 

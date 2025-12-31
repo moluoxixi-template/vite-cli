@@ -6,6 +6,7 @@
 /**
  * 根组件
  */
+import { RouterView } from 'vue-router'
 </script>
 
 <style scoped>

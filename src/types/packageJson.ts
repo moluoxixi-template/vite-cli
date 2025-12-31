@@ -23,4 +23,3 @@ export interface PackageJson {
   /** 其他字段 */
   [key: string]: unknown
 }
-

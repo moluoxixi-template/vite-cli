@@ -30,14 +30,16 @@ export function renderTemplate(src: string, dest: string): void {
         return
       }
 
-      fs.mkdirSync(dest, { recursive: true })
+      // 统一使用绝对路径，确保目录创建和文件复制使用相同的路径格式
+      const resolvedDest = path.resolve(dest)
+      fs.mkdirSync(resolvedDest, { recursive: true })
 
       for (const file of fs.readdirSync(src)) {
         // 验证文件名安全性
         if (file.includes('..') || file.includes('~')) {
           throw new Error(`不安全的文件名: ${file}`)
         }
-        renderTemplate(path.resolve(src, file), path.resolve(dest, file))
+        renderTemplate(path.resolve(src, file), path.resolve(resolvedDest, file))
       }
       return
     }
@@ -64,6 +66,10 @@ export function renderTemplate(src: string, dest: string): void {
     // 处理特殊文件名转换（如 _gitignore -> .gitignore）
     const targetFilename = renameFile(filename)
     const targetPath = path.resolve(path.dirname(dest), targetFilename)
+
+    // 确保目标文件的父目录存在
+    // 虽然目录处理时已创建，但文件名重命名时路径可能不同，需要确保父目录存在
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true })
 
     // 普通文件直接复制（后面的会覆盖前面的）
     fs.copyFileSync(src, targetPath)

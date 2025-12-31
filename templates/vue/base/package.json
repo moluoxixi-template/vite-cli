@@ -5,7 +5,9 @@
   },
   "dependencies": {
     "vue": "^3.5.13",
-    "vite-plugin-qiankun": "^1.0.15"
+    "vite-plugin-qiankun": "^1.0.15",
+    "pinia": "^2.2.7",
+    "vue-router": "^4.4.5"
   },
   "devDependencies": {
     "@moluoxixi/css-module-global-root-plugin": "latest",

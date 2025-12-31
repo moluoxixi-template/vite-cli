@@ -1,84 +1,120 @@
 <template>
-  <el-container class="layout-container">
-    <el-aside :width="sidebarCollapsed ? '64px' : '200px'" class="layout-aside">
-      <div class="logo">
-        <span v-if="!sidebarCollapsed">Logo</span>
-      </div>
-      <el-menu
-        :collapse="sidebarCollapsed"
-        default-active="1"
-        class="layout-menu"
-      >
-        <el-menu-item index="1">
-          <template #title>
-            首页
-          </template>
-        </el-menu-item>
-        <el-menu-item index="2">
-          <template #title>
-            关于
-          </template>
-        </el-menu-item>
-      </el-menu>
-    </el-aside>
-    <el-container>
-      <el-header class="layout-header">
-        <el-button @click="toggleSidebar">
-          {{ sidebarCollapsed ? '展开' : '折叠' }}
-        </el-button>
-      </el-header>
-      <el-main class="layout-main">
-        <slot />
-      </el-main>
-    </el-container>
-  </el-container>
+  <ElConfigProvider :namespace="systemCode" :empty-values="[undefined]">
+    <div
+      class="h-full"
+      :class="{ 'h-screen!': !qiankunWindow.__POWERED_BY_QIANKUN__ }"
+      :style="`--el-color-primary: ${themeColor || '#3A77FF'};`"
+    >
+      <ElContainer class="w-full h-full">
+        <ElHeader
+          v-if="!qiankunWindow.__POWERED_BY_QIANKUN__"
+          class="headerbox"
+          style="padding: 0"
+          height="60"
+        >
+          <div class="w-full h-full bg-primary flex justify-center">
+            <ElMenu :default-active="defaultTab" :ellipsis="false" mode="horizontal" router>
+              <SubMenu menu-height="60" :routes="routes" />
+            </ElMenu>
+          </div>
+        </ElHeader>
+        <ElMain>
+          <ElContainer class="h-full w-full">
+            <ElMain style="background-color: #fff">
+              <transition name="fade">
+                <RouterView v-slot="{ Component, route }">
+                  <keep-alive>
+                    <component :is="Component" v-if="route.meta.keep" :key="route.path" />
+                  </keep-alive>
+                  <component :is="Component" v-if="!route.meta.keep" :key="route.path" />
+                </RouterView>
+              </transition>
+            </ElMain>
+          </ElContainer>
+        </ElMain>
+      </ElContainer>
+    </div>
+  </ElConfigProvider>
 </template>
 
-<script setup lang="ts">
-/**
- * Element Plus 布局组件
- */
-import { ref } from 'vue'
+<script lang="ts" setup>
+import { ElConfigProvider, ElContainer, ElHeader, ElMain, ElMenu } from 'element-plus'
+import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
+import { computed, reactive } from 'vue'
+import { RouterView, useRouter } from 'vue-router'
+import SubMenu from '@/components/SubMenu'
+import { useSystemStore } from '@/stores/modules/system'
 
-const sidebarCollapsed = ref(false)
-
-function toggleSidebar(): void {
-  sidebarCollapsed.value = !sidebarCollapsed.value
-}
+const router = useRouter()
+const routes = reactive(router.options.routes[0].children!)
+const systemStore = useSystemStore()
+const themeColor = computed(() => systemStore.themeColor)
+const systemCode = computed(() => {
+  return systemStore.systemCode
+})
+const defaultTab = computed(() => router.currentRoute.value.path)
 </script>
 
-<style scoped lang="scss">
-.layout-container {
-  height: 100vh;
+<style lang="scss" scoped>
+:deep(.el-main) {
+  --el-main-padding: 12px !important;
 }
-
-.layout-aside {
-  background-color: #304156;
-  transition: width 0.3s;
+.bg-primary {
+  background-color: var(--el-color-primary);
 }
+.headerbox {
+  :deep(.el-menu) {
+    background-color: var(--el-color-primary);
 
-.logo {
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 20px;
-  font-weight: bold;
-}
+    .el-menu-item,
+    .el-sub-menu {
+      background-color: var(--el-color-primary);
+      color: #fff !important;
 
-.layout-menu {
-  border-right: none;
-}
+      .el-sub-menu__title {
+        background-color: var(--el-color-primary);
+        color: #fff !important;
+      }
 
-.layout-header {
-  background-color: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-  display: flex;
-  align-items: center;
-}
+      &.is-active,
+      &:hover {
+        background-color: #fff;
+        color: var(--el-color-primary) !important;
 
-.layout-main {
-  background-color: #f0f2f5;
+        .el-sub-menu__title,
+        .el-sub-menu__title:hover {
+          background-color: #fff;
+          color: var(--el-color-primary) !important;
+        }
+      }
+    }
+
+    &.el-menu--popup {
+      background-color: #fff;
+
+      .el-sub-menu,
+      .el-menu-item {
+        background-color: #fff !important;
+        color: var(--el-color-primary) !important;
+
+        .el-sub-menu__title {
+          background-color: #fff;
+          color: var(--el-color-primary) !important;
+        }
+
+        &.is-active,
+        &:hover {
+          background-color: var(--el-color-primary) !important;
+          color: #fff !important;
+
+          .el-sub-menu__title,
+          .el-sub-menu__title:hover {
+            background-color: var(--el-color-primary) !important;
+            color: #fff !important;
+          }
+        }
+      }
+    }
+  }
 }
 </style>

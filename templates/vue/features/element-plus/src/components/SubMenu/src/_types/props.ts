@@ -1,10 +1,16 @@
-/**
- * SubMenu Props 类型定义
- */
+export interface subMenuRouteMetaType {
+  title?: string
+  [key: string]: unknown
+}
 
-import type { RouteRecordRaw } from 'vue-router'
+export interface subMenuRouteType {
+  path?: string
+  name?: string
+  meta?: subMenuRouteMetaType
+  children?: subMenuRouteType[]
+}
 
-export interface SubMenuProps {
-  /** 菜单列表 */
-  menuList: RouteRecordRaw[]
+export interface propsType {
+  routes: subMenuRouteType[]
+  menuHeight?: number
 }
