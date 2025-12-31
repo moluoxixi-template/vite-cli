@@ -2,6 +2,9 @@
  * Element Plus 样式定制
  * 自定义 Element Plus 主题
  */
+@forward 'element-plus/theme-chalk/src/mixins/config.scss' with (
+  $namespace: $namespace
+);
 
 @forward 'element-plus/theme-chalk/src/common/var.scss' with (
   $colors: (
