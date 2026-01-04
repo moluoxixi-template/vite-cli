@@ -6,7 +6,6 @@ import { loadEnv } from 'vite'
 <% if (sentry) { -%>
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 <% } -%>
-import qiankun from 'vite-plugin-qiankun'
 
 export default ViteConfig(
   ({ mode }) => {
@@ -33,9 +32,6 @@ export default ViteConfig(
 <% } -%>
       viteConfig: {
         plugins: [
-          qiankun(appCode, {
-            useDevMode: true,
-          }),
 <% if (sentry) { -%>
           viteEnv.VITE_SENTRY && mode === 'production' && sentryVitePlugin({
             authToken: process.env.SENTRY_AUTH_TOKEN,
