@@ -44,6 +44,10 @@ function getRouter(props: any = {}) {
     routes: routesClone,
   })
 
+  /**
+   * 微前端环境下，解决vue-router大版本路由不兼容问题
+   * @issue https://github.com/umijs/qiankun/issues/2254
+   */
   router.beforeEach((_, from, next) => {
     if (isEmpty(history.state.current)) {
       assign(history.state, { current: from.fullPath })

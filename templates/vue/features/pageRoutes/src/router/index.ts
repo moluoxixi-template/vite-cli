@@ -1,5 +1,4 @@
 import { cloneDeep } from 'lodash-es'
-import { assign, isEmpty } from 'radash'
 import routes from '~pages'
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -27,19 +26,10 @@ function getRouter() {
   const base = import.meta.env.VITE_APP_CODE
   const routesClone = cloneDeep(Routes)
 
-  const router = createRouter({
+  return createRouter({
     history: createWebHistory(base),
     routes: routesClone,
   })
-
-  router.beforeEach((_, from, next) => {
-    if (isEmpty(history.state.current)) {
-      assign(history.state, { current: from.fullPath })
-    }
-    next()
-  })
-
-  return router
 }
 
 export default getRouter

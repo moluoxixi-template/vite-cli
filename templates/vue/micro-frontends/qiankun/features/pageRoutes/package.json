@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "vite-plugin-qiankun": "^1.0.15"
+    "vite-plugin-qiankun": "^1.0.15",
+    "radash": "^12.1.0",
+    "vue-router": "^4.4.5"
   }
 }
