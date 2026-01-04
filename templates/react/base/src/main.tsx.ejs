@@ -1,21 +1,22 @@
 /**
- * 应用入口文件
+ * 应用入口文件 - 标准模式
  * 初始化 React 应用并挂载到 DOM
  */
 
-<% if (qiankun) { -%>
-import { qiankunWindow, renderWithQiankun } from 'vite-plugin-qiankun/dist/helper'
-<% } -%>
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+<% if (hasRouter) { -%>
 import { RouterProvider } from 'react-router-dom'
+import { createRouter } from '@/router'
+<% } else { -%>
+import App from './App'
+<% } -%>
 <% if (i18n) { -%>
 import '@/locales'
 <% } -%>
 <% if (sentry) { -%>
 import { initSentry } from '@/utils/sentry'
 <% } -%>
-import { createRouter } from '@/router'
 
 // 导入样式文件
 <% if (uiLibrary === 'ant-design') { -%>
@@ -32,52 +33,24 @@ initSentry({
 })
 
 <% } -%>
-let root: ReturnType<typeof ReactDOM.createRoot> | null = null
-
 /**
- * 渲染应用
- * @param props 渲染属性
+ * 初始化并渲染应用
  */
-async function render(props: Record<string, unknown> = {}): Promise<void> {
-  const { container } = props as { container?: Element }
-<% if (qiankun) { -%>
-  const basename = qiankunWindow.__POWERED_BY_QIANKUN__
-    ? (qiankunWindow as { __INJECTED_PUBLIC_PATH_BY_QIANKUN__?: string }).__INJECTED_PUBLIC_PATH_BY_QIANKUN__?.split('/')[1]
-    : undefined
-  const router = createRouter({ basename })
-<% } else { -%>
+function initApp(): void {
+<% if (hasRouter) { -%>
   const router = createRouter()
 <% } -%>
-
-  const containerElement = container
-    ? container.querySelector('#root') || container
-    : document.getElementById('root')!
-
-  root = ReactDOM.createRoot(containerElement)
+  const root = ReactDOM.createRoot(document.getElementById('root')!)
+  
   root.render(
     <React.StrictMode>
+<% if (hasRouter) { -%>
       <RouterProvider router={router} />
+<% } else { -%>
+      <App />
+<% } -%>
     </React.StrictMode>,
   )
 }
 
-<% if (qiankun) { -%>
-if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
-  render({})
-}
-else {
-  renderWithQiankun({
-    async mount(props: Record<string, unknown>) {
-      await render(props)
-    },
-    bootstrap() {},
-    unmount() {
-      root?.unmount()
-      root = null
-    },
-    update() {},
-  })
-}
-<% } else { -%>
-render({})
-<% } -%>
+initApp()

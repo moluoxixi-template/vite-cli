@@ -6,11 +6,13 @@ registry: https://registry.npmjs.org/
 
 packages:
   - templates/common/base
-  - templates/vue/base
-  - templates/react/base
   - templates/common/features/*
+  - templates/vue/base
   - templates/vue/features/*
+  - templates/vue/micro-frontends/qiankun/features/*
+  - templates/react/base
   - templates/react/features/*
+  - templates/react/micro-frontends/qiankun/features/*
 catalogs:
   build:
     chalk: ^5.3.0

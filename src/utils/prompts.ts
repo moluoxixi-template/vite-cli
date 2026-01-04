@@ -5,6 +5,7 @@
 
 import type {
   FrameworkType,
+  MicroFrontendEngine,
   PackageManagerType,
   ProjectConfigType,
   RouteModeType,
@@ -145,6 +146,25 @@ export async function collectProjectConfig(
       message: '是否启用国际化 (i18n)?',
       default: true,
     },
+    // 是否启用微前端
+    {
+      type: 'confirm',
+      name: 'microFrontend',
+      message: '是否启用微前端支持?',
+      default: false,
+    },
+    // 微前端引擎选择
+    {
+      type: 'list',
+      name: 'microFrontendEngine',
+      message: '选择微前端引擎:',
+      choices: [
+        { name: 'qiankun (阿里开源)', value: 'qiankun' },
+        // TODO: 还没有,后续可考虑接入
+        // { name: 'micro-app (京东开源)', value: 'micro-app' },
+      ],
+      when: (answers: Record<string, unknown>) => answers.microFrontend === true,
+    },
     // 是否启用错误监控
     {
       type: 'confirm',
@@ -182,20 +202,32 @@ export async function collectProjectConfig(
 
   const targetDir = `${process.cwd()}/${answers.projectName}`
 
+  // 根据 routeMode 确定启用哪个路由 feature
+  const isManualRoutes = answers.routeMode === 'manual'
+  const isPageRoutes = answers.routeMode === 'file-system'
+
+  // 根据框架确定状态管理 feature
+  const isPinia = answers.framework === 'vue'
+  const isZustand = answers.framework === 'react'
+
   return {
     projectName: answers.projectName,
     description: answers.description,
     author: answers.author,
     framework: answers.framework as FrameworkType,
     uiLibrary: answers.uiLibrary as UILibraryType,
-    routeMode: (answers.routeMode as RouteModeType) || 'manual',
-    router: true, // 路由已内置
-    stateManagement: true, // 状态管理已内置
+    routeMode: (answers.routeMode as RouteModeType) || 'pageRoutes',
+    // feature 名称与目录名称一致
+    pinia: isPinia,
+    zustand: isZustand,
+    manualRoutes: isManualRoutes,
+    pageRoutes: isPageRoutes,
     i18n: answers.i18n,
-    qiankun: true, // 微前端已内置
+    microFrontend: answers.microFrontend || false,
+    microFrontendEngine: answers.microFrontendEngine as MicroFrontendEngine | undefined,
     sentry: answers.sentry,
     eslint: answers.eslint,
-    gitHooks: answers.gitHooks,
+    husky: answers.gitHooks,
     packageManager: answers.packageManager as PackageManagerType,
     targetDir,
   }

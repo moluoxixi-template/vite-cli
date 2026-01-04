@@ -1,11 +1,13 @@
 <template>
   <ElConfigProvider :namespace="systemCode" :empty-values="[undefined]">
     <div
-      class="h-full h-screen!"
+      class="h-full"
+      :class="{ 'h-screen!': !qiankunWindow.__POWERED_BY_QIANKUN__ }"
       :style="`--el-color-primary: ${themeColor || '#3A77FF'};`"
     >
       <ElContainer class="w-full h-full">
         <ElHeader
+          v-if="!qiankunWindow.__POWERED_BY_QIANKUN__"
           class="headerbox"
           style="padding: 0"
           height="60"
@@ -37,6 +39,7 @@
 
 <script lang="ts" setup>
 import { ElConfigProvider, ElContainer, ElHeader, ElMain, ElMenu } from 'element-plus'
+import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 import { computed, reactive } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 import SubMenu from '@/components/SubMenu'

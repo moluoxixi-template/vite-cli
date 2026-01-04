@@ -1,11 +1,8 @@
 /**
- * 应用入口文件
+ * 应用入口文件 - 标准模式
  * 初始化 Vue 应用并挂载到 DOM
  */
 
-<% if (qiankun) { -%>
-import { qiankunWindow, renderWithQiankun } from 'vite-plugin-qiankun/dist/helper'
-<% } -%>
 import { createApp } from 'vue'
 import directives from '@/directives'
 <% if (i18n) { -%>
@@ -14,71 +11,51 @@ import i18n from '@/locales'
 <% if (sentry) { -%>
 import { initSentry } from '@/utils/sentry'
 <% } -%>
+<% if (pinia) { -%>
 import { store } from '@/stores'
+<% } -%>
 import App from './App.vue'
+<% if (hasRouter) { -%>
 import getRouter from './router'
+<% } -%>
 
 // 导入样式文件
 <% if (uiLibrary === 'element-plus') { -%>
 import '@/assets/styles/element/index.scss'
-import '@/assets/styles/element/fixQiankun.scss'
 <% } -%>
 import '@/assets/styles/main.scss'
 import '@/assets/fonts/index.css'
 
-let app: ReturnType<typeof createApp> | null = null
-
 /**
- * 渲染应用
- * @param props 渲染属性
+ * 初始化并渲染应用
  */
-async function render(props: Record<string, unknown> = {}): Promise<void> {
-  const { container } = props as { container?: Element }
-  app = createApp(App)
+async function initApp(): Promise<void> {
+  const app = createApp(App)
 
   directives(app)
-  const router = getRouter(props)
+<% if (hasRouter) { -%>
+  const router = getRouter()
 
+<% } -%>
 <% if (sentry) { -%>
-  initSentry(app, router, {
+  initSentry(app<% if (hasRouter) { %>, router<% } %>, {
     dsn: import.meta.env.VITE_SENTRY_DSN,
     environment: import.meta.env.MODE,
   })
 
 <% } -%>
+<% if (pinia) { -%>
   app.use(store)
+<% } -%>
 <% if (i18n) { -%>
   app.use(i18n)
 <% } -%>
+<% if (hasRouter) { -%>
   app.use(router)
+<% } -%>
   app.config.warnHandler = () => null
 
-  if (container) {
-    const root = container.querySelector('#app')
-    app.mount(root)
-  }
-  else {
-    app.mount('#app')
-  }
+  app.mount('#app')
 }
 
-<% if (qiankun) { -%>
-if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
-  render({})
-}
-else {
-  renderWithQiankun({
-    async mount(props: Record<string, unknown>) {
-      await render(props)
-    },
-    bootstrap() {},
-    unmount() {
-      app?.unmount()
-      app = null
-    },
-    update() {},
-  })
-}
-<% } else { -%>
-render({})
-<% } -%>
+initApp()

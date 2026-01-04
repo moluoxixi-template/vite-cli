@@ -117,6 +117,14 @@ function generateTestConfigs(minimalOnly = false): Array<{ name: string, config:
             packageManager,
           }
 
+          // 根据 routeMode 设置对应的布尔 feature
+          if (routeModeFeature === 'manualRoutes') {
+            config.manualRoutes = true
+          }
+          else if (routeModeFeature === 'pageRoutes') {
+            config.pageRoutes = true
+          }
+
           // 应用布尔 features 的组合
           for (let i = 0; i < booleanFeatures.length; i++) {
             const feature = booleanFeatures[i]
@@ -152,6 +160,14 @@ function generateTestConfigs(minimalOnly = false): Array<{ name: string, config:
                 uiLibrary: uiLibrary as UILibraryType,
                 routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
                 packageManager,
+              }
+
+              // 根据 routeMode 设置对应的布尔 feature
+              if (routeModeFeature === 'manualRoutes') {
+                config.manualRoutes = true
+              }
+              else if (routeModeFeature === 'pageRoutes') {
+                config.pageRoutes = true
               }
 
               // 应用布尔 features 的组合
@@ -247,13 +263,17 @@ async function generateTestProjects(minimalOnly = false): Promise<void> {
       framework: config.framework!,
       uiLibrary: config.uiLibrary!,
       routeMode: config.routeMode!,
-      router: config.router ?? true,
-      stateManagement: config.stateManagement ?? true,
+      // feature 名称与目录名称一致
+      pinia: config.framework === 'vue',
+      zustand: config.framework === 'react',
+      manualRoutes: config.routeMode === 'manualRoutes',
+      pageRoutes: config.routeMode === 'pageRoutes',
       i18n: config.i18n!,
-      qiankun: config.qiankun!,
+      microFrontend: config.microFrontend ?? false,
+      microFrontendEngine: config.microFrontendEngine,
       sentry: config.sentry!,
       eslint: config.eslint!,
-      gitHooks: config.gitHooks!,
+      husky: config.husky ?? true,
       packageManager: config.packageManager!,
       targetDir: path.join(frameworkOutputDir, name),
     }
@@ -378,7 +398,7 @@ async function auditMoluoxixiDeps(minimalOnly = false): Promise<void> {
       }
     }
 
-    if (!config.gitHooks) {
+    if (!config.husky) {
       const huskyDir = path.join(projectDir, '.husky')
       if (fs.existsSync(huskyDir)) {
         console.log(chalk.red(`  ❌ 不应存在 .husky/ 目录（Git Hooks 已禁用）`))

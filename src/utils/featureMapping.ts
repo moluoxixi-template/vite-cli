@@ -1,6 +1,7 @@
 /**
  * Features 映射工具
- * 统一管理配置项到 feature 目录的映射关系
+ * 用于测试用例生成和 feature 扫描
+ * 注意：配置名称与 feature 目录名称完全一致，无需额外映射
  */
 
 import type { FrameworkType } from '../types/index.ts'
@@ -53,91 +54,39 @@ export function scanAllFeatures(framework: FrameworkType): string[] {
 }
 
 /**
- * 配置项到 feature 目录的映射（从 renderFeatures 提取）
- * @param _framework 框架类型（已不再使用，保留以保持接口兼容性）
- * @returns 配置键到 feature 名称的映射对象
- */
-export function getConfigToFeatureMap(_framework: FrameworkType): Record<string, string> {
-  return {
-    // router、stateManagement、qiankun 已内置到 base，不再作为 feature
-    eslint: 'eslint',
-    i18n: 'i18n',
-    sentry: 'sentry',
-  }
-}
-
-/**
- * 公共 features 映射
- * @returns 公共配置键到 feature 名称的映射对象
- */
-export function getCommonFeatureMap(): Record<string, string> {
-  return {
-    gitHooks: 'husky',
-  }
-}
-
-/**
- * 路由模式映射
- * @param routeMode 路由模式（'manual' 或 'file-system'）
- * @returns feature 名称
- */
-export function getRouteModeFeature(routeMode: string): string {
-  return routeMode === 'manual' ? 'manualRoutes' : 'pageRoutes'
-}
-
-/**
- * UI 库映射
- * @param uiLibrary UI 库名称
- * @returns feature 名称（通常与 UI 库名称相同）
- */
-export function getUILibraryFeature(uiLibrary: string): string {
-  return uiLibrary
-}
-
-/**
  * Feature 名称转换为配置键和值（用于测试用例生成）
+ * 注意：大部分情况下 feature 名称 === 配置名称
  * @param feature feature 名称
- * @param framework 框架类型
+ * @param _framework 框架类型（保留参数以保持接口兼容性）
  * @returns 配置键值对，如果无法映射则返回 null
  */
 export function featureToConfig(
   feature: string,
-  framework: FrameworkType,
+  _framework: FrameworkType,
 ): { key: string, value: string | boolean } | null {
-  // 路由模式
-  if (feature === 'manualRoutes')
-    return { key: 'routeMode', value: 'manual' }
-  if (feature === 'pageRoutes')
-    return { key: 'routeMode', value: 'file-system' }
-
-  // UI 库
+  // UI 库：配置键是 uiLibrary，值是 feature 名称
   const uiLibraries = ['element-plus', 'ant-design-vue', 'ant-design']
-  if (uiLibraries.includes(feature))
+  if (uiLibraries.includes(feature)) {
     return { key: 'uiLibrary', value: feature }
-
-  // 状态管理（反向映射）
-  const stateManagementMap: Record<string, string> = {
-    pinia: 'stateManagement',
-    zustand: 'stateManagement',
   }
-  if (stateManagementMap[feature])
-    return { key: stateManagementMap[feature], value: true }
 
-  // Git Hooks（公共 feature）
-  if (feature === 'husky')
-    return { key: 'gitHooks', value: true }
+  // 路由模式 features：用于测试分类
+  if (feature === 'manualRoutes' || feature === 'pageRoutes') {
+    return { key: 'routeMode', value: feature }
+  }
 
-  // 其他布尔 features（通过映射查找）
-  const configMap = getConfigToFeatureMap(framework)
-  const configKey = Object.keys(configMap).find(key => configMap[key] === feature)
-  if (configKey)
-    return { key: configKey, value: true }
-
-  // 公共 features
-  const commonMap = getCommonFeatureMap()
-  const commonKey = Object.keys(commonMap).find(key => commonMap[key] === feature)
-  if (commonKey)
-    return { key: commonKey, value: true }
+  // 布尔类型的 features：配置名 === feature 名
+  const booleanFeatures = [
+    'eslint',
+    'i18n',
+    'sentry',
+    'pinia',
+    'zustand',
+    'husky',
+  ]
+  if (booleanFeatures.includes(feature)) {
+    return { key: feature, value: true }
+  }
 
   return null
 }

@@ -1,6 +1,9 @@
 /**
  * 特性配置定义
- * 定义所有可用特性的 ID
+ * 核心依赖和微前端引擎类型定义
+ *
+ * 注意：Features 现在通过文件系统扫描自动发现，无需在此维护常量列表
+ * 参考：src/utils/renderFeatures.ts
  */
 
 /**
@@ -16,32 +19,8 @@ export const MOLUOXIXI_DEPS = {
 } as const
 
 /**
- * Vue 特性 ID
+ * 微前端引擎类型
  */
-export const VUE_FEATURES = [
-  'router',
-  'pinia',
-  'eslint',
-  'i18n',
-  'sentry',
-  'qiankun',
-  'pageRoutes',
-  'element-plus',
-  'ant-design-vue',
-] as const
+export const MICRO_FRONTEND_ENGINES = ['qiankun', 'micro-app'] as const
 
-/**
- * React 特性 ID
- */
-export const REACT_FEATURES = [
-  'router',
-  'zustand',
-  'eslint',
-  'i18n',
-  'sentry',
-  'qiankun',
-  'ant-design',
-] as const
-
-export type VueFeatureId = typeof VUE_FEATURES[number]
-export type ReactFeatureId = typeof REACT_FEATURES[number]
+export type MicroFrontendEngine = typeof MICRO_FRONTEND_ENGINES[number]

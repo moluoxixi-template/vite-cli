@@ -1,0 +1,93 @@
+import path from 'node:path'
+import process from 'node:process'
+import cssModuleGlobalRootPlugin from '@moluoxixi/css-module-global-root-plugin'
+import { ViteConfig, wrapperEnv } from '@moluoxixi/vite-config'
+import { loadEnv } from 'vite'
+<% if (sentry) { -%>
+import { sentryVitePlugin } from '@sentry/vite-plugin'
+<% } -%>
+import qiankun from 'vite-plugin-qiankun'
+
+export default ViteConfig(
+  ({ mode }) => {
+    const env = loadEnv(mode!, process.cwd())
+    const viteEnv = wrapperEnv(env)
+    const rootPath = path.resolve()
+    const appCode = viteEnv.VITE_APP_CODE
+    const appTitle = viteEnv.VITE_APP_TITLE
+    const port = viteEnv.VITE_APP_PORT
+
+    return {
+      rootPath,
+      appTitle,
+      appCode,
+      port,
+<% if (framework === 'vue') { -%>
+      vue: true,
+      autoComponent: true,
+<% } else if (framework === 'react') { -%>
+      react: true,
+<% } -%>
+<% if (routeMode === 'file-system') { -%>
+      pageRoutes: true,
+<% } -%>
+      viteConfig: {
+        plugins: [
+          qiankun(appCode, {
+            useDevMode: true,
+          }),
+<% if (sentry) { -%>
+          viteEnv.VITE_SENTRY && mode === 'production' && sentryVitePlugin({
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            org: 'f1f562b9b82f',
+            project: 'javascript-<%= framework %>',
+            sourcemaps: {
+              assets: './dist/**',
+              ignore: ['node_modules'],
+            },
+            release: {
+              name: viteEnv.VITE_APP_VERSION || 'unknown',
+            },
+          }),
+<% } -%>
+        ],
+        server: {
+          proxy: {
+            '/api': {
+              changeOrigin: true,
+              target: 'http://localhost:3000',
+            },
+          },
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          },
+        },
+        css: {
+          preprocessorOptions: {
+            scss: {
+              silenceDeprecations: ['legacy-js-api'],
+              api: 'modern-compiler',
+<% if (uiLibrary === 'element-plus') { -%>
+              additionalData: (source: string, filename: string) => {
+                if (filename.includes('assets/styles/element/index.scss')) {
+                  return `$namespace : ${appCode || 'el'};
+                ${source}`
+                }
+                else {
+                  return source
+                }
+              },
+<% } -%>
+            },
+            postcss: {
+              plugins: [
+                cssModuleGlobalRootPlugin() as any,
+              ],
+            },
+          },
+        },
+      },
+    }
+  },
+)
+

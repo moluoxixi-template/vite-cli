@@ -1,0 +1,83 @@
+/**
+ * 应用入口文件 - Qiankun 微前端模式
+ * 初始化 React 应用并挂载到 DOM（支持 qiankun 生命周期）
+ */
+
+import { qiankunWindow, renderWithQiankun } from 'vite-plugin-qiankun/dist/helper'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { RouterProvider } from 'react-router-dom'
+<% if (i18n) { -%>
+import '@/locales'
+<% } -%>
+<% if (sentry) { -%>
+import { initSentry } from '@/utils/sentry'
+<% } -%>
+import { createRouter } from '@/router'
+
+// 导入样式文件
+<% if (uiLibrary === 'ant-design') { -%>
+import 'antd/dist/reset.css'
+<% } -%>
+import '@/assets/styles/main.scss'
+import '@/assets/fonts/index.css'
+
+<% if (sentry) { -%>
+// 初始化 Sentry
+initSentry({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.MODE,
+})
+
+<% } -%>
+let root: ReturnType<typeof ReactDOM.createRoot> | null = null
+
+/**
+ * 渲染应用
+ * @param props 渲染属性
+ */
+async function render(props: Record<string, unknown> = {}): Promise<void> {
+  const { container } = props as { container?: Element }
+  
+  const basename = qiankunWindow.__POWERED_BY_QIANKUN__
+    ? (qiankunWindow as { __INJECTED_PUBLIC_PATH_BY_QIANKUN__?: string }).__INJECTED_PUBLIC_PATH_BY_QIANKUN__?.split('/')[1]
+    : undefined
+  const router = createRouter({ basename })
+
+  const containerElement = container
+    ? container.querySelector('#root') || container
+    : document.getElementById('root')!
+
+  root = ReactDOM.createRoot(containerElement)
+  root.render(
+    <React.StrictMode>
+      <RouterProvider router={router} />
+    </React.StrictMode>,
+  )
+}
+
+// Qiankun 生命周期
+if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
+  // 独立运行模式
+  render({})
+}
+else {
+  // 微前端运行模式
+  renderWithQiankun({
+    async mount(props: Record<string, unknown>) {
+      await render(props)
+    },
+    bootstrap() {
+      console.log('[Qiankun] React app bootstrapped')
+    },
+    unmount() {
+      root?.unmount()
+      root = null
+      console.log('[Qiankun] React app unmounted')
+    },
+    update() {
+      console.log('[Qiankun] React app updated')
+    },
+  })
+}
+
