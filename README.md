@@ -21,19 +21,12 @@ npm create @moluoxixi/app
 - 📦 **多框架支持** - Vue 3、React 18
 - 🎨 **多 UI 库** - Element Plus、Ant Design Vue、Ant Design
 - 📝 **TypeScript** - 全面的类型支持
-
-### 内置功能（所有项目默认包含）
-
-- ✅ **路由系统** - Vue Router / React Router DOM，支持手动配置和文件系统路由
-- ✅ **状态管理** - Pinia (Vue) / Zustand (React)
-- ✅ **微前端支持** - Qiankun 集成，开箱即用
-
-### 可选功能
-
+- 🛣️ **路由系统** - Vue Router / React Router DOM，支持手动配置和文件系统路由
+- 🗄️ **状态管理** - Pinia (Vue) / Zustand (React)，根据框架自动启用
 - 🌍 **国际化** - 可选 vue-i18n / i18next 支持
 - 📊 **错误监控** - 可选 Sentry 集成
-- ⚡ **文件系统路由** - 可选 vite-plugin-pages（替代手动路由）
 - 🔧 **规范配置** - 可选 ESLint + Commitlint + Husky
+- 🧩 **微前端支持** - 可选 Qiankun 集成
 
 ## 📋 开发计划
 
@@ -117,7 +110,7 @@ pnpm commit
 | 项目名称 | string | 项目名称，用于 package.json |
 | 框架 | vue / react | 前端框架 |
 | UI 库 | element-plus / ant-design-vue / ant-design | UI 组件库 |
-| 路由模式 | manual / file-system | 手动配置或文件系统路由 |
+| 路由模式 | manualRoutes / pageRoutes | 手动配置或文件系统路由 |
 | 包管理器 | pnpm / npm / yarn | 包管理器 |
 
 ### 可选功能
@@ -129,11 +122,6 @@ pnpm commit
 | ESLint | boolean | true | 是否启用 ESLint 代码规范检查 |
 | Git Hooks | boolean | true | 是否启用 Husky + Commitlint |
 
-### 内置功能（无需配置）
-
-- ✅ **路由系统** - 所有项目默认包含
-- ✅ **状态管理** - Vue 使用 Pinia，React 使用 Zustand
-- ✅ **微前端** - Qiankun 支持已内置
 
 ## 开发
 
