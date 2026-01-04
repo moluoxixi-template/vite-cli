@@ -34,13 +34,50 @@ const __dirname = path.dirname(__filename)
 const TEST_OUTPUT_DIR = path.resolve(__dirname, '../test')
 
 /**
- * 解析命令行参数
+ * 测试配置
+ * 集中管理测试选项，方便随时调整
  */
-function parseArgs(): { minimalOnly: boolean } {
-  const args = process.argv.slice(2)
-  const minimalOnly = args.includes('--minimal') || args.includes('--min') || args.includes('-m')
-  return { minimalOnly }
-}
+const TEST_CONFIG = {
+  /** 固定默认值（不参与组合测试） */
+  defaults: {
+    /** 项目名称（会自动生成，此处为描述） */
+    projectName: 'auto-generated',
+    /** 项目描述 */
+    description: 'A Vite project',
+    /** 作者 */
+    author: 'test',
+    /** 是否启用国际化 */
+    i18n: true,
+    /** 是否启用错误监控 */
+    sentry: false,
+    /** 是否启用 ESLint */
+    eslint: true,
+    /** 是否启用 Git Hooks */
+    husky: true,
+  },
+  /** 参与组合测试的选项 */
+  combinations: {
+    /** 框架列表（空数组表示不启用） */
+    frameworks: ['vue', 'react'] as FrameworkType[],
+    /** UI 库配置（按框架分组，空数组表示不启用，需要明确配置才启用） */
+    uiLibraries: {
+      vue: ['element-plus', 'ant-design-vue'] as string[], // Vue 可用的 UI 库
+      react: ['ant-design'] as string[], // React 可用的 UI 库
+    },
+    /** 路由模式列表（空数组表示不启用） */
+    routeModes: ['manualRoutes', 'pageRoutes'] as string[],
+    /** 包管理器列表（空数组表示不启用） */
+    packageManagers: ['pnpm'] as PackageManagerType[],
+    /** 是否测试 i18n 的组合 */
+    i18n: false,
+    /** 是否测试 sentry 的组合 */
+    sentry: false,
+    /** 是否测试 eslint 的组合 */
+    eslint: false,
+    /** 是否测试 husky 的组合 */
+    husky: false,
+  },
+} as const
 
 /**
  * 生成所有可能的组合（包括全开、全关）
@@ -63,11 +100,17 @@ function generateAllCombinations<T>(items: T[]): boolean[][] {
 
 /**
  * 自动生成测试用例配置（基于组合算法）
- * @param minimalOnly 是否只生成全量和最小配置
  */
-function generateTestConfigs(minimalOnly = false): Array<{ name: string, config: Partial<ProjectConfigType> }> {
+function generateTestConfigs(): Array<{ name: string, config: Partial<ProjectConfigType> }> {
   const configs: Array<{ name: string, config: Partial<ProjectConfigType> }> = []
-  const frameworks: Array<'vue' | 'react'> = ['vue', 'react']
+  // 框架列表（空数组表示不启用）
+  const frameworks = TEST_CONFIG.combinations.frameworks.length > 0
+    ? TEST_CONFIG.combinations.frameworks
+    : []
+
+  if (frameworks.length === 0) {
+    return configs
+  }
 
   for (const framework of frameworks) {
     const allFeatures = scanAllFeatures(framework)
@@ -96,100 +139,110 @@ function generateTestConfigs(minimalOnly = false): Array<{ name: string, config:
     if (uiLibraries.length === 0)
       continue
 
-    if (minimalOnly) {
-      // 只生成全量和最小配置：每个框架只选择一个 UI 库和一个路由模式
-      const uiLibrary = uiLibraries[0] // 只选择第一个 UI 库
-      const routeModeFeature = routeModes.length > 0 ? routeModes[0] : 'manualRoutes' // 只选择第一个路由模式
-
-      // 只生成全量和最小两种配置
-      const allFalse = Array.from({ length: booleanFeatures.length }, () => false)
-      const allTrue = Array.from({ length: booleanFeatures.length }, () => true)
-      const combinations = [allFalse, allTrue]
-
-      // 为每种包管理器生成测试用例
-      const packageManagers: PackageManagerType[] = ['pnpm', 'npm', 'yarn']
-      for (const packageManager of packageManagers) {
-        for (const combination of combinations) {
-          const config: Partial<ProjectConfigType> = {
-            framework,
-            uiLibrary: uiLibrary as UILibraryType,
-            routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
-            packageManager,
-          }
-
-          // 根据 routeMode 设置对应的布尔 feature
-          if (routeModeFeature === 'manualRoutes') {
-            config.manualRoutes = true
-          }
-          else if (routeModeFeature === 'pageRoutes') {
-            config.pageRoutes = true
-          }
-
-          // 应用布尔 features 的组合
-          for (let i = 0; i < booleanFeatures.length; i++) {
-            const feature = booleanFeatures[i]
-            const enabled = combination[i]
-            const featureConfig = featureToConfig(feature, framework)
-            if (featureConfig && featureConfig.key !== 'uiLibrary' && featureConfig.key !== 'routeMode') {
-              config[featureConfig.key as keyof ProjectConfigType] = enabled as never
-            }
-          }
-
-          // 生成测试用例名称（包含包管理器）
-          const suffix = combination.every(v => !v) ? 'minimal' : 'full'
-          configs.push(createTestConfig(framework, uiLibrary, `${packageManager}-${suffix}`, config))
-        }
+    // 过滤掉不需要测试的布尔特性（根据 combinations 配置决定）
+    // 过滤掉根据框架自动选择的特性（pinia/zustand）
+    const autoSelectedFeatures = framework === 'vue' ? ['pinia'] : ['zustand']
+    const filteredBooleanFeatures = booleanFeatures.filter((feature) => {
+      // 排除自动选择的特性
+      if (autoSelectedFeatures.includes(feature)) {
+        return false
       }
+      // 根据 combinations 配置决定是否参与组合测试
+      const featureConfig = featureToConfig(feature, framework)
+      if (featureConfig && featureConfig.key in TEST_CONFIG.combinations) {
+        const combinationValue = TEST_CONFIG.combinations[featureConfig.key as keyof typeof TEST_CONFIG.combinations]
+        // 如果是数组（frameworks, uiLibraries, routeModes, packageManagers），跳过
+        if (Array.isArray(combinationValue)) {
+          return true
+        }
+        // 其他布尔特性根据配置决定（i18n, sentry, eslint, husky）
+        // 使用 Boolean() 转换，避免类型检查问题
+        return Boolean(combinationValue)
+      }
+      // 默认参与组合测试
+      return true
+    })
+
+    // 生成所有组合
+    // UI 库列表（按框架分组配置，空数组表示不启用）
+    const frameworkUiLibraries = TEST_CONFIG.combinations.uiLibraries[framework] || []
+
+    // 如果配置为空数组，表示不启用该框架的 UI 库测试
+    if (frameworkUiLibraries.length === 0) {
+      continue
     }
-    else {
-      // 生成所有组合
-      for (const uiLibrary of uiLibraries) {
-        // 为每个路由模式生成测试用例
-        const routeModesToTest = routeModes.length > 0 ? routeModes : ['manualRoutes'] // 默认
 
-        for (const routeModeFeature of routeModesToTest) {
-          // 生成所有布尔 features 的组合（2^n 种）
-          const combinations = generateAllCombinations(booleanFeatures)
+    // 只测试配置中指定的 UI 库
+    const uiLibrariesToTest = uiLibraries.filter(uiLib => frameworkUiLibraries.includes(uiLib))
 
-          // 为每种包管理器生成测试用例
-          const packageManagers: PackageManagerType[] = ['pnpm', 'npm', 'yarn']
-          for (const packageManager of packageManagers) {
-            for (const combination of combinations) {
-              const config: Partial<ProjectConfigType> = {
-                framework,
-                uiLibrary: uiLibrary as UILibraryType,
-                routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
-                packageManager,
-              }
+    if (uiLibrariesToTest.length === 0) {
+      continue
+    }
 
-              // 根据 routeMode 设置对应的布尔 feature
-              if (routeModeFeature === 'manualRoutes') {
-                config.manualRoutes = true
-              }
-              else if (routeModeFeature === 'pageRoutes') {
-                config.pageRoutes = true
-              }
+    for (const uiLibrary of uiLibrariesToTest) {
+      // 路由模式列表（空数组表示不启用，使用默认值）
+      const routeModesToTest = TEST_CONFIG.combinations.routeModes.length > 0
+        ? routeModes.filter(routeMode => TEST_CONFIG.combinations.routeModes.includes(routeMode))
+        : (routeModes.length > 0 ? routeModes : ['manualRoutes']) // 默认
 
-              // 应用布尔 features 的组合
-              for (let i = 0; i < booleanFeatures.length; i++) {
-                const feature = booleanFeatures[i]
-                const enabled = combination[i]
-                const featureConfig = featureToConfig(feature, framework)
-                if (featureConfig && featureConfig.key !== 'uiLibrary' && featureConfig.key !== 'routeMode') {
-                  config[featureConfig.key as keyof ProjectConfigType] = enabled as never
-                }
-              }
+      if (routeModesToTest.length === 0) {
+        continue
+      }
 
-              // 生成测试用例名称（包含包管理器）
-              const enabledFeatures = booleanFeatures.filter((_, i) => combination[i])
-              const suffix = enabledFeatures.length === 0
-                ? 'minimal'
-                : enabledFeatures.length === booleanFeatures.length
-                  ? 'full'
-                  : enabledFeatures.join('-')
+      for (const routeModeFeature of routeModesToTest) {
+        // 生成所有布尔 features 的组合（2^n 种）
+        const combinations = generateAllCombinations(filteredBooleanFeatures)
 
-              configs.push(createTestConfig(framework, uiLibrary, `${packageManager}-${routeModeFeature}-${suffix}`, config))
+        // 包管理器列表（空数组表示不启用）
+        const packageManagersToTest = TEST_CONFIG.combinations.packageManagers
+
+        if (packageManagersToTest.length === 0) {
+          continue
+        }
+
+        for (const packageManager of packageManagersToTest) {
+          for (const combination of combinations) {
+            const config: Partial<ProjectConfigType> = {
+              framework,
+              uiLibrary: uiLibrary as UILibraryType,
+              routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
+              packageManager,
             }
+
+            // 根据 routeMode 设置对应的布尔 feature
+            if (routeModeFeature === 'manualRoutes') {
+              config.manualRoutes = true
+            }
+            else if (routeModeFeature === 'pageRoutes') {
+              config.pageRoutes = true
+            }
+
+            // 应用布尔 features 的组合
+            for (let i = 0; i < filteredBooleanFeatures.length; i++) {
+              const feature = filteredBooleanFeatures[i]
+              const enabled = combination[i]
+              const featureConfig = featureToConfig(feature, framework)
+              if (featureConfig && featureConfig.key !== 'uiLibrary' && featureConfig.key !== 'routeMode') {
+                config[featureConfig.key as keyof ProjectConfigType] = enabled as never
+              }
+            }
+
+            // 生成测试用例名称
+            // 如果没有布尔特性组合，使用固定后缀
+            const suffix = filteredBooleanFeatures.length === 0
+              ? 'default'
+              : (() => {
+                  const enabledFeatures = filteredBooleanFeatures.filter((_, i) => combination[i])
+                  return enabledFeatures.length === 0
+                    ? 'minimal'
+                    : enabledFeatures.length === filteredBooleanFeatures.length
+                      ? 'full'
+                      : enabledFeatures.join('-')
+                })()
+
+            // 生成测试用例名称
+            const packageManagerSuffix = TEST_CONFIG.combinations.packageManagers.length > 1 ? `${packageManager}-` : ''
+            configs.push(createTestConfig(framework, uiLibrary, `${packageManagerSuffix}${routeModeFeature}-${suffix}`, config))
           }
         }
       }
@@ -217,9 +270,16 @@ function createTestConfig(
   return {
     name,
     config: {
+      // 固定默认值，不参与组合测试
       projectName: name,
-      description: `${framework === 'vue' ? 'Vue' : 'React'} + ${uiLibrary} ${suffix}`,
-      author: 'test',
+      description: TEST_CONFIG.defaults.description,
+      author: TEST_CONFIG.defaults.author,
+      // 固定默认值，不参与组合测试（避免几何级增长）
+      i18n: TEST_CONFIG.defaults.i18n,
+      sentry: TEST_CONFIG.defaults.sentry,
+      eslint: TEST_CONFIG.defaults.eslint,
+      husky: TEST_CONFIG.defaults.husky,
+      packageManager: TEST_CONFIG.combinations.packageManagers[0] as PackageManagerType,
       ...overrides,
     },
   }
@@ -227,15 +287,13 @@ function createTestConfig(
 
 /**
  * 生成测试项目
- * @param minimalOnly 是否只生成全量和最小配置
  * @returns Promise<void>
  */
-async function generateTestProjects(minimalOnly = false): Promise<void> {
-  const mode = minimalOnly ? '（仅全量和最小配置）' : '（全部组合）'
-  console.log(chalk.blue.bold(`\n🧪 开始生成测试项目${mode}...\n`))
+async function generateTestProjects(): Promise<void> {
+  console.log(chalk.blue.bold('\n🧪 开始生成测试项目...\n'))
 
   // 扫描并生成测试配置
-  const TEST_CONFIGS = generateTestConfigs(minimalOnly)
+  const TEST_CONFIGS = generateTestConfigs()
   console.log(chalk.cyan(`📋 扫描到 ${TEST_CONFIGS.length} 个测试用例\n`))
 
   // 清理并创建测试目录
@@ -257,9 +315,10 @@ async function generateTestProjects(minimalOnly = false): Promise<void> {
     const frameworkOutputDir = config.framework === 'vue' ? vueOutputDir : reactOutputDir
 
     const fullConfig: ProjectConfigType = {
-      projectName: config.projectName!,
-      description: config.description!,
-      author: config.author!,
+      // 固定默认值（不参与组合测试）
+      projectName: config.projectName || name,
+      description: config.description || TEST_CONFIG.defaults.description,
+      author: config.author || TEST_CONFIG.defaults.author,
       framework: config.framework!,
       uiLibrary: config.uiLibrary!,
       routeMode: config.routeMode!,
@@ -268,13 +327,15 @@ async function generateTestProjects(minimalOnly = false): Promise<void> {
       zustand: config.framework === 'react',
       manualRoutes: config.routeMode === 'manualRoutes',
       pageRoutes: config.routeMode === 'pageRoutes',
-      i18n: config.i18n!,
+      // 固定默认值（不参与组合测试，避免几何级增长）
+      i18n: config.i18n ?? TEST_CONFIG.defaults.i18n,
+      sentry: config.sentry ?? TEST_CONFIG.defaults.sentry,
+      eslint: config.eslint ?? TEST_CONFIG.defaults.eslint,
+      husky: config.husky ?? TEST_CONFIG.defaults.husky,
+      // 参与组合测试的特性
       microFrontend: config.microFrontend ?? false,
       microFrontendEngine: config.microFrontendEngine,
-      sentry: config.sentry!,
-      eslint: config.eslint!,
-      husky: config.husky ?? true,
-      packageManager: config.packageManager!,
+      packageManager: config.packageManager ?? TEST_CONFIG.combinations.packageManagers[0],
       targetDir: path.join(frameworkOutputDir, name),
     }
 
@@ -334,12 +395,11 @@ function checkPackageJsonVersions(projectDir: string): boolean {
 
 /**
  * 审计 @moluoxixi 依赖
- * @param minimalOnly 是否只生成全量和最小配置
  */
-async function auditMoluoxixiDeps(minimalOnly = false): Promise<void> {
+async function auditMoluoxixiDeps(): Promise<void> {
   console.log(chalk.blue.bold('\n🔍 开始审计 @moluoxixi 依赖...\n'))
 
-  const TEST_CONFIGS = generateTestConfigs(minimalOnly)
+  const TEST_CONFIGS = generateTestConfigs()
   const requiredDeps = [
     '@moluoxixi/vite-config',
     '@moluoxixi/ajax-package',
@@ -498,20 +558,15 @@ async function printFileTree(dir: string, indent: string): Promise<void> {
  * @returns Promise<void>
  */
 async function main(): Promise<void> {
-  const { minimalOnly } = parseArgs()
-
   console.log(chalk.blue.bold(`\n${'='.repeat(60)}`))
   console.log(chalk.blue.bold('  Vite CLI Next - 产物审计测试'))
-  if (minimalOnly) {
-    console.log(chalk.yellow.bold('  模式: 仅全量和最小配置'))
-  }
   console.log(chalk.blue.bold('='.repeat(60)))
 
   // 1. 生成测试项目
-  await generateTestProjects(minimalOnly)
+  await generateTestProjects()
 
   // 2. 审计 @moluoxixi 依赖
-  await auditMoluoxixiDeps(minimalOnly)
+  await auditMoluoxixiDeps()
 
   // 3. 显示文件树
   await showFileTrees()
