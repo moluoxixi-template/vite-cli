@@ -9,6 +9,7 @@
 
 import type {
   FrameworkType,
+  MicroFrontendEngine,
   PackageManagerType,
   ProjectConfigType,
   RouteModeType,
@@ -26,6 +27,7 @@ import { FILE_CONSTANTS } from './constants/index.ts'
 
 import { generateProject } from './generators/index.ts'
 import { featureToConfig, scanAllFeatures } from './utils/featureMapping.ts'
+import { getRouteModeFeatures } from './utils/routeModeMapping.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -66,6 +68,8 @@ const TEST_CONFIG = {
     },
     /** 路由模式列表（空数组表示不启用） */
     routeModes: ['manualRoutes', 'pageRoutes'] as string[],
+    /** 微前端引擎列表（空数组表示不启用） */
+    microFrontendEngines: ['qiankun'] as MicroFrontendEngine[],
     /** 包管理器列表（空数组表示不启用） */
     packageManagers: ['pnpm'] as PackageManagerType[],
     /** 是否测试 i18n 的组合 */
@@ -190,59 +194,70 @@ function generateTestConfigs(): Array<{ name: string, config: Partial<ProjectCon
       }
 
       for (const routeModeFeature of routeModesToTest) {
-        // 生成所有布尔 features 的组合（2^n 种）
-        const combinations = generateAllCombinations(filteredBooleanFeatures)
+        // 微前端引擎列表（空数组表示不启用）
+        const microFrontendEnginesToTest = TEST_CONFIG.combinations.microFrontendEngines
 
-        // 包管理器列表（空数组表示不启用）
-        const packageManagersToTest = TEST_CONFIG.combinations.packageManagers
+        // 如果配置了微前端引擎，生成两种组合：不带微前端（null）和带微前端（配置的引擎）
+        // 如果没配置，只生成不带微前端的组合
+        const microFrontendOptions: (MicroFrontendEngine | null)[] = microFrontendEnginesToTest.length > 0
+          ? [null, ...microFrontendEnginesToTest] // 总是包含 null（不带），再加上配置的引擎
+          : [null] // 如果没配置，只生成不带微前端的
 
-        if (packageManagersToTest.length === 0) {
-          continue
-        }
+        for (const microFrontendEngine of microFrontendOptions) {
+          // 生成所有布尔 features 的组合（2^n 种）
+          const combinations = generateAllCombinations(filteredBooleanFeatures)
 
-        for (const packageManager of packageManagersToTest) {
-          for (const combination of combinations) {
-            const config: Partial<ProjectConfigType> = {
-              framework,
-              uiLibrary: uiLibrary as UILibraryType,
-              routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
-              packageManager,
-            }
+          // 包管理器列表（空数组表示不启用）
+          const packageManagersToTest = TEST_CONFIG.combinations.packageManagers
 
-            // 根据 routeMode 设置对应的布尔 feature
-            if (routeModeFeature === 'manualRoutes') {
-              config.manualRoutes = true
-            }
-            else if (routeModeFeature === 'pageRoutes') {
-              config.pageRoutes = true
-            }
+          if (packageManagersToTest.length === 0) {
+            continue
+          }
 
-            // 应用布尔 features 的组合
-            for (let i = 0; i < filteredBooleanFeatures.length; i++) {
-              const feature = filteredBooleanFeatures[i]
-              const enabled = combination[i]
-              const featureConfig = featureToConfig(feature, framework)
-              if (featureConfig && featureConfig.key !== 'uiLibrary' && featureConfig.key !== 'routeMode') {
-                config[featureConfig.key as keyof ProjectConfigType] = enabled as never
+          for (const packageManager of packageManagersToTest) {
+            for (const combination of combinations) {
+              const config: Partial<ProjectConfigType> = {
+                framework,
+                uiLibrary: uiLibrary as UILibraryType,
+                routeMode: featureToConfig(routeModeFeature, framework)!.value as RouteModeType,
+                packageManager,
+                microFrontend: microFrontendEngine !== null,
+                microFrontendEngine: microFrontendEngine || undefined,
               }
+
+              // 根据 routeMode 设置对应的布尔 feature
+              const routeModeFeatures = getRouteModeFeatures(routeModeFeature as RouteModeType)
+              config.manualRoutes = routeModeFeatures.manualRoutes
+              config.pageRoutes = routeModeFeatures.pageRoutes
+
+              // 应用布尔 features 的组合
+              for (let i = 0; i < filteredBooleanFeatures.length; i++) {
+                const feature = filteredBooleanFeatures[i]
+                const enabled = combination[i]
+                const featureConfig = featureToConfig(feature, framework)
+                if (featureConfig && featureConfig.key !== 'uiLibrary' && featureConfig.key !== 'routeMode') {
+                  config[featureConfig.key as keyof ProjectConfigType] = enabled as never
+                }
+              }
+
+              // 生成测试用例名称
+              // 如果没有布尔特性组合，使用固定后缀
+              const suffix = filteredBooleanFeatures.length === 0
+                ? 'default'
+                : (() => {
+                    const enabledFeatures = filteredBooleanFeatures.filter((_, i) => combination[i])
+                    return enabledFeatures.length === 0
+                      ? 'minimal'
+                      : enabledFeatures.length === filteredBooleanFeatures.length
+                        ? 'full'
+                        : enabledFeatures.join('-')
+                  })()
+
+              // 生成测试用例名称
+              const packageManagerSuffix = TEST_CONFIG.combinations.packageManagers.length > 1 ? `${packageManager}-` : ''
+              const microFrontendSuffix = microFrontendEngine ? `${microFrontendEngine}-` : ''
+              configs.push(createTestConfig(framework, uiLibrary, `${packageManagerSuffix}${microFrontendSuffix}${routeModeFeature}-${suffix}`, config))
             }
-
-            // 生成测试用例名称
-            // 如果没有布尔特性组合，使用固定后缀
-            const suffix = filteredBooleanFeatures.length === 0
-              ? 'default'
-              : (() => {
-                  const enabledFeatures = filteredBooleanFeatures.filter((_, i) => combination[i])
-                  return enabledFeatures.length === 0
-                    ? 'minimal'
-                    : enabledFeatures.length === filteredBooleanFeatures.length
-                      ? 'full'
-                      : enabledFeatures.join('-')
-                })()
-
-            // 生成测试用例名称
-            const packageManagerSuffix = TEST_CONFIG.combinations.packageManagers.length > 1 ? `${packageManager}-` : ''
-            configs.push(createTestConfig(framework, uiLibrary, `${packageManagerSuffix}${routeModeFeature}-${suffix}`, config))
           }
         }
       }
@@ -325,8 +340,7 @@ async function generateTestProjects(): Promise<void> {
       // feature 名称与目录名称一致
       pinia: config.framework === 'vue',
       zustand: config.framework === 'react',
-      manualRoutes: config.routeMode === 'manualRoutes',
-      pageRoutes: config.routeMode === 'pageRoutes',
+      ...getRouteModeFeatures(config.routeMode!),
       // 固定默认值（不参与组合测试，避免几何级增长）
       i18n: config.i18n ?? TEST_CONFIG.defaults.i18n,
       sentry: config.sentry ?? TEST_CONFIG.defaults.sentry,

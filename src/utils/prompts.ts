@@ -18,6 +18,7 @@ import process from 'node:process'
 import inquirer from 'inquirer'
 
 import { getDefaultAuthor } from './npmConfig.ts'
+import { getRouteModeFeatures } from './routeModeMapping.ts'
 
 /**
  * 收集项目配置信息
@@ -135,8 +136,8 @@ export async function collectProjectConfig(
       name: 'routeMode',
       message: '选择路由模式:',
       choices: [
-        { name: '文件系统路由 (vite-plugin-pages)', value: 'file-system' },
-        { name: '手动配置路由', value: 'manual' },
+        { name: '文件系统路由 (vite-plugin-pages)', value: 'pageRoutes' },
+        { name: '手动配置路由', value: 'manualRoutes' },
       ],
     },
     // 是否启用国际化
@@ -202,13 +203,13 @@ export async function collectProjectConfig(
 
   const targetDir = `${process.cwd()}/${answers.projectName}`
 
-  // 根据 routeMode 确定启用哪个路由 feature
-  const isManualRoutes = answers.routeMode === 'manual'
-  const isPageRoutes = answers.routeMode === 'file-system'
-
   // 根据框架确定状态管理 feature
   const isPinia = answers.framework === 'vue'
   const isZustand = answers.framework === 'react'
+
+  // 根据路由模式获取对应的布尔特征配置
+  const routeMode = answers.routeMode as RouteModeType
+  const routeModeFeatures = getRouteModeFeatures(routeMode)
 
   return {
     projectName: answers.projectName,
@@ -216,12 +217,12 @@ export async function collectProjectConfig(
     author: answers.author,
     framework: answers.framework as FrameworkType,
     uiLibrary: answers.uiLibrary as UILibraryType,
-    routeMode: (answers.routeMode as RouteModeType) || 'pageRoutes',
+    routeMode,
     // feature 名称与目录名称一致
     pinia: isPinia,
     zustand: isZustand,
-    manualRoutes: isManualRoutes,
-    pageRoutes: isPageRoutes,
+    manualRoutes: routeModeFeatures.manualRoutes,
+    pageRoutes: routeModeFeatures.pageRoutes,
     i18n: answers.i18n,
     microFrontend: answers.microFrontend || false,
     microFrontendEngine: answers.microFrontendEngine as MicroFrontendEngine | undefined,
