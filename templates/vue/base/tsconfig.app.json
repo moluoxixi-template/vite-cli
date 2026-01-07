@@ -20,6 +20,7 @@
     "dist",
     "node_modules",
     "cypress",
-    "vite.config.ts"
+    "vite",
+    "vite.config.*"
   ]
 }

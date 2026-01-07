@@ -9,6 +9,7 @@
     "composite": true
   },
   "include": [
-    "vite.config.ts"
+    "vite",
+    "vite.config.*"
   ]
 }

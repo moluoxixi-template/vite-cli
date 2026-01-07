@@ -1,71 +1,70 @@
 /**
- * CLI 类型定义
- * 定义项目配置、模板层级等核心类型
+ * CLI type definitions
+ * Define project configuration, template layers and other core types
  */
 
 import type { MicroFrontendEngine } from './features.ts'
 
-export * from './ejs.ts'
 export * from './features.ts'
 
 /**
- * 框架类型
+ * Framework type
  */
 export type FrameworkType = 'vue' | 'react'
 
 /**
- * UI 库类型
+ * UI library type
  */
 export type UILibraryType = 'element-plus' | 'ant-design-vue' | 'ant-design'
 
 /**
- * 路由模式类型
+ * Route mode type
  */
 export type RouteModeType = 'manualRoutes' | 'pageRoutes'
 
 /**
- * 包管理器类型
+ * Package manager type
  */
 export type PackageManagerType = 'pnpm' | 'npm' | 'yarn'
 
 /**
- * 项目配置接口
+ * Project configuration interface
  */
 export interface ProjectConfigType {
-  /** 项目名称 */
+  /** Project name */
   projectName: string
-  /** 项目描述 */
+  /** Project description */
   description: string
-  /** 作者 */
+  /** Author */
   author: string
-  /** 框架类型 */
+  /** Framework type */
   framework: FrameworkType
-  /** UI 库（feature 名称：element-plus | ant-design-vue | ant-design） */
+  /** UI library (feature name: element-plus | ant-design-vue | ant-design) */
   uiLibrary: UILibraryType
-  /** 路由模式（决定使用 manualRoutes 还是 pageRoutes feature） */
+  /** Route mode (determines manualRoutes or pageRoutes feature) */
   routeMode: RouteModeType
-  /** 是否启用 pinia/zustand feature */
+  /** Enable pinia feature (Vue) */
   pinia?: boolean
-  /** 是否启用 zustand feature (React) */
+  /** Enable zustand feature (React) */
   zustand?: boolean
-  /** 是否启用 manualRoutes feature */
+  /** Enable manualRoutes feature */
   manualRoutes?: boolean
-  /** 是否启用 pageRoutes feature */
+  /** Enable pageRoutes feature */
   pageRoutes?: boolean
-  /** 是否启用 i18n feature */
+  /** Enable i18n feature */
   i18n: boolean
-  /** 是否启用微前端支持 */
+  /** Enable micro-frontend support */
   microFrontend: boolean
-  /** 微前端引擎（qiankun、micro-app 等）- 当 microFrontend 为 true 时有效 */
+  /** Micro-frontend engine (qiankun, micro-app, etc.) - valid when microFrontend is true */
   microFrontendEngine?: MicroFrontendEngine
-  /** 是否启用 sentry feature */
+  /** Enable sentry feature */
   sentry: boolean
-  /** 是否启用 eslint feature */
+  /** Enable eslint feature */
   eslint: boolean
-  /** 是否启用 husky feature (Git Hooks) */
+  /** Enable husky feature (Git Hooks) */
   husky: boolean
-  /** 包管理器 */
+  /** Package manager */
   packageManager: PackageManagerType
-  /** 目标目录 */
+  /** Target directory */
   targetDir: string
 }

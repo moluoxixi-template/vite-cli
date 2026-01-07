@@ -50,7 +50,63 @@ npm create @moluoxixi/app
 | `@moluoxixi/class-names` | CSS 类名工具 |
 | `@moluoxixi/css-module-global-root-plugin` | CSS Module 插件 |
 
-## 项目结构
+## 源码目录结构
+
+本项目采用清晰的模块化架构，将业务逻辑和工具函数分离：
+
+```
+src/
+├── commands/              # CLI 命令
+│   ├── index.ts          # 命令导出
+│   └── create.ts         # create 命令实现
+│
+├── constants/             # 常量定义
+│   └── index.ts          # 文件常量、路径常量等
+│
+├── core/                 # 核心业务逻辑模块
+│   ├── index.ts          # 核心模块导出
+│   ├── feature.ts        # Feature 管理（扫描、映射、渲染）
+│   ├── prompts.ts        # 交互式问答（收集用户配置）
+│   └── template.ts       # 模板渲染（文件复制、合并）
+│
+├── generators/            # 项目生成器
+│   ├── index.ts          # 生成器导出
+│   └── project.ts       # 项目生成核心逻辑
+│
+├── types/                 # TypeScript 类型定义
+│   ├── index.ts          # 公共类型导出
+│   ├── features.ts       # Feature 相关类型
+│   └── packageJson.ts    # package.json 类型
+│
+├── utils/                 # 纯工具函数（无业务逻辑）
+│   ├── index.ts          # 工具函数导出
+│   ├── deepMerge.ts      # 深度合并对象
+│   ├── file.ts           # 文件操作（读写、复制、路径处理）
+│   ├── install.ts        # 依赖安装、Git 初始化
+│   ├── npmConfig.ts      # npm 配置读取
+│   └── sortDependencies.ts # 依赖排序
+│
+├── index.ts              # CLI 入口
+└── test.ts               # 测试脚本
+```
+
+### 目录职责说明
+
+- **`commands/`** - CLI 命令实现，处理用户交互和流程控制
+- **`core/`** - 核心业务逻辑，包含 feature 管理、模板渲染、用户配置收集
+- **`generators/`** - 项目生成器，根据配置生成完整的项目结构
+- **`utils/`** - 纯工具函数，不包含业务逻辑，可独立使用
+- **`types/`** - TypeScript 类型定义，确保类型安全
+- **`constants/`** - 常量定义，集中管理配置值
+
+### 设计原则
+
+1. **职责分离** - 业务逻辑在 `core/`，工具函数在 `utils/`
+2. **模块化** - 每个模块职责单一，便于维护和测试
+3. **类型安全** - 完整的 TypeScript 类型定义
+4. **可扩展性** - 通过文件系统扫描自动发现 features，无需手动配置
+
+## 生成的项目结构
 
 生成的项目结构示例：
 

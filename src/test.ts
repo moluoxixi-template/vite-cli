@@ -1,10 +1,6 @@
 /**
  * 测试脚本
  * 通过文件系统扫描自动生成所有测试用例组合
- *
- * 用法:
- *   pnpm test              # 生成所有测试用例
- *   pnpm test --minimal    # 只生成全量和最小配置
  */
 
 import type {
@@ -24,10 +20,8 @@ import chalk from 'chalk'
 import fs from 'fs-extra'
 
 import { FILE_CONSTANTS } from './constants/index.ts'
-
+import { featureToConfig, getRouteModeFeatures, scanAllFeatures } from './core/feature.ts'
 import { generateProject } from './generators/index.ts'
-import { featureToConfig, scanAllFeatures } from './utils/featureMapping.ts'
-import { getRouteModeFeatures } from './utils/routeModeMapping.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -40,6 +34,8 @@ const TEST_OUTPUT_DIR = path.resolve(__dirname, '../test')
  * 集中管理测试选项，方便随时调整
  */
 const TEST_CONFIG = {
+  /** 是否使用 minimal 模式（只生成全量和最小配置） */
+  minimal: false,
   /** 固定默认值（不参与组合测试） */
   defaults: {
     /** 项目名称（会自动生成，此处为描述） */
@@ -60,11 +56,17 @@ const TEST_CONFIG = {
   /** 参与组合测试的选项 */
   combinations: {
     /** 框架列表（空数组表示不启用） */
-    frameworks: ['vue', 'react'] as FrameworkType[],
+    // TODO: React 功能暂时关闭
+    // frameworks: ['vue', 'react'] as FrameworkType[],
+    frameworks: ['vue'] as FrameworkType[],
     /** UI 库配置（按框架分组，空数组表示不启用，需要明确配置才启用） */
     uiLibraries: {
-      vue: ['element-plus', 'ant-design-vue'] as string[], // Vue 可用的 UI 库
-      react: ['ant-design'] as string[], // React 可用的 UI 库
+      // TODO: Ant Design Vue 功能暂时关闭
+      // vue: ['element-plus', 'ant-design-vue'] as string[], // Vue 可用的 UI 库
+      vue: ['element-plus'] as string[], // Vue 框架可用的 UI 库
+      // TODO: React 功能暂时关闭
+      // react: ['ant-design'] as string[], // React 可用的 UI 库
+      react: [] as string[], // React 功能暂时关闭
     },
     /** 路由模式列表（空数组表示不启用） */
     routeModes: ['manualRoutes', 'pageRoutes'] as string[],
@@ -187,7 +189,7 @@ function generateTestConfigs(): Array<{ name: string, config: Partial<ProjectCon
       // 路由模式列表（空数组表示不启用，使用默认值）
       const routeModesToTest = TEST_CONFIG.combinations.routeModes.length > 0
         ? routeModes.filter(routeMode => TEST_CONFIG.combinations.routeModes.includes(routeMode))
-        : (routeModes.length > 0 ? routeModes : ['manualRoutes']) // 默认
+        : (routeModes.length > 0 ? routeModes : ['manualRoutes']) // 默认路由模式
 
       if (routeModesToTest.length === 0) {
         continue
@@ -200,11 +202,11 @@ function generateTestConfigs(): Array<{ name: string, config: Partial<ProjectCon
         // 如果配置了微前端引擎，生成两种组合：不带微前端（null）和带微前端（配置的引擎）
         // 如果没配置，只生成不带微前端的组合
         const microFrontendOptions: (MicroFrontendEngine | null)[] = microFrontendEnginesToTest.length > 0
-          ? [null, ...microFrontendEnginesToTest] // 总是包含 null（不带），再加上配置的引擎
-          : [null] // 如果没配置，只生成不带微前端的
+          ? [null, ...microFrontendEnginesToTest] // 总是包含 null（不带微前端），再加上配置的引擎
+          : [null] // 如果没配置微前端引擎，只生成不带微前端的组合
 
         for (const microFrontendEngine of microFrontendOptions) {
-          // 生成所有布尔 features 的组合（2^n 种）
+          // 生成所有布尔特性的组合（2^n 种）
           const combinations = generateAllCombinations(filteredBooleanFeatures)
 
           // 包管理器列表（空数组表示不启用）
@@ -215,7 +217,17 @@ function generateTestConfigs(): Array<{ name: string, config: Partial<ProjectCon
           }
 
           for (const packageManager of packageManagersToTest) {
-            for (const combination of combinations) {
+            // 如果启用 minimal 模式，只生成全开和全关两种组合
+            const combinationsToTest = TEST_CONFIG.minimal && filteredBooleanFeatures.length > 0
+              ? [
+                  // 全关（minimal）
+                  Array.from({ length: filteredBooleanFeatures.length }).fill(false),
+                  // 全开（full）
+                  Array.from({ length: filteredBooleanFeatures.length }).fill(true),
+                ]
+              : combinations
+
+            for (const combination of combinationsToTest) {
               const config: Partial<ProjectConfigType> = {
                 framework,
                 uiLibrary: uiLibrary as UILibraryType,
@@ -225,12 +237,12 @@ function generateTestConfigs(): Array<{ name: string, config: Partial<ProjectCon
                 microFrontendEngine: microFrontendEngine || undefined,
               }
 
-              // 根据 routeMode 设置对应的布尔 feature
+              // 根据路由模式设置对应的布尔特性
               const routeModeFeatures = getRouteModeFeatures(routeModeFeature as RouteModeType)
               config.manualRoutes = routeModeFeatures.manualRoutes
               config.pageRoutes = routeModeFeatures.pageRoutes
 
-              // 应用布尔 features 的组合
+              // 应用布尔特性的组合
               for (let i = 0; i < filteredBooleanFeatures.length; i++) {
                 const feature = filteredBooleanFeatures[i]
                 const enabled = combination[i]
@@ -337,7 +349,7 @@ async function generateTestProjects(): Promise<void> {
       framework: config.framework!,
       uiLibrary: config.uiLibrary!,
       routeMode: config.routeMode!,
-      // feature 名称与目录名称一致
+      // 特性名称与目录名称一致
       pinia: config.framework === 'vue',
       zustand: config.framework === 'react',
       ...getRouteModeFeatures(config.routeMode!),
@@ -575,6 +587,10 @@ async function main(): Promise<void> {
   console.log(chalk.blue.bold(`\n${'='.repeat(60)}`))
   console.log(chalk.blue.bold('  Vite CLI Next - 产物审计测试'))
   console.log(chalk.blue.bold('='.repeat(60)))
+
+  if (TEST_CONFIG.minimal) {
+    console.log(chalk.yellow('  ⚠️  运行在 minimal 模式（只生成全量和最小配置）\n'))
+  }
 
   // 1. 生成测试项目
   await generateTestProjects()

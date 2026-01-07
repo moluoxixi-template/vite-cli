@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@sentry/react": "^9.27.0",
-    "@sentry/vite-plugin": "^3.5.0"
+    "@sentry/vite-plugin": "^3.5.0",
+    "react-router-dom": "^7.1.3"
   }
 }

@@ -8,10 +8,10 @@ import process from 'node:process'
 import chalk from 'chalk'
 import ora from 'ora'
 
+import { collectProjectConfig, confirmOverwrite } from '../core/prompts.ts'
 import { generateProject } from '../generators/project.ts'
 import { pathExists } from '../utils/file.ts'
 import { initGit, installDependencies } from '../utils/install.ts'
-import { collectProjectConfig, confirmOverwrite } from '../utils/prompts.ts'
 
 /**
  * 创建项目

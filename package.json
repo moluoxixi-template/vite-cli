@@ -1,6 +1,6 @@
 {
   "name": "@moluoxixi/create-app",
-  "version": "2.0.413",
+  "version": "2.0.415",
   "type": "module",
   "packageManager": "pnpm@10.8.0",
   "description": "Create Vue/React projects with atomic layered architecture",
@@ -20,7 +20,7 @@
     "test": "tsx src/test.ts",
     "type-check": "tsc --noEmit",
     "lint:eslint": "eslint . --fix",
-    "submodule:update": "git submodule init && git submodule update --init --recursive",
+    "submodule:update": "git submodule update --init --recursive --remote",
     "prepare": "pnpm submodule:update && node .husky/install.mjs",
     "lint-staged": "lint-staged",
     "commit": "git add . && git-cz",
@@ -65,23 +65,17 @@
   "dependencies": {
     "chalk": "catalog:build",
     "commander": "catalog:build",
-    "ejs": "catalog:build",
     "fs-extra": "catalog:build",
     "inquirer": "catalog:build",
-    "jiti": "catalog:dev",
-    "lodash-es": "catalog:build",
-    "ora": "catalog:build",
-    "yaml": "catalog:build"
+    "ora": "catalog:build"
   },
   "devDependencies": {
     "vite": "catalog:dev",
     "@commitlint/cli": "catalog:dev",
     "@commitlint/config-conventional": "catalog:dev",
     "@moluoxixi/eslint-config": "latest",
-    "@types/ejs": "catalog:type",
     "@types/fs-extra": "catalog:type",
     "@types/inquirer": "catalog:type",
-    "@types/lodash-es": "catalog:type",
     "@vue-macros/volar": "catalog:type",
     "@types/node": "catalog:type",
     "commitizen": "catalog:dev",

@@ -9,7 +9,7 @@
   "packageManager": "pnpm@10.8.0",
   "scripts": {
     "dev": "vite",
-    "submodule:update": "git init && git submodule init && git submodule update --init --recursive",
+    "submodule:update": "git submodule update --init --recursive",
     "prepare": "pnpm submodule:update",
     "build": "vite build --mode production",
     "build:zip": "vite build --mode production && tsx scripts/build.mts",
@@ -32,6 +32,8 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@moluoxixi/css-module-global-root-plugin": "latest",
+    "@moluoxixi/vite-config": "latest",
     "@types/crypto-js": "^4.2.2",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.14.0",

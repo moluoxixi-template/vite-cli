@@ -22,5 +22,9 @@
   },
   "include": [
     "templates/**/*"
+  ],
+  "exclude": [
+    "templates/**/vite.config.ts",
+    "templates/**/vite/**/*.ts"
   ]
 }

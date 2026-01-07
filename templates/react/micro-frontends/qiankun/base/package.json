@@ -1,4 +1,9 @@
 {
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "vite-plugin-qiankun": "^1.0.15"
+  },
+  "devDependencies": {
+    "@moluoxixi/css-module-global-root-plugin": "latest",
+    "@moluoxixi/vite-config": "latest"
+  }
 }

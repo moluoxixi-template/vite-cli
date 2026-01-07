@@ -7,13 +7,13 @@
     "module": "NodeNext",
     "moduleResolution": "nodenext",
     "outDir": "./dist",
-    "rootDir": "./src",
     "noEmit": false,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
     "composite": true
   },
   "include": [
-    "src/**/*.ts"
+    "templates/**/vite.config.ts",
+    "templates/**/vite/**/*.ts"
   ]
 }

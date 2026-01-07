@@ -9,6 +9,7 @@
     }
   },
   "include": [
+    "vite",
     "env.d.ts",
     "src/**/*",
     "src/**/*.tsx"
