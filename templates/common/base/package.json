@@ -9,8 +9,8 @@
   "packageManager": "pnpm@10.8.0",
   "scripts": {
     "dev": "vite",
-    "submodule:update": "git submodule update --init --recursive",
-    "prepare": "pnpm submodule:update",
+    "submodule:update": "git submodule update --init --recursive --remote",
+    "postinstall": "pnpm submodule:update",
     "build": "vite build --mode production",
     "build:zip": "vite build --mode production && tsx scripts/build.mts",
     "preview": "vite preview",

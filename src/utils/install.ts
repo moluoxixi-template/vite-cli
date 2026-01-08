@@ -5,12 +5,12 @@
 
 import type { PackageManagerType } from '../types/index.ts'
 
-import { exec } from 'node:child_process'
+import { exec, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 
 import { validatePath } from './file.ts'
 
-const execAsync = promisify(exec)
+const execAsync = promisify(exec) // exec 用于 initGit 函数
 
 /** 重试延迟基数（毫秒） */
 const RETRY_DELAY_BASE_MS = 1000
@@ -60,8 +60,27 @@ export async function installDependencies(
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      await execAsync(command, {
-        cwd,
+      // 使用 spawn 以支持实时输出
+      await new Promise<void>((resolve, reject) => {
+        const [cmd, ...args] = command.split(' ')
+        const child = spawn(cmd, args, {
+          cwd,
+          stdio: 'inherit', // 直接输出到终端
+          shell: true, // Windows 需要 shell
+        })
+
+        child.on('close', (code) => {
+          if (code === 0) {
+            resolve()
+          }
+          else {
+            reject(new Error(`命令退出，退出码: ${code}`))
+          }
+        })
+
+        child.on('error', (error) => {
+          reject(error)
+        })
       })
       return // 成功则返回
     }
@@ -95,6 +114,8 @@ export async function initGit(cwd: string, projectName: string): Promise<void> {
     validatePath(cwd)
 
     await execAsync('git init', { cwd })
+    // 添加 AIRules 子模块
+    await execAsync('git submodule add -b main https://github.com/moluoxixi/AIRules.git .cursor', { cwd })
     await execAsync('git add .', { cwd })
     await execAsync(`git commit -m "feat: initialize ${projectName}"`, { cwd })
   }

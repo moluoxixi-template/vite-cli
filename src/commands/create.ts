@@ -70,15 +70,15 @@ export async function createProject(projectName?: string): Promise<void> {
     }
 
     // 安装依赖
-    const installSpinner = ora('正在安装依赖...').start()
+    console.log(chalk.blue('\n📦 开始安装依赖...\n'))
     try {
       await installDependencies(config.packageManager, config.targetDir, 1)
-      installSpinner.succeed('依赖安装成功!')
+      console.log(chalk.green('\n✅ 依赖安装成功!\n'))
     }
     catch (error) {
-      installSpinner.fail('依赖安装失败')
+      console.log(chalk.red('\n❌ 依赖安装失败\n'))
       console.log(
-        chalk.yellow('\n⚠️  项目已创建，但依赖安装失败。'),
+        chalk.yellow('⚠️  项目已创建，但依赖安装失败。'),
       )
       console.log(
         chalk.yellow(`   请手动运行 "${config.packageManager} install"\n`),
