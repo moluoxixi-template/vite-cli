@@ -6,7 +6,9 @@
 import eslintConfig from '@moluoxixi/eslint-config'
 
 export default eslintConfig({
-  ignores: [],
+  ignores: [
+    'package.json',
+  ],
   rules: {
     // import排序
     'perfectionist/sort-imports': 'off',

@@ -34,9 +34,9 @@ npm create @moluoxixi/app
 
 - [ ] 🔄 **Ant Design Vue 模板重构** - 优化 ant-design-vue 模板结构和配置
 - [ ] 🔄 **Ant Design 模板重构** - 优化 ant-design 模板结构和配置
-- [ ] 🔧 **main.ts.ejs 解耦** - 将 Vue 入口文件模板解耦，提高可维护性
-- [ ] 🔧 **main.tsx.ejs 解耦** - 将 React 入口文件模板解耦，提高可维护性
-- [ ] 🔧 **vite.config.ts.ejs 解耦** - 将 Vite 配置模板解耦，提高可维护性
+- [x] 🔧 **main.ts.ejs 解耦** - 将 Vue 入口文件模板解耦，提高可维护性
+- [x] 🔧 **main.tsx.ejs 解耦** - 将 React 入口文件模板解耦，提高可维护性
+- [x] 🔧 **vite.config.ts.ejs 解耦** - 将 Vite 配置模板解耦，提高可维护性
 
 ## 内置依赖
 

@@ -1,18 +1,19 @@
 {
   "name": "@moluoxixi/create-app",
-  "version": "2.0.426",
+  "version": "2.0.432",
   "type": "module",
   "packageManager": "pnpm@10.8.0",
   "description": "Create Vue/React projects with atomic layered architecture",
   "main": "dist/index.js",
   "bin": {
-    "create-mox": "./dist/index.js"
+    "create-app": "./dist/index.js"
   },
   "files": [
     "LICENSE.txt",
     "README.md",
     "dist",
-    "templates"
+    "templates",
+    "!template/**/node_modules/.bin/*"
   ],
   "scripts": {
     "dev": "tsx src/index.ts",
@@ -21,8 +22,6 @@
     "type-check": "tsc --noEmit",
     "lint:eslint": "eslint . --fix",
     "submodule:update": "git submodule update --init --recursive --remote",
-    "prepare": "node .husky/install.mjs",
-    "postinstall": "pnpm submodule:update",
     "lint-staged": "lint-staged",
     "commit": "git add . && git-cz",
     "version:patch": "pnpm version patch --no-git-tag-version",
@@ -31,10 +30,9 @@
     "version:patch:git": "pnpm version patch",
     "version:minor:git": "pnpm version minor",
     "version:major:git": "pnpm version major",
-    "publish:public": "pnpm build && pnpm publish --access public",
-    "publish:beta": "pnpm build && pnpm publish --tag beta --access public",
-    "publish:dry-run": "pnpm build && pnpm publish --dry-run",
-    "prepublishOnly": "pnpm lint:eslint",
+    "publish:public": "pnpm publish --access public",
+    "publish:beta": "pnpm publish --tag beta --access public",
+    "prepublishOnly": "pnpm build",
     "release:patch": "pnpm version:patch && pnpm publish:public",
     "release:minor": "pnpm version:minor && pnpm publish:public",
     "release:major": "pnpm version:major && pnpm publish:public",
