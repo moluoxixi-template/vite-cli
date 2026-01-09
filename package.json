@@ -1,6 +1,6 @@
 {
   "name": "@moluoxixi/create-app",
-  "version": "2.0.420",
+  "version": "2.0.421",
   "type": "module",
   "packageManager": "pnpm@10.8.0",
   "description": "Create Vue/React projects with atomic layered architecture",
@@ -75,7 +75,7 @@
     "vite": "catalog:dev",
     "@commitlint/cli": "catalog:dev",
     "@commitlint/config-conventional": "catalog:dev",
-    "@moluoxixi/eslint-config": "latest",
+    "@moluoxixi/eslint-config": "catalog:dev",
     "@types/fs-extra": "catalog:type",
     "@types/inquirer": "catalog:type",
     "@vue-macros/volar": "catalog:type",

@@ -6,12 +6,13 @@
 import eslintConfig from '@moluoxixi/eslint-config'
 
 export default eslintConfig({
-  ignores: [
-    'dist',
-    '*/.husky',
-  ],
+  ignores: [],
   rules: {
+    // import排序
     'perfectionist/sort-imports': 'off',
+    // jsonc排序
     'jsonc/sort-keys': 'off',
+    // 不允许使用console
+    'no-console': 'off',
   },
 })
