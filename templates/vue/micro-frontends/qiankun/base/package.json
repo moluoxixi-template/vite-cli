@@ -3,8 +3,6 @@
     "vite-plugin-qiankun": "^1.0.15"
   },
   "devDependencies": {
-    "vite": "7.1.11",
-    "@moluoxixi/css-module-global-root-plugin": "latest",
-    "@moluoxixi/vite-config": "latest"
+    "vite": "7.1.11"
   }
 }

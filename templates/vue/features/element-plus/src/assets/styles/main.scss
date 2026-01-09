@@ -1,0 +1,9 @@
+/**
+ * 主样式文件
+ * 导入所有样式
+ */
+
+@use './base.scss';
+@use './custom.scss';
+@use './tailwind.scss';
+@use 'element.scss';

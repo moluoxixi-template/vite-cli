@@ -14,16 +14,14 @@ const config: ReturnType<typeof ViteConfig> = ViteConfig(({ mode }) => {
   const port = viteEnv.VITE_APP_PORT
 
   // 加载所有 feature 配置
-  const featureConfig = loadFeatureConfigs({ viteEnv, mode: mode!, appCode })
+  const featureConfig = loadFeatureConfigs({ viteEnv, mode, appCode })
 
   return {
     rootPath,
     appTitle,
     appCode,
     port,
-    vue: true,
     autoComponent: true,
-    pageRoutes: true,
     viteConfig: mergeConfig(
       {
         server: {
