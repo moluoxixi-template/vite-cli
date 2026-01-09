@@ -19,7 +19,14 @@ import { fileURLToPath } from 'node:url'
 import chalk from 'chalk'
 import fs from 'fs-extra'
 
-import { FILE_CONSTANTS } from './constants/index.ts'
+import {
+  FILE_CONSTANTS,
+  FRAMEWORKS,
+  MICRO_FRONTEND_ENGINES,
+  PACKAGE_MANAGERS,
+  ROUTE_MODES,
+  UI_LIBRARIES,
+} from './constants/index.ts'
 import { featureToConfig, getRouteModeFeatures, scanAllFeatures } from './core/feature.ts'
 import { generateProject } from './generators/index.ts'
 
@@ -55,25 +62,19 @@ const TEST_CONFIG = {
   },
   /** 参与组合测试的选项 */
   combinations: {
-    /** 框架列表（空数组表示不启用） */
-    // TODO: React 功能暂时关闭
-    // frameworks: ['vue', 'react'] as FrameworkType[],
-    frameworks: ['vue'] as FrameworkType[],
-    /** UI 库配置（按框架分组，空数组表示不启用，需要明确配置才启用） */
+    /** 框架列表（使用常量） */
+    frameworks: FRAMEWORKS,
+    /** UI 库配置（直接使用 UI_LIBRARIES） */
     uiLibraries: {
-      // TODO: Ant Design Vue 功能暂时关闭
-      // vue: ['element-plus', 'ant-design-vue'] as string[], // Vue 可用的 UI 库
-      vue: ['element-plus'] as string[], // Vue 框架可用的 UI 库
-      // TODO: React 功能暂时关闭
-      // react: ['ant-design'] as string[], // React 可用的 UI 库
-      react: [] as string[], // React 功能暂时关闭
+      vue: UI_LIBRARIES.vue,
+      react: UI_LIBRARIES.react,
     },
     /** 路由模式列表（空数组表示不启用） */
-    routeModes: ['manualRoutes', 'pageRoutes'] as string[],
-    /** 微前端引擎列表（空数组表示不启用） */
-    microFrontendEngines: ['qiankun'] as MicroFrontendEngine[],
-    /** 包管理器列表（空数组表示不启用） */
-    packageManagers: ['pnpm'] as PackageManagerType[],
+    routeModes: ROUTE_MODES,
+    /** 微前端引擎列表（直接使用常量） */
+    microFrontendEngines: MICRO_FRONTEND_ENGINES,
+    /** 包管理器列表（直接使用常量） */
+    packageManagers: PACKAGE_MANAGERS,
     /** 是否测试 i18n 的组合 */
     i18n: false,
     /** 是否测试 sentry 的组合 */
@@ -171,7 +172,7 @@ function generateTestConfigs(): Array<{ name: string, config: Partial<ProjectCon
 
     // 生成所有组合
     // UI 库列表（按框架分组配置，空数组表示不启用）
-    const frameworkUiLibraries = TEST_CONFIG.combinations.uiLibraries[framework] || []
+    const frameworkUiLibraries: readonly UILibraryType[] = TEST_CONFIG.combinations.uiLibraries[framework] || []
 
     // 如果配置为空数组，表示不启用该框架的 UI 库测试
     if (frameworkUiLibraries.length === 0) {
@@ -179,7 +180,7 @@ function generateTestConfigs(): Array<{ name: string, config: Partial<ProjectCon
     }
 
     // 只测试配置中指定的 UI 库
-    const uiLibrariesToTest = uiLibraries.filter(uiLib => frameworkUiLibraries.includes(uiLib))
+    const uiLibrariesToTest = uiLibraries.filter(uiLib => frameworkUiLibraries.includes(uiLib as UILibraryType))
 
     if (uiLibrariesToTest.length === 0) {
       continue
@@ -188,7 +189,7 @@ function generateTestConfigs(): Array<{ name: string, config: Partial<ProjectCon
     for (const uiLibrary of uiLibrariesToTest) {
       // 路由模式列表（空数组表示不启用，使用默认值）
       const routeModesToTest = TEST_CONFIG.combinations.routeModes.length > 0
-        ? routeModes.filter(routeMode => TEST_CONFIG.combinations.routeModes.includes(routeMode))
+        ? routeModes.filter(routeMode => TEST_CONFIG.combinations.routeModes.includes(routeMode as RouteModeType))
         : (routeModes.length > 0 ? routeModes : ['manualRoutes']) // 默认路由模式
 
       if (routeModesToTest.length === 0) {

@@ -17,6 +17,13 @@ import process from 'node:process'
 
 import inquirer from 'inquirer'
 
+import {
+  FRAMEWORK_OPTIONS,
+  MICRO_FRONTEND_ENGINE_OPTIONS,
+  PACKAGE_MANAGER_OPTIONS,
+  ROUTE_MODE_OPTIONS,
+  UI_LIBRARY_OPTIONS,
+} from '../constants/index.ts'
 import { getDefaultAuthor } from '../utils/npmConfig.ts'
 import { getRouteModeFeatures } from './feature.ts'
 
@@ -108,11 +115,7 @@ export async function collectProjectConfig(
       type: 'list',
       name: 'framework',
       message: '选择框架:',
-      choices: [
-        { name: 'Vue 3', value: 'vue' },
-        // TODO: React 功能暂时关闭
-        // { name: 'React', value: 'react' },
-      ],
+      choices: FRAMEWORK_OPTIONS,
     },
     // UI 库选择
     {
@@ -120,18 +123,8 @@ export async function collectProjectConfig(
       name: 'uiLibrary',
       message: '选择 UI 组件库:',
       choices: (answers: Record<string, unknown>) => {
-        if (answers.framework === 'vue') {
-          return [
-            { name: 'Element Plus', value: 'element-plus' },
-            // TODO: Ant Design Vue 功能暂时关闭
-            // { name: 'Ant Design Vue', value: 'ant-design-vue' },
-          ]
-        }
-        else {
-          // TODO: React 功能暂时关闭
-          // return [{ name: 'Ant Design', value: 'ant-design' }]
-          return []
-        }
+        const framework = answers.framework as FrameworkType
+        return UI_LIBRARY_OPTIONS[framework] ?? []
       },
     },
     // 路由模式（路由已内置，只需选择模式）
@@ -139,10 +132,7 @@ export async function collectProjectConfig(
       type: 'list',
       name: 'routeMode',
       message: '选择路由模式:',
-      choices: [
-        { name: '文件系统路由 (vite-plugin-pages)', value: 'pageRoutes' },
-        { name: '手动配置路由', value: 'manualRoutes' },
-      ],
+      choices: ROUTE_MODE_OPTIONS,
     },
     // 是否启用国际化
     {
@@ -163,11 +153,7 @@ export async function collectProjectConfig(
       type: 'list',
       name: 'microFrontendEngine',
       message: '选择微前端引擎:',
-      choices: [
-        { name: 'qiankun (阿里开源)', value: 'qiankun' },
-        // TODO: 还没有,后续可考虑接入
-        // { name: 'micro-app (京东开源)', value: 'micro-app' },
-      ],
+      choices: MICRO_FRONTEND_ENGINE_OPTIONS,
       when: (answers: Record<string, unknown>) => answers.microFrontend === true,
     },
     // 是否启用错误监控
@@ -196,11 +182,7 @@ export async function collectProjectConfig(
       type: 'list',
       name: 'packageManager',
       message: '选择包管理器:',
-      choices: [
-        { name: 'pnpm (推荐)', value: 'pnpm' },
-        { name: 'npm', value: 'npm' },
-        { name: 'yarn', value: 'yarn' },
-      ],
+      choices: PACKAGE_MANAGER_OPTIONS,
       default: 'pnpm',
     },
   ])

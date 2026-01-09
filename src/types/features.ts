@@ -19,7 +19,9 @@ export const MOLUOXIXI_DEPS = {
 } as const
 
 /**
- * 微前端引擎类型
+ * 微前端引擎类型定义
+ * 注意：此处的常量仅用于类型推导，实际使用的常量请参考 src/constants/index.ts 中的 MICRO_FRONTEND_ENGINES
+ * 如需修改微前端引擎列表，请同时更新 src/constants/index.ts 中的 MICRO_FRONTEND_ENGINE_OPTIONS
  */
 export const MICRO_FRONTEND_ENGINES = ['qiankun', 'micro-app'] as const
 

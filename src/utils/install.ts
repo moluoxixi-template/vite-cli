@@ -8,6 +8,7 @@ import type { PackageManagerType } from '../types/index.ts'
 import { exec, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 
+import { PACKAGE_MANAGERS } from '../constants/index.ts'
 import { validatePath } from './file.ts'
 
 const execAsync = promisify(exec) // exec 用于 initGit 函数
@@ -22,9 +23,8 @@ const RETRY_DELAY_BASE_MS = 1000
  * @throws {Error} 如果包管理器类型不支持或路径不安全
  */
 function validateInstallParams(packageManager: PackageManagerType, cwd: string): void {
-  // 验证包管理器类型
-  const validPackageManagers: PackageManagerType[] = ['pnpm', 'npm', 'yarn']
-  if (!validPackageManagers.includes(packageManager)) {
+  // 验证包管理器类型（从常量中获取）
+  if (!PACKAGE_MANAGERS.includes(packageManager)) {
     throw new Error(`不支持的包管理器: ${packageManager}`)
   }
 

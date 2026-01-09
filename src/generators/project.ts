@@ -8,7 +8,7 @@ import type { ProjectConfigType } from '../types/index.ts'
 
 import path from 'node:path'
 
-import { FILE_CONSTANTS } from '../constants/index.ts'
+import { FILE_CONSTANTS, FRAMEWORKS } from '../constants/index.ts'
 import {
   renderCommonFeatures,
   renderFrameworkFeatures,
@@ -91,12 +91,8 @@ function renderAllFeatures(
  * @throws {Error} 如果框架不支持或项目生成失败
  */
 export async function generateProject(config: ProjectConfigType): Promise<void> {
-  // 支持的框架列表
-  // TODO: React 功能暂时关闭
-  // const supportedFrameworks = ['vue', 'react']
-  const supportedFrameworks = ['vue']
-
-  if (!supportedFrameworks.includes(config.framework)) {
+  // 验证框架是否支持
+  if (!FRAMEWORKS.includes(config.framework)) {
     throw new Error(`不支持的框架: ${config.framework}`)
   }
 

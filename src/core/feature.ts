@@ -3,11 +3,12 @@
  * 统一管理 features 的扫描、映射、渲染逻辑
  */
 
-import type { FrameworkType, ProjectConfigType, RouteModeType } from '../types/index.ts'
+import type { FrameworkType, ProjectConfigType, RouteModeType, UILibraryType } from '../types/index.ts'
 
 import fs from 'fs-extra'
 import path from 'node:path'
 
+import { ROUTE_MODES, UI_LIBRARIES } from '../constants/index.ts'
 import { getTemplatesDir } from '../utils/file.ts'
 import { renderTemplate } from './template.ts'
 
@@ -68,19 +69,9 @@ function getMicroFrontendEngines(framework: FrameworkType): string[] {
 // ============================================================================
 
 /**
- * UI 库优先级顺序（用于排序，确保默认选择）
- * TODO: ant-design-vue 和 ant-design (React) 功能暂时关闭
- */
-const UI_LIBRARY_PRIORITY: Record<string, number> = {
-  'element-plus': 1,
-  // 'ant-design-vue': 2,  // TODO: 暂时关闭
-  // 'ant-design': 1,      // TODO: 暂时关闭 (React)
-}
-
-/**
  * 扫描所有 features（框架的 + 公共的）
  * @param framework 框架类型
- * @returns 所有 feature 名称数组（UI 库按优先级排序）
+ * @returns 所有 feature 名称数组
  */
 export function scanAllFeatures(framework: FrameworkType): string[] {
   const frameworkDir = path.join(getTemplatesDir(), framework, 'features')
@@ -100,16 +91,7 @@ export function scanAllFeatures(framework: FrameworkType): string[] {
     ))
   }
 
-  // 对 UI 库进行排序，确保 element-plus 优先（优先级数字越小越靠前）
-  return features.sort((a, b) => {
-    const priorityA = UI_LIBRARY_PRIORITY[a] ?? 999
-    const priorityB = UI_LIBRARY_PRIORITY[b] ?? 999
-    if (priorityA !== priorityB) {
-      return priorityA - priorityB
-    }
-    // 相同优先级时保持字母顺序
-    return a.localeCompare(b)
-  })
+  return features
 }
 
 /**
@@ -124,15 +106,14 @@ export function featureToConfig(
   _framework: FrameworkType,
 ): { key: string, value: string | boolean } | null {
   // UI 库：配置键是 uiLibrary，值是 feature 名称
-  // TODO: ant-design-vue 和 ant-design (React) 功能暂时关闭
-  // const uiLibraries = ['element-plus', 'ant-design-vue', 'ant-design']
-  const uiLibraries = ['element-plus']
-  if (uiLibraries.includes(feature)) {
+  // 从常量中获取所有 UI 库列表（合并所有框架的 UI 库）
+  const allUiLibraries = Object.values(UI_LIBRARIES).flat()
+  if (allUiLibraries.includes(feature as UILibraryType)) {
     return { key: 'uiLibrary', value: feature }
   }
 
   // 路由模式 features：用于测试分类
-  if (feature === 'manualRoutes' || feature === 'pageRoutes') {
+  if (ROUTE_MODES.includes(feature as RouteModeType)) {
     return { key: 'routeMode', value: feature }
   }
 
@@ -165,9 +146,11 @@ export function getRouteModeFeatures(routeMode: RouteModeType): {
   manualRoutes: boolean
   pageRoutes: boolean
 } {
+  const manualRoutesValue = ROUTE_MODES.find(m => m === 'manualRoutes')!
+  const pageRoutesValue = ROUTE_MODES.find(m => m === 'pageRoutes')!
   return {
-    manualRoutes: routeMode === 'manualRoutes',
-    pageRoutes: routeMode === 'pageRoutes',
+    manualRoutes: routeMode === manualRoutesValue,
+    pageRoutes: routeMode === pageRoutesValue,
   }
 }
 
