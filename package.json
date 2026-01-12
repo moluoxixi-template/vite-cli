@@ -62,6 +62,10 @@
   ],
   "author": "1983531544@qq.com",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moluoxixi-template/vite-cli.git"
+  },
   "dependencies": {
     "chalk": "catalog:build",
     "commander": "catalog:build",
