@@ -1,20 +1,54 @@
 name: Publish
 
-# 基于分支发布，仅 main 分支可以发布
+# 基于分支和 tag 发布
+# - main 分支推送：自动版本号+1并发布
+# - v* tag 推送：直接发布（不更新版本号）
 on:
   push:
     branches:
       - main
-  # 之前 tag 的逻辑（已注释，个人测试用，暂时不想用 tag）
-  # push:
-  #   tags:
-  #     - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+    tags:
+      - 'v*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
+  # 版本号+1，只在分支推送时运行（tag 推送时跳过）
+  bump-version:
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+      
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - run: pnpm install
+      
+      - name: Bump version and commit
+        run: |
+          pnpm version:patch
+          VERSION=$(node -p "require('./package.json').version")
+          git add package.json
+          git commit -m "chore: bump version to $VERSION [skip ci]" || exit 0
+          git push || exit 0
+  
   release:
+    needs: bump-version
+    if: always() && (needs.bump-version.result == 'success' || needs.bump-version.result == 'skipped')
     # Use Publish environment for deployment protection
     environment: Publish
     runs-on: ubuntu-latest
@@ -32,5 +66,5 @@ jobs:
       - name: Update npm
         run: npm install -g npm@latest
       - run: pnpm install
-      - run: pnpm version:patch && pnpm publish:public --no-git-checks
+      - run: pnpm publish:public --no-git-checks
 
