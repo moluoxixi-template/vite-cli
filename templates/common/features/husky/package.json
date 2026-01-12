@@ -1,8 +1,6 @@
 {
   "scripts": {
     "prepare": "node .husky/install.mjs",
-    "postinstall": "pnpm submodule:update",
-    "submodule:update": "git submodule update --init --recursive --remote",
     "lint-staged": "lint-staged",
     "commit": "git add . && git-cz"
   },
