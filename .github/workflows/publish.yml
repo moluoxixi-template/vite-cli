@@ -85,6 +85,9 @@ jobs:
     steps:
       # 检出代码（包含已更新的版本号，如果是分支推送场景）
       - uses: actions/checkout@v6
+        # 确保获取最新提交而不是工作流的当前提交
+        with:
+          ref: main
       # 设置 pnpm 包管理器
       - uses: pnpm/action-setup@v4
       # 设置 Node.js 运行环境并配置 npm registry
