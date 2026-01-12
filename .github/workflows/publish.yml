@@ -1,8 +1,9 @@
 name: Publish
 
-# 基于分支和 tag 发布
-# - main 分支推送：自动版本号+1并发布
-# - v* tag 推送：直接发布（不更新版本号）
+# 发布工作流
+# 支持两种发布模式：
+# 1. main 分支推送：自动版本号+1并发布到 npm
+# 2. v* tag 推送：直接发布到 npm（不更新版本号，适合手动版本管理）
 on:
   push:
     branches:
@@ -14,30 +15,46 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  # 版本号+1，只在分支推送时运行（tag 推送时跳过）
+  # 版本号自增任务
+  # 仅在分支推送时运行（tag 推送时会被跳过）
+  # 自动将 package.json 中的版本号 patch 版本 +1，并提交回仓库
   bump-version:
+    # 只在分支推送时运行，tag 推送时跳过此任务
     if: github.ref_type == 'branch'
+    # 使用 Publish 环境进行部署保护，需要审批才能执行
+    environment: Publish
     runs-on: ubuntu-latest
+    # 需要写入权限，用于提交代码到仓库
     permissions:
       contents: write
     steps:
+      # 检出代码，需要 token 以获取 push 权限
       - uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
       
+      # 设置 pnpm 包管理器
       - uses: pnpm/action-setup@v4
+      # 设置 Node.js 运行环境
       - uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
       
+      # 配置 git 用户信息，用于后续提交代码
       - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
       
+      # 安装项目依赖
       - run: pnpm install
       
+      # 版本号自增并提交
+      # 1. 使用 pnpm version:patch 自动将版本号 patch 版本 +1（如 2.0.432 -> 2.0.433）
+      # 2. 读取更新后的版本号
+      # 3. 将 package.json 添加到暂存区
+      # 4. 提交更改，使用 [skip ci] 标记避免触发新的 CI 运行
+      # 5. 推送到仓库，使用 || exit 0 确保即使提交失败（如版本号未变化）也不会导致任务失败
       - name: Bump version and commit
         run: |
           pnpm version:patch
@@ -46,25 +63,43 @@ jobs:
           git commit -m "chore: bump version to $VERSION [skip ci]" || exit 0
           git push || exit 0
   
+  # 发布到 npm 任务
+  # 在版本号自增任务完成后执行，或者当版本号自增任务被跳过时（tag 推送场景）也执行
+  # 构建项目并发布到 npm 公共仓库
   release:
+    # 依赖版本号自增任务，等待其完成后再执行
     needs: bump-version
+    # 条件：无论版本号自增任务是成功还是被跳过，都执行发布任务
+    # - success: 版本号自增成功（分支推送场景）
+    # - skipped: 版本号自增被跳过（tag 推送场景）
     if: always() && (needs.bump-version.result == 'success' || needs.bump-version.result == 'skipped')
-    # Use Publish environment for deployment protection
+    # 使用 Publish 环境进行部署保护，需要审批才能执行
     environment: Publish
     runs-on: ubuntu-latest
+    # 权限配置
+    # - contents: read: 读取代码权限
+    # - id-token: write: 用于 npm 身份验证（OIDC）
     permissions:
       contents: read
       id-token: write
     steps:
+      # 检出代码（包含已更新的版本号，如果是分支推送场景）
       - uses: actions/checkout@v6
+      # 设置 pnpm 包管理器
       - uses: pnpm/action-setup@v4
+      # 设置 Node.js 运行环境并配置 npm registry
       - uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
+          # 配置 npm registry 为官方公共仓库
           registry-url: 'https://registry.npmjs.org'
-      # Ensure npm 11.5.1 or later is installed
+      # 确保使用最新版本的 npm（某些 npm 功能可能需要较新版本）
       - name: Update npm
         run: npm install -g npm@latest
+      # 安装项目依赖（包括构建依赖）
       - run: pnpm install
+      # 构建项目并发布到 npm
+      # prepublishOnly 脚本会自动执行构建（在 package.json 中配置）
+      # --no-git-checks: 跳过 git 检查，允许在工作流中发布（因为可能是在 CI 环境中）
       - run: pnpm publish:public --no-git-checks
 
