@@ -33,3 +33,5 @@ Thumbs.db
 *.tmp
 .cache
 
+# 依赖
+*-lock.*
