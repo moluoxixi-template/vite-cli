@@ -5,18 +5,18 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { generateProject } from '@/generators/project.ts'
-import type { ProjectConfigType } from '@/types/index.ts'
+import { generateProject } from '@/generators/project'
+import type { ProjectConfigType } from '@/types'
 import {
   findCatalogReferences,
   readPackageJson,
   scanAllImports,
-} from '@test/dependency-validator.ts'
+} from '@test/dependency-validator'
 import {
   cleanupTempDir,
   createTempDir,
-} from '@test/test-utils.ts'
-import { generateTestConfigs } from '@test/test-config-generator.ts'
+} from '@test/test-utils'
+import { generateTestConfigs } from '@test/test-config-generator'
 
 // 🔍 自动扫描生成测试配置（基于文件系统）
 const TEST_CONFIGS = generateTestConfigs()

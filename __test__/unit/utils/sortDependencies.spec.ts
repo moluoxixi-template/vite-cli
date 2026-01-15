@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { sortDependencies } from '@/utils/sortDependencies.ts'
+import { sortDependencies } from '@/utils/sortDependencies'
 
 describe('sortDependencies', () => {
   it('should sort dependencies alphabetically', () => {

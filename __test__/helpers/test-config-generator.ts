@@ -11,15 +11,15 @@ import type {
   ProjectConfigType,
   RouteModeType,
   UILibraryType,
-} from '@/types/index.ts'
+} from '@/types'
 import {
   FRAMEWORKS,
   MICRO_FRONTEND_ENGINES,
   PACKAGE_MANAGERS,
   ROUTE_MODES,
   UI_LIBRARIES,
-} from '@/constants/index.ts'
-import { featureToConfig, getRouteModeFeatures, scanAllFeatures } from '@/core/feature.ts'
+} from '@/constants'
+import { featureToConfig, getRouteModeFeatures, scanAllFeatures } from '@/core/feature'
 
 /**
  * 测试配置选项

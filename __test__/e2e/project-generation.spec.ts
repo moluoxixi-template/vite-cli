@@ -7,9 +7,9 @@ import path from 'node:path'
 import fs from 'fs-extra'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { execa } from 'execa'
-import { generateProject } from '@/generators/project.ts'
-import type { ProjectConfigType } from '@/types/index.ts'
-import { cleanupTempDir, createTempDir } from '@test/test-utils.ts'
+import { generateProject } from '@/generators/project'
+import type { ProjectConfigType } from '@/types'
+import { cleanupTempDir, createTempDir } from '@test/test-utils'
 
 /**
  * E2E 测试配置（选择几个代表性的配置进行完整测试）

@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { deepMerge } from '@/utils/deepMerge.ts'
+import { deepMerge } from '@/utils/deepMerge'
 
 describe('deepMerge', () => {
   it('should merge two simple objects', () => {

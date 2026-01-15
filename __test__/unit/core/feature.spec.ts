@@ -5,9 +5,9 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { featureToConfig, getRouteModeFeatures, scanAllFeatures } from '@/core/feature.ts'
-import type { FrameworkType } from '@/types/index.ts'
-import { FRAMEWORKS } from '@/constants/index.ts'
+import { featureToConfig, getRouteModeFeatures, scanAllFeatures } from '@/core/feature'
+import type { FrameworkType } from '@/types'
+import { FRAMEWORKS } from '@/constants'
 
 describe('featureToConfig', () => {
   it('should map UI library features for Vue', () => {

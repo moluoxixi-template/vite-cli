@@ -4,14 +4,14 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { generateProject } from '@/generators/project.ts'
-import type { ProjectConfigType } from '@/types/index.ts'
+import { generateProject } from '@/generators/project'
+import type { ProjectConfigType } from '@/types'
 import {
   findCatalogReferences,
   readPackageJson,
   validateDependencies,
-} from '@test/dependency-validator.ts'
-import { cleanupTempDir, createTempDir } from '@test/test-utils.ts'
+} from '@test/dependency-validator'
+import { cleanupTempDir, createTempDir } from '@test/test-utils'
 
 describe('e2E Dependency Validation Tests', () => {
   describe('catalog References Resolution', () => {
