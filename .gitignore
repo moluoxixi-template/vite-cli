@@ -12,8 +12,9 @@ dist
 *.tsbuildinfo
 
 # 测试产物
-test
 test-verify
+test-output
+coverage
 
 # 文档
 docs

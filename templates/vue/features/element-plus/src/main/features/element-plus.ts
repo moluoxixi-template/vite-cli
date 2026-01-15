@@ -7,7 +7,7 @@ import type { App } from 'vue'
 import type { Router } from 'vue-router'
 
 // 导入 Element Plus 样式
-import '@/assets/styles/element/index.scss'
+import '@/assets/styles/element.scss'
 
 /** 执行顺序 - 样式应该尽早加载 */
 export const order = 5

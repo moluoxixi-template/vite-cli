@@ -1,0 +1,27 @@
+{
+  "name": "@moluoxixi/vite-cli-test",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Test suite for @moluoxixi/create-app",
+  "scripts": {
+    "test": "vitest",
+    "test:unit": "vitest run unit",
+    "test:integration": "vitest run integration",
+    "test:e2e": "vitest run e2e",
+    "test:watch": "vitest watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "catalog:type",
+    "@types/node": "catalog:type",
+    "@vitest/coverage-v8": "^4.0.17",
+    "@vitest/ui": "^4.0.17",
+    "execa": "^9.6.1",
+    "fs-extra": "catalog:build",
+    "typescript": "catalog:dev",
+    "vitest": "^4.0.17"
+  }
+}

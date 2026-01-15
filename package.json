@@ -18,7 +18,7 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc --build tsconfig.build.json",
-    "test": "tsx src/test.ts",
+    "test": "pnpm --filter @moluoxixi/vite-cli-test test:all",
     "type-check": "tsc --noEmit",
     "lint:eslint": "eslint . --fix",
     "submodule:update": "git submodule update --init --recursive --remote",
@@ -74,14 +74,13 @@
     "ora": "catalog:build"
   },
   "devDependencies": {
-    "vite": "catalog:dev",
     "@commitlint/cli": "catalog:dev",
     "@commitlint/config-conventional": "catalog:dev",
     "@moluoxixi/eslint-config": "catalog:dev",
     "@types/fs-extra": "catalog:type",
     "@types/inquirer": "catalog:type",
-    "@vue-macros/volar": "catalog:type",
     "@types/node": "catalog:type",
+    "@vue-macros/volar": "catalog:type",
     "commitizen": "catalog:dev",
     "cz-customizable": "catalog:dev",
     "eslint": "catalog:dev",

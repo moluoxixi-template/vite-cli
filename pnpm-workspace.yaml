@@ -5,6 +5,7 @@ gitChecks: false
 registry: https://registry.npmjs.org/
 
 packages:
+  - __test__
   - templates/common/base
   - templates/common/features/*
   - templates/vue/base

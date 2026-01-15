@@ -15,10 +15,30 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
+  # 测试任务
+  # 在所有发布操作之前运行，确保代码质量
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # 检出代码
+      - uses: actions/checkout@v6
+      # 设置 pnpm 包管理器
+      - uses: pnpm/action-setup@v4
+      # 设置 Node.js 运行环境
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+      # 安装项目依赖
+      - run: pnpm install
+      # 运行所有测试（单元测试、集成测试、E2E 测试）
+      - run: pnpm test
+
   # 版本号自增任务
   # 仅在分支推送时运行（tag 推送时会被跳过）
   # 自动将 package.json 中的版本号 patch 版本 +1，并提交回仓库
   bump-version:
+    # 依赖测试任务，确保测试通过后才执行
+    needs: test
     # 只在分支推送时运行，tag 推送时跳过此任务
     if: github.ref_type == 'branch'
     # 使用 Publish 环境进行部署保护，需要审批才能执行
@@ -32,23 +52,23 @@ jobs:
       - uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       # 设置 pnpm 包管理器
       - uses: pnpm/action-setup@v4
       # 设置 Node.js 运行环境
       - uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
-      
+
       # 配置 git 用户信息，用于后续提交代码
       - name: Configure git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-      
+
       # 安装项目依赖
       - run: pnpm install
-      
+
       # 版本号自增并提交
       # 1. 使用 pnpm version:patch 自动将版本号 patch 版本 +1（如 2.0.432 -> 2.0.433）
       # 2. 读取更新后的版本号
@@ -62,13 +82,13 @@ jobs:
           git add package.json
           git commit -m "chore: bump version to $VERSION [skip ci]" || exit 0
           git push || exit 0
-  
+
   # 发布到 npm 任务
   # 在版本号自增任务完成后执行，或者当版本号自增任务被跳过时（tag 推送场景）也执行
   # 构建项目并发布到 npm 公共仓库
   release:
-    # 依赖版本号自增任务，等待其完成后再执行
-    needs: bump-version
+    # 依赖测试任务和版本号自增任务，确保测试通过后才执行
+    needs: [test, bump-version]
     # 条件：无论版本号自增任务是成功还是被跳过，都执行发布任务
     # - success: 版本号自增成功（分支推送场景）
     # - skipped: 版本号自增被跳过（tag 推送场景）
@@ -105,4 +125,3 @@ jobs:
       # prepublishOnly 脚本会自动执行构建（在 package.json 中配置）
       # --no-git-checks: 跳过 git 检查，允许在工作流中发布（因为可能是在 CI 环境中）
       - run: pnpm publish:public --no-git-checks
-
