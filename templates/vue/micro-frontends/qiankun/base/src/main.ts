@@ -5,15 +5,15 @@
 
 import { qiankunWindow, renderWithQiankun } from 'vite-plugin-qiankun/dist/helper'
 import { createApp } from 'vue'
-import directives from '@/directives'
-import { store } from '@/stores'
+import directives from './directives'
+import { store } from './stores'
 import App from './App.vue'
 import getRouter from './router'
-import { setupFeatures } from './main/index'
+import { setupFeatures } from './main'
 
 // Import styles
-import '@/assets/styles/main.scss'
-import '@/assets/fonts/index.css'
+import './assets/styles/main.scss'
+import './assets/fonts/index.css'
 
 let app: ReturnType<typeof createApp> | null = null
 
