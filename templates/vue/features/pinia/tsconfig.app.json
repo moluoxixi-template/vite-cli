@@ -6,7 +6,11 @@
     "types": [
       "vite/client"
     ],
-    "composite": true
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "vueCompilerOptions": {
     "plugins": [

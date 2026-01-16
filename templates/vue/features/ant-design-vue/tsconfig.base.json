@@ -6,12 +6,6 @@
   "compilerOptions": {
     "target": "ESNext",
     "jsx": "preserve",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    },
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "allowJs": true,
@@ -28,5 +22,3 @@
     "declaration": true
   }
 }
-
-
