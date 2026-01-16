@@ -10,9 +10,9 @@ import type {
   ListResponseType,
   PaginationParamsType,
   UpdateExampleParamsType,
-} from '../types'
+} from '@/apis/types'
 
-import request from '../request'
+import request from '@/apis/request'
 
 /**
  * 获取示例列表

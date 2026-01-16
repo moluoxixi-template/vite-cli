@@ -3,9 +3,9 @@
  * 用户相关 API
  */
 
-import type { ApiResponseType, LoginParamsType, LoginResponseType, UserInfoType } from '../types'
+import type { ApiResponseType, LoginParamsType, LoginResponseType, UserInfoType } from '@/apis/types'
 
-import request from '../request'
+import request from '@/apis/request'
 
 /**
  * 用户登录

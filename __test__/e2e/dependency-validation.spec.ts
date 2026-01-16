@@ -226,10 +226,10 @@ describe('e2E Dependency Validation Tests', () => {
 
         const result = await validateDependencies(projectDir, {
           required: [
-            '@moluoxixi/vite-config',
             '@moluoxixi/ajax-package',
           ],
           devRequired: [
+            '@moluoxixi/vite-config',
             '@moluoxixi/eslint-config',
           ],
         })

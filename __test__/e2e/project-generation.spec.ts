@@ -59,7 +59,7 @@ const E2E_TEST_CONFIGS = [
   // },
 ]
 
-describe('e2E Project Generation Tests', () => {
+describe('e2e 项目生成测试', () => {
   for (const testConfig of E2E_TEST_CONFIGS) {
     describe(testConfig.name, () => {
       let projectDir: string
@@ -78,38 +78,40 @@ describe('e2E Project Generation Tests', () => {
         await cleanupTempDir(projectDir)
       })
 
-      it('should have package.json', () => {
+      it('应该存在 package.json 文件', () => {
         const packageJsonPath = path.join(projectDir, 'package.json')
         expect(fs.existsSync(packageJsonPath)).toBe(true)
       })
 
-      it('should install dependencies successfully', async () => {
+      it('应该成功安装依赖', async () => {
         const { exitCode, stderr } = await execa('pnpm', ['install'], {
           cwd: projectDir,
           reject: false,
         })
 
         if (exitCode !== 0) {
-          console.error('Install failed:', stderr)
+          console.error('依赖安装失败:', stderr)
         }
 
         expect(exitCode).toBe(0)
       }, 180000) // 3 minutes timeout
 
-      it('should pass type checking', async () => {
-        const { exitCode, stderr } = await execa('pnpm', ['type-check'], {
+      it('应该通过类型检查', async () => {
+        const { exitCode, stdout, stderr } = await execa('pnpm', ['type-check'], {
           cwd: projectDir,
           reject: false,
         })
 
         if (exitCode !== 0) {
-          console.error('Type check failed:', stderr)
+          console.error('类型检查失败:')
+          console.error('标准输出:', stdout)
+          console.error('错误输出:', stderr)
         }
 
         expect(exitCode).toBe(0)
       }, 120000)
 
-      it('should pass linting', async () => {
+      it('应该通过代码检查', async () => {
         if (!testConfig.config.eslint) {
           return
         }
@@ -120,20 +122,22 @@ describe('e2E Project Generation Tests', () => {
         })
 
         if (exitCode !== 0) {
-          console.error('Lint failed:', stderr)
+          console.error('代码检查失败:', stderr)
         }
 
         expect(exitCode).toBe(0)
       }, 120000)
 
-      it('should build successfully', async () => {
-        const { exitCode, stderr } = await execa('pnpm', ['build'], {
+      it('应该成功构建', async () => {
+        const { exitCode, stdout, stderr } = await execa('pnpm', ['build'], {
           cwd: projectDir,
           reject: false,
         })
 
         if (exitCode !== 0) {
-          console.error('Build failed:', stderr)
+          console.error('构建失败:')
+          console.error('标准输出:', stdout)
+          console.error('错误输出:', stderr)
         }
 
         expect(exitCode).toBe(0)
@@ -143,11 +147,11 @@ describe('e2E Project Generation Tests', () => {
         expect(fs.existsSync(distDir)).toBe(true)
       }, 180000) // 3 minutes timeout
 
-      it('should have valid build output', async () => {
+      it('应该有有效的构建输出', async () => {
         const distDir = path.join(projectDir, 'dist')
 
         if (!fs.existsSync(distDir)) {
-          throw new Error('dist directory not found')
+          throw new Error('未找到 dist 目录')
         }
 
         const files = await fs.readdir(distDir)
@@ -160,7 +164,7 @@ describe('e2E Project Generation Tests', () => {
         expect(hasAssets).toBe(true)
       })
 
-      it('should have correct project metadata', async () => {
+      it('应该有正确的项目元数据', async () => {
         const packageJson = await fs.readJson(path.join(projectDir, 'package.json'))
 
         expect(packageJson.name).toBe(testConfig.config.projectName)

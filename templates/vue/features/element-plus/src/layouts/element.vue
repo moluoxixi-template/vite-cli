@@ -12,7 +12,7 @@
         >
           <div class="w-full h-full bg-primary flex justify-center">
             <ElMenu :default-active="defaultTab" :ellipsis="false" mode="horizontal" router>
-              <SubMenu menu-height="60" :routes="routes" />
+              <SubMenu :menu-height="60" :routes="routes as any" />
             </ElMenu>
           </div>
         </ElHeader>

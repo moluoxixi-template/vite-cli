@@ -12,6 +12,7 @@
         "src/*"
       ]
     },
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "allowJs": true,
     "strict": true,

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { store } from '../index.ts'
+import { store } from '@/stores'
 
 /**
  * 系统对象

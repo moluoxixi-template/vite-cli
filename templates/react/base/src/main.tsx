@@ -7,7 +7,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import { createRouter } from '@/router'
-import { setupFeatures } from './main/index'
+import { setupFeatures } from '@/main'
 
 // Import styles
 import '@/assets/styles/main.scss'

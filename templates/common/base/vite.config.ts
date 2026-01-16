@@ -5,8 +5,8 @@ import { loadEnv, mergeConfig } from 'vite'
 import process from 'node:process'
 import { loadFeatureConfigs } from './vite/index.ts'
 
-const config: ReturnType<typeof ViteConfig> = ViteConfig(({ mode }) => {
-  const env = loadEnv(mode!, process.cwd())
+const config = ViteConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd())
   const viteEnv = wrapperEnv(env)
   const rootPath = path.resolve()
   const appCode = viteEnv.VITE_APP_CODE

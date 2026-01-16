@@ -38,7 +38,7 @@ jobs:
   # 自动将 package.json 中的版本号 patch 版本 +1，并提交回仓库
   bump-version:
     # 依赖测试任务，确保测试通过后才执行
-    needs: test
+    needs: [test]
     # 只在分支推送时运行，tag 推送时跳过此任务
     if: github.ref_type == 'branch'
     # 使用 Publish 环境进行部署保护，需要审批才能执行
@@ -87,8 +87,8 @@ jobs:
   # 在版本号自增任务完成后执行，或者当版本号自增任务被跳过时（tag 推送场景）也执行
   # 构建项目并发布到 npm 公共仓库
   release:
-    # 依赖测试任务和版本号自增任务，确保测试通过后才执行
-    needs: [test, bump-version]
+    # 依赖版本号自增任务，确保测试通过且版本号递增后才执行
+    needs: [bump-version]
     # 条件：无论版本号自增任务是成功还是被跳过，都执行发布任务
     # - success: 版本号自增成功（分支推送场景）
     # - skipped: 版本号自增被跳过（tag 推送场景）
