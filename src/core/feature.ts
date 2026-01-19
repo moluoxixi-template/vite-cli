@@ -116,10 +116,13 @@ export function scanAllFeatures(framework: FrameworkType): string[] {
  * @returns 布尔类型 feature 名称数组
  */
 export function filterBooleanFeatures(features: string[]): string[] {
-  const allUiLibraries = Object.values(UI_LIBRARIES).flat()
+  // 使用 Set 提高查找性能
+  const allUiLibraries = new Set(Object.values(UI_LIBRARIES).flat())
+  const routeModesSet = new Set(ROUTE_MODES)
+
   return features.filter(
-    feature => !allUiLibraries.includes(feature as UILibraryType)
-      && !ROUTE_MODES.includes(feature as RouteModeType),
+    feature => !allUiLibraries.has(feature as UILibraryType)
+      && !routeModesSet.has(feature as RouteModeType),
   )
 }
 

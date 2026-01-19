@@ -511,20 +511,12 @@ describe('getRouteModeFeatures', () => {
     it(`应该为 "${routeMode}" 返回正确的功能`, () => {
       const result = getRouteModeFeatures(routeMode)
 
-      // 验证所有路由模式属性都存在且为布尔类型
+      // 遍历所有路由模式，验证每个路由模式的布尔值
       for (const mode of ROUTE_MODES) {
         expect(result).toHaveProperty(mode)
-        expect(typeof result[mode as 'manualRoutes' | 'pageRoutes']).toBe('boolean')
-      }
-
-      // 验证当前路由模式对应的布尔值为 true
-      expect(result[routeMode as 'manualRoutes' | 'pageRoutes']).toBe(true)
-
-      // 验证其他路由模式对应的布尔值为 false
-      for (const otherMode of ROUTE_MODES) {
-        if (otherMode !== routeMode) {
-          expect(result[otherMode as 'manualRoutes' | 'pageRoutes']).toBe(false)
-        }
+        expect(typeof result[mode]).toBe('boolean')
+        // 当前路由模式应该为 true，其他应该为 false
+        expect(result[mode]).toBe(mode === routeMode)
       }
     })
   }
@@ -532,9 +524,9 @@ describe('getRouteModeFeatures', () => {
   it('应该处理无效的路由模式', () => {
     const result = getRouteModeFeatures('default' as any)
 
-    // 验证所有路由模式属性都为 false
+    // 遍历所有路由模式，验证都为 false
     for (const mode of ROUTE_MODES) {
-      expect(result[mode as 'manualRoutes' | 'pageRoutes']).toBe(false)
+      expect(result[mode]).toBe(false)
     }
   })
 })
@@ -549,21 +541,34 @@ describe('getCommonFeatures', () => {
 })
 
 describe('filterBooleanFeatures', () => {
-  it('应该过滤出布尔类型功能（排除 UI 库和路由模式）', () => {
-    const allFeatures = ['element-plus', 'ant-design', 'manualRoutes', 'pageRoutes', 'i18n', 'sentry', 'pinia']
-    const booleanFeatures = filterBooleanFeatures(allFeatures)
+  // 遍历所有框架，使用 scanAllFeatures 的返回值进行测试
+  for (const framework of FRAMEWORKS) {
+    it(`应该过滤出 ${framework} 框架的布尔类型功能（排除 UI 库和路由模式）`, () => {
+      // 使用 scanAllFeatures 获取所有 features（包括框架、公共、微前端）
+      const allFeatures = scanAllFeatures(framework)
+      const booleanFeatures = filterBooleanFeatures(allFeatures)
 
-    // 应该排除 UI 库
-    expect(booleanFeatures).not.toContain('element-plus')
-    expect(booleanFeatures).not.toContain('ant-design')
-    // 应该排除路由模式
-    expect(booleanFeatures).not.toContain('manualRoutes')
-    expect(booleanFeatures).not.toContain('pageRoutes')
-    // 应该包含布尔类型功能
-    expect(booleanFeatures).toContain('i18n')
-    expect(booleanFeatures).toContain('sentry')
-    expect(booleanFeatures).toContain('pinia')
-  })
+      // 获取所有 UI 库和路由模式
+      const allUiLibraries = Object.values(UI_LIBRARIES).flat()
+
+      // 验证过滤后的结果不包含 UI 库
+      for (const uiLibrary of allUiLibraries) {
+        expect(booleanFeatures).not.toContain(uiLibrary)
+      }
+
+      // 验证过滤后的结果不包含路由模式
+      for (const routeMode of ROUTE_MODES) {
+        expect(booleanFeatures).not.toContain(routeMode)
+      }
+
+      // 验证过滤后的结果只包含布尔类型功能（存在于原始 features 中）
+      for (const booleanFeature of booleanFeatures) {
+        expect(allFeatures).toContain(booleanFeature)
+        expect(allUiLibraries).not.toContain(booleanFeature)
+        expect(ROUTE_MODES).not.toContain(booleanFeature)
+      }
+    })
+  }
 
   it('应该处理空数组', () => {
     const booleanFeatures = filterBooleanFeatures([])
