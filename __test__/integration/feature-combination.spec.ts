@@ -65,7 +65,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           await cleanupTempDir(projectDir)
         })
 
-        it('应该只从自己的包导入（无跨模板导入）', async () => {
+        it(`应该只从自己的包导入（无跨模板导入）- ${testConfig.name}`, async () => {
           const imports = await scanAllImports(projectDir)
 
           // 找出所有跨模板的 import（不允许引用其他模板）
@@ -75,6 +75,10 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
             || imp.includes('../../../vue/')
             || imp.includes('../../../react/'),
           )
+
+          if (crossTemplateImports.length > 0) {
+            throw new Error(`发现 ${crossTemplateImports.length} 个跨模板导入:\n${crossTemplateImports.slice(0, 10).join('\n')}${crossTemplateImports.length > 10 ? `\n... 还有 ${crossTemplateImports.length - 10} 个` : ''}`)
+          }
 
           expect(crossTemplateImports).toEqual([])
         })
@@ -154,7 +158,7 @@ describe('模板验证与功能组合测试', () => {
       describe(template.name, () => {
         const sourceFiles = scanSourceFiles(template.path)
 
-        it(`应该有源代码文件 (${sourceFiles.length} 个文件)`, () => {
+        it(`应该有源代码文件 - ${template.name} (${sourceFiles.length} 个文件)`, () => {
           if (sourceFiles.length === 0) {
             console.log(`\n❌ No files found in: ${template.path}`)
             console.log(`   Exists: ${fs.existsSync(template.path)}`)
@@ -209,13 +213,13 @@ describe('模板验证与功能组合测试', () => {
           }
         }
 
-        it(`应该有有效的文件导入${fileImportErrors.length > 0 ? ` (${fileImportErrors.length} 个错误)` : ''}`, () => {
+        it(`应该有有效的文件导入 - ${template.name}${fileImportErrors.length > 0 ? ` (${fileImportErrors.length} 个错误)` : ' (通过)'}`, () => {
           if (fileImportErrors.length > 0) {
             throw new Error(`Found ${fileImportErrors.length} missing file imports:\n${fileImportErrors.join('\n')}`)
           }
         })
 
-        it(`所有包导入都应该在 package.json 中声明${packageImportErrors.length > 0 ? ` (${packageImportErrors.length} 个错误)` : ''}`, () => {
+        it(`所有包导入都应该在 package.json 中声明 - ${template.name}${packageImportErrors.length > 0 ? ` (${packageImportErrors.length} 个错误)` : ' (通过)'}`, () => {
           if (packageImportErrors.length > 0) {
             const summary = `Missing packages: ${Array.from(missingPackages).join(', ')}`
             throw new Error(`Found ${packageImportErrors.length} missing package declarations:\n${summary}\n\n${packageImportErrors.slice(0, 10).join('\n')}${packageImportErrors.length > 10 ? `\n... and ${packageImportErrors.length - 10} more` : ''}`)
