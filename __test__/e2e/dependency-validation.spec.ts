@@ -13,9 +13,9 @@ import {
 } from '@test/dependency-validator'
 import { cleanupTempDir, createTempDir } from '@test/test-utils'
 
-describe('e2E Dependency Validation Tests', () => {
-  describe('catalog References Resolution', () => {
-    it('should resolve all catalog references to actual versions in Vue project', async () => {
+describe('e2e 依赖验证测试', () => {
+  describe('目录引用解析', () => {
+    it('应该在 Vue 项目中解析所有目录引用为实际版本', async () => {
       const projectDir = await createTempDir('test-catalog-vue-')
 
       try {
@@ -51,7 +51,7 @@ describe('e2E Dependency Validation Tests', () => {
     }, 60000)
 
     // TODO: 启用 React 测试（当 React 模板准备好后）
-    it.skip('should resolve all catalog references to actual versions in React project', async () => {
+    it.skip('应该在 React 项目中解析所有目录引用为实际版本', async () => {
       const projectDir = await createTempDir('test-catalog-react-')
 
       try {
@@ -87,45 +87,8 @@ describe('e2E Dependency Validation Tests', () => {
     }, 60000)
   })
 
-  describe('monorepo Import Validation', () => {
-    it('should not have cross-template imports in Vue project', async () => {
-      const projectDir = await createTempDir('test-imports-vue-')
-
-      try {
-        const config: ProjectConfigType = {
-          framework: 'vue',
-          uiLibrary: 'element-plus',
-          routeMode: 'manualRoutes',
-          pinia: true,
-          manualRoutes: true,
-          pageRoutes: false,
-          i18n: true,
-          sentry: false,
-          eslint: true,
-          husky: true,
-          microFrontend: false,
-          packageManager: 'pnpm',
-          projectName: 'test-imports-vue',
-          description: 'Test project',
-          author: 'test',
-          targetDir: projectDir,
-        }
-
-        await generateProject(config)
-
-        // scanAllImports 会在集成测试中验证
-        // E2E 测试主要确保项目生成成功
-        const packageJson = await readPackageJson(projectDir)
-        expect(packageJson).toBeDefined()
-      }
-      finally {
-        await cleanupTempDir(projectDir)
-      }
-    }, 60000)
-  })
-
-  describe('conditional Dependencies', () => {
-    it('should not have ESLint deps when eslint is disabled', async () => {
+  describe('条件依赖', () => {
+    it('当禁用 eslint 时不应该有 ESLint 依赖', async () => {
       const projectDir = await createTempDir('test-no-eslint-')
 
       try {
@@ -161,7 +124,7 @@ describe('e2E Dependency Validation Tests', () => {
       }
     }, 60000)
 
-    it('should not have i18n deps when i18n is disabled', async () => {
+    it('当禁用 i18n 时不应该有 i18n 依赖', async () => {
       const projectDir = await createTempDir('test-no-i18n-')
 
       try {
@@ -198,8 +161,8 @@ describe('e2E Dependency Validation Tests', () => {
     }, 60000)
   })
 
-  describe('required Base Dependencies', () => {
-    it('should have @moluoxixi dependencies in all projects', async () => {
+  describe('必需的基础依赖', () => {
+    it('所有项目都应该有 @moluoxixi 依赖', async () => {
       const projectDir = await createTempDir('test-moluoxixi-deps-')
 
       try {

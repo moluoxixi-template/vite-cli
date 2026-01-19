@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { sortDependencies } from '@/utils/sortDependencies'
 
 describe('sortDependencies', () => {
-  it('should sort dependencies alphabetically', () => {
+  it('应该按字母顺序排序依赖', () => {
     const deps = {
       'vue': '^3.0.0',
       'axios': '^1.0.0',
@@ -20,21 +20,21 @@ describe('sortDependencies', () => {
     expect(keys).toEqual(['axios', 'pinia', 'vue', 'vue-router'])
   })
 
-  it('should handle empty object', () => {
+  it('应该处理空对象', () => {
     const deps = {}
     const sorted = sortDependencies(deps)
 
     expect(sorted).toEqual({})
   })
 
-  it('should handle single dependency', () => {
+  it('应该处理单个依赖', () => {
     const deps = { vue: '^3.0.0' }
     const sorted = sortDependencies(deps)
 
     expect(sorted).toEqual({ vue: '^3.0.0' })
   })
 
-  it('should preserve dependency values', () => {
+  it('应该保留依赖值', () => {
     const deps = {
       'package-z': '^1.0.0',
       'package-a': '^2.0.0',
@@ -50,7 +50,7 @@ describe('sortDependencies', () => {
     })
   })
 
-  it('should handle scoped packages', () => {
+  it('应该处理作用域包', () => {
     const deps = {
       'vue': '^3.0.0',
       '@vue/compiler-sfc': '^3.0.0',
@@ -64,7 +64,7 @@ describe('sortDependencies', () => {
     expect(keys).toEqual(['@types/node', '@vue/compiler-sfc', 'axios', 'vue'])
   })
 
-  it('should not modify the original object', () => {
+  it('不应该修改原始对象', () => {
     const deps = {
       vue: '^3.0.0',
       axios: '^1.0.0',

@@ -24,6 +24,9 @@ const config = ViteConfig(({ mode }) => {
     autoComponent: true,
     viteConfig: mergeConfig(
       {
+        build: {
+          outDir: 'dist',
+        },
         server: {
           proxy: {
             '/api': {

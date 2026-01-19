@@ -36,7 +36,7 @@ function scanFeatures(baseDir: string): string[] {
  * 获取公共 features 列表（从文件系统扫描）
  * @returns 公共 feature 名称数组
  */
-function getCommonFeatures(): string[] {
+export function getCommonFeatures(): string[] {
   const templatesDir = getTemplatesDir()
   const commonFeaturesDir = path.join(templatesDir, 'common', 'features')
   return scanFeatures(commonFeaturesDir)
@@ -47,7 +47,7 @@ function getCommonFeatures(): string[] {
  * @param framework 框架类型
  * @returns 框架 feature 名称数组
  */
-function getFrameworkFeatures(framework: FrameworkType): string[] {
+export function getFrameworkFeatures(framework: FrameworkType): string[] {
   const templatesDir = getTemplatesDir()
   const frameworkFeaturesDir = path.join(templatesDir, framework, 'features')
   return scanFeatures(frameworkFeaturesDir)
@@ -58,7 +58,7 @@ function getFrameworkFeatures(framework: FrameworkType): string[] {
  * @param framework 框架类型
  * @returns 微前端引擎名称数组
  */
-function getMicroFrontendEngines(framework: FrameworkType): string[] {
+export function getMicroFrontendEngines(framework: FrameworkType): string[] {
   const templatesDir = getTemplatesDir()
   const microFrontendsDir = path.join(templatesDir, framework, 'micro-frontends')
   return scanFeatures(microFrontendsDir)
@@ -69,29 +69,58 @@ function getMicroFrontendEngines(framework: FrameworkType): string[] {
 // ============================================================================
 
 /**
- * 扫描所有 features（框架的 + 公共的）
+ * 扫描所有 features（框架的 + 公共的 + 微前端的）
  * @param framework 框架类型
  * @returns 所有 feature 名称数组
  */
 export function scanAllFeatures(framework: FrameworkType): string[] {
-  const frameworkDir = path.join(getTemplatesDir(), framework, 'features')
-  const commonDir = path.join(getTemplatesDir(), 'common', 'features')
+  const templatesDir = getTemplatesDir()
+  const frameworkDir = path.join(templatesDir, framework, 'features')
+  const commonDir = path.join(templatesDir, 'common', 'features')
 
   const features: string[] = []
 
+  // 扫描框架 features
   if (fs.existsSync(frameworkDir)) {
-    features.push(...fs.readdirSync(frameworkDir).filter(f =>
-      fs.statSync(path.join(frameworkDir, f)).isDirectory(),
-    ))
+    features.push(...scanFeatures(frameworkDir))
   }
 
+  // 扫描公共 features
   if (fs.existsSync(commonDir)) {
-    features.push(...fs.readdirSync(commonDir).filter(f =>
-      fs.statSync(path.join(commonDir, f)).isDirectory(),
-    ))
+    features.push(...scanFeatures(commonDir))
   }
 
-  return features
+  // 扫描微前端 features
+  const microFrontendsDir = path.join(templatesDir, framework, 'micro-frontends')
+  if (fs.existsSync(microFrontendsDir)) {
+    const engines = getMicroFrontendEngines(framework)
+    for (const engine of engines) {
+      const microFrontendFeaturesPath = path.join(
+        microFrontendsDir,
+        engine,
+        'features',
+      )
+      if (fs.existsSync(microFrontendFeaturesPath)) {
+        features.push(...scanFeatures(microFrontendFeaturesPath))
+      }
+    }
+  }
+
+  // 去重并返回
+  return [...new Set(features)]
+}
+
+/**
+ * 过滤出布尔类型功能（排除 UI 库和路由模式）
+ * @param features feature 名称数组
+ * @returns 布尔类型 feature 名称数组
+ */
+export function filterBooleanFeatures(features: string[]): string[] {
+  const allUiLibraries = Object.values(UI_LIBRARIES).flat()
+  return features.filter(
+    feature => !allUiLibraries.includes(feature as UILibraryType)
+      && !ROUTE_MODES.includes(feature as RouteModeType),
+  )
 }
 
 /**
@@ -99,12 +128,12 @@ export function scanAllFeatures(framework: FrameworkType): string[] {
  * 注意：大部分情况下 feature 名称 === 配置名称
  * @param feature feature 名称
  * @param _framework 框架类型（保留参数以保持接口兼容性）
- * @returns 配置键值对，如果无法映射则返回 null
+ * @returns 配置键值对
  */
 export function featureToConfig(
   feature: string,
   _framework: FrameworkType,
-): { key: string, value: string | boolean } | null {
+): { key: string, value: string | boolean } {
   // UI 库：配置键是 uiLibrary，值是 feature 名称
   // 从常量中获取所有 UI 库列表（合并所有框架的 UI 库）
   const allUiLibraries = Object.values(UI_LIBRARIES).flat()
@@ -117,20 +146,9 @@ export function featureToConfig(
     return { key: 'routeMode', value: feature }
   }
 
-  // 布尔类型的 features：配置名 === feature 名
-  const booleanFeatures = [
-    'eslint',
-    'i18n',
-    'sentry',
-    'pinia',
-    'zustand',
-    'husky',
-  ]
-  if (booleanFeatures.includes(feature)) {
-    return { key: feature, value: true }
-  }
-
-  return null
+  // 其他所有情况都视为布尔类型的 features：配置名 === feature 名
+  // 除了 UI 库、路由模式之外，其他都是布尔类型
+  return { key: feature, value: true }
 }
 
 // ============================================================================
@@ -146,12 +164,15 @@ export function getRouteModeFeatures(routeMode: RouteModeType): {
   manualRoutes: boolean
   pageRoutes: boolean
 } {
-  const manualRoutesValue = ROUTE_MODES.find(m => m === 'manualRoutes')!
-  const pageRoutesValue = ROUTE_MODES.find(m => m === 'pageRoutes')!
-  return {
-    manualRoutes: routeMode === manualRoutesValue,
-    pageRoutes: routeMode === pageRoutesValue,
+  // 使用常量确保类型安全，避免硬编码字符串
+  // 遍历 ROUTE_MODES 数组，初始化所有路由模式为 false
+  const result: Record<RouteModeType, boolean> = {} as Record<RouteModeType, boolean>
+
+  for (const mode of ROUTE_MODES) {
+    result[mode] = mode === routeMode
   }
+
+  return result as { manualRoutes: boolean, pageRoutes: boolean }
 }
 
 // ============================================================================
@@ -268,30 +289,4 @@ export function renderMicroFrontendFeatures(
 export function validateMicroFrontendEngine(framework: FrameworkType, engine: string): boolean {
   const availableEngines = getMicroFrontendEngines(framework)
   return availableEngines.includes(engine)
-}
-
-/**
- * 获取可用的公共 features（用于测试和文档生成）
- * @returns 公共 feature 名称数组
- */
-export function getAvailableCommonFeatures(): string[] {
-  return getCommonFeatures()
-}
-
-/**
- * 获取可用的框架 features（用于测试和文档生成）
- * @param framework 框架类型
- * @returns 框架 feature 名称数组
- */
-export function getAvailableFrameworkFeatures(framework: FrameworkType): string[] {
-  return getFrameworkFeatures(framework)
-}
-
-/**
- * 获取可用的微前端引擎（用于测试和文档生成）
- * @param framework 框架类型
- * @returns 微前端引擎名称数组
- */
-export function getAvailableMicroFrontendEngines(framework: FrameworkType): string[] {
-  return getMicroFrontendEngines(framework)
 }

@@ -397,14 +397,14 @@ function scanTemplates(): Array<{ name: string, path: string, packageJsonPath: s
   return templates
 }
 
-describe('template Integrity Tests', () => {
+describe('模板完整性测试', () => {
   const templates = scanTemplates()
 
   for (const template of templates) {
     describe(template.name, () => {
       const sourceFiles = scanSourceFiles(template.path)
 
-      it('should have source files', () => {
+      it('应该有源代码文件', () => {
         if (sourceFiles.length === 0) {
           console.log(`\n❌ No files found in: ${template.path}`)
           console.log(`   Exists: ${fs.existsSync(template.path)}`)
@@ -416,7 +416,7 @@ describe('template Integrity Tests', () => {
         expect(sourceFiles.length).toBeGreaterThan(0)
       })
 
-      it('should have valid file imports (relative and alias)', () => {
+      it('应该有有效的文件导入（相对路径和别名）', () => {
         const errors: string[] = []
 
         for (const file of sourceFiles) {
@@ -444,7 +444,7 @@ describe('template Integrity Tests', () => {
         }
       })
 
-      it('should have all package imports declared in package.json', () => {
+      it('所有包导入都应该在 package.json 中声明', () => {
         const errors: string[] = []
         const missingPackages = new Set<string>()
 
@@ -481,7 +481,7 @@ describe('template Integrity Tests', () => {
     })
   }
 
-  it('should have scanned all expected templates', () => {
+  it('应该扫描所有预期的模板', () => {
     const templateNames = templates.map(t => t.name)
 
     // 至少应该有这些模板

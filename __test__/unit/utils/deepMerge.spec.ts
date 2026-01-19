@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { deepMerge } from '@/utils/deepMerge'
 
 describe('deepMerge', () => {
-  it('should merge two simple objects', () => {
+  it('应该合并两个简单对象', () => {
     const target = { a: 1, b: 2 }
     const source = { b: 3, c: 4 }
     const result = deepMerge(target, source)
@@ -14,7 +14,7 @@ describe('deepMerge', () => {
     expect(result).toEqual({ a: 1, b: 3, c: 4 })
   })
 
-  it('should merge nested objects', () => {
+  it('应该合并嵌套对象', () => {
     const target = { a: { x: 1, y: 2 } }
     const source = { a: { y: 3, z: 4 } }
     const result = deepMerge(target, source)
@@ -22,7 +22,7 @@ describe('deepMerge', () => {
     expect(result).toEqual({ a: { x: 1, y: 3, z: 4 } })
   })
 
-  it('should merge and deduplicate arrays', () => {
+  it('应该合并并去重数组', () => {
     const target = { arr: [1, 2, 3] }
     const source = { arr: [4, 5] }
     const result = deepMerge(target, source)
@@ -31,7 +31,7 @@ describe('deepMerge', () => {
     expect(result).toEqual({ arr: [1, 2, 3, 4, 5] })
   })
 
-  it('should deduplicate arrays with same values', () => {
+  it('应该对具有相同值的数组去重', () => {
     const target = { arr: [1, 2, 3] }
     const source = { arr: [2, 3, 4] }
     const result = deepMerge(target, source)
@@ -40,7 +40,7 @@ describe('deepMerge', () => {
     expect(result).toEqual({ arr: [1, 2, 3, 4] })
   })
 
-  it('should handle deep nested objects', () => {
+  it('应该处理深层嵌套对象', () => {
     const target = {
       level1: {
         level2: {
@@ -74,7 +74,7 @@ describe('deepMerge', () => {
     })
   })
 
-  it('should handle null and undefined', () => {
+  it('应该处理 null 和 undefined', () => {
     const target = { a: null, b: undefined }
     const source = { b: 2, c: 3 }
     const result = deepMerge(target, source)
@@ -82,7 +82,7 @@ describe('deepMerge', () => {
     expect(result).toEqual({ a: null, b: 2, c: 3 })
   })
 
-  it('should not modify the original objects', () => {
+  it('不应该修改原始对象', () => {
     const target = { a: 1, nested: { x: 1 } }
     const source = { b: 2, nested: { y: 2 } }
     const originalTarget = JSON.parse(JSON.stringify(target))
@@ -94,7 +94,7 @@ describe('deepMerge', () => {
     expect(source).toEqual(originalSource)
   })
 
-  it('should handle empty objects', () => {
+  it('应该处理空对象', () => {
     const target = {}
     const source = { a: 1 }
     const result = deepMerge(target, source)
@@ -102,7 +102,7 @@ describe('deepMerge', () => {
     expect(result).toEqual({ a: 1 })
   })
 
-  it('should merge package.json-like objects', () => {
+  it('应该合并类似 package.json 的对象', () => {
     const target = {
       dependencies: {
         vue: '^3.0.0',
