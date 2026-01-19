@@ -587,37 +587,47 @@ describe('renderCommonFeatures', () => {
     vi.clearAllMocks()
   })
 
-  it('应该渲染配置中为 true 的公共功能', () => {
-    const config = createTestConfig({
-      eslint: true,
-      husky: true,
-      i18n: false,
-    })
-    const targetDir = '/tmp/test'
+  it('应该渲染配置中为 true 且存在于文件系统的公共功能', () => {
+    const availableFeatures = getCommonFeatures()
+    const booleanFeatures = filterBooleanFeatures(availableFeatures)
 
-    renderCommonFeatures(config, targetDir)
+    for (const testFeature of booleanFeatures) {
+      const config = createTestConfig({
+        [testFeature]: true,
+      })
+      const targetDir = '/tmp/test'
 
-    // 验证 renderTemplate 被调用（具体调用次数取决于实际存在的 features）
-    expect(renderTemplate).toHaveBeenCalled()
+      vi.clearAllMocks()
+      renderCommonFeatures(config, targetDir)
+
+      // 验证 renderTemplate 被调用，且调用了该功能的路径
+      expect(renderTemplate).toHaveBeenCalled()
+      const calls = vi.mocked(renderTemplate).mock.calls
+      const featurePath = calls.find(call => call[0]?.includes(testFeature) && call[0]?.includes('common'))
+      expect(featurePath).toBeDefined()
+    }
   })
 
   it('不应该渲染配置中为 false 的公共功能', () => {
-    const config = createTestConfig({
-      eslint: false,
-      husky: false,
-    })
-    const targetDir = '/tmp/test'
+    const availableFeatures = getCommonFeatures()
+    const booleanFeatures = filterBooleanFeatures(availableFeatures)
 
-    renderCommonFeatures(config, targetDir)
+    for (const testFeature of booleanFeatures) {
+      const config = createTestConfig({
+        [testFeature]: false,
+      })
+      const targetDir = '/tmp/test'
 
-    // 验证 renderTemplate 的调用参数中不包含 false 的功能路径
-    const calls = vi.mocked(renderTemplate).mock.calls
-    const eslintPath = calls.find(call => call[0]?.includes('eslint'))
-    const huskyPath = calls.find(call => call[0]?.includes('husky'))
+      vi.clearAllMocks()
+      renderCommonFeatures(config, targetDir)
 
-    // eslint 和 husky 设置为 false，不应该被渲染
-    expect(eslintPath).toBeUndefined()
-    expect(huskyPath).toBeUndefined()
+      // 验证 renderTemplate 的调用参数中不包含 false 的功能路径
+      const calls = vi.mocked(renderTemplate).mock.calls
+      const featurePath = calls.find(call => call[0]?.includes(testFeature) && call[0]?.includes('common'))
+
+      // 设置为 false 的功能不应该被渲染
+      expect(featurePath).toBeUndefined()
+    }
   })
 
   it('不应该渲染配置中为 true 但不存在于文件系统的公共功能', () => {

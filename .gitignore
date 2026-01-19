@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # 构建产物
+typings
 dist
 *.local
 *.tsbuildinfo

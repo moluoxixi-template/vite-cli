@@ -7,13 +7,13 @@
  * @param source 源对象
  * @returns 合并后的对象
  */
-export function deepMerge<T extends Record<string, unknown>>(
-  target: T,
-  source: Partial<T>,
-): T {
+export function deepMerge(
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+): Record<string, unknown> {
   const result = { ...target }
 
-  for (const key of Object.keys(source) as Array<keyof T>) {
+  for (const key of Object.keys(source)) {
     const targetValue = result[key]
     const sourceValue = source[key]
 
@@ -26,15 +26,15 @@ export function deepMerge<T extends Record<string, unknown>>(
       result[key] = deepMerge(
         targetValue as Record<string, unknown>,
         sourceValue as Record<string, unknown>,
-      ) as T[keyof T]
+      )
     }
     else if (Array.isArray(targetValue) && Array.isArray(sourceValue)) {
       // 合并数组并去重
-      result[key] = [...new Set([...targetValue, ...sourceValue])] as T[keyof T]
+      result[key] = [...new Set([...targetValue, ...sourceValue])]
     }
     else {
       // 直接覆盖
-      result[key] = sourceValue as T[keyof T]
+      result[key] = sourceValue
     }
   }
 
