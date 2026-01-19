@@ -105,3 +105,12 @@ export const PACKAGE_MANAGER_OPTIONS = [
  * 包管理器列表（仅值）
  */
 export const PACKAGE_MANAGERS: readonly PackageManagerType[] = PACKAGE_MANAGER_OPTIONS.map(opt => opt.value)
+
+/**
+ * 状态管理库映射（按框架自动选择）
+ * 框架 -> 对应的状态管理库 feature 名称
+ */
+export const STATE_MANAGEMENT_MAP: Record<FrameworkType, string> = {
+  vue: 'pinia',
+  react: 'zustand',
+} as const

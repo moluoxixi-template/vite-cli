@@ -5,6 +5,7 @@
 
 export * from './deepMerge.ts'
 export * from './file.ts'
+export * from './framework.ts'
 export * from './install.ts'
 export * from './npmConfig.ts'
 export * from './sortDependencies.ts'

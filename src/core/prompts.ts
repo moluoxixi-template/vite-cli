@@ -24,6 +24,7 @@ import {
   ROUTE_MODE_OPTIONS,
   UI_LIBRARY_OPTIONS,
 } from '../constants/index.ts'
+import { getAutoSelectedStateManagement } from '../utils/framework.ts'
 import { getDefaultAuthor } from '../utils/npmConfig.ts'
 import { getRouteModeFeatures } from './feature.ts'
 
@@ -190,8 +191,10 @@ export async function collectProjectConfig(
   const targetDir = `${process.cwd()}/${answers.projectName}`
 
   // 根据框架确定状态管理 feature
-  const isPinia = answers.framework === 'vue'
-  const isZustand = answers.framework === 'react'
+  const framework = answers.framework as FrameworkType
+  const autoSelectedStateManagement = getAutoSelectedStateManagement(framework)
+  const isPinia = autoSelectedStateManagement === 'pinia'
+  const isZustand = autoSelectedStateManagement === 'zustand'
 
   // 根据路由模式获取对应的布尔特征配置
   const routeMode = answers.routeMode as RouteModeType
@@ -201,7 +204,7 @@ export async function collectProjectConfig(
     projectName: answers.projectName,
     description: answers.description,
     author: answers.author,
-    framework: answers.framework as FrameworkType,
+    framework,
     uiLibrary: answers.uiLibrary as UILibraryType,
     routeMode,
     // feature 名称与目录名称一致

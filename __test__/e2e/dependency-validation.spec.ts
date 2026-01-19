@@ -10,7 +10,7 @@ import {
   findCatalogReferences,
   readPackageJson,
   validateDependencies,
-} from '@test/dependency-validator'
+} from './dependency-validator'
 import { cleanupTempDir, createTempDir } from '@test/test-utils'
 
 describe('e2e 依赖验证测试', () => {

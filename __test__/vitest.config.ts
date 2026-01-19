@@ -10,6 +10,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    // 第一个测试失败后立即停止（确保模板完整性检查失败时，不执行后续测试）
+    bail: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
