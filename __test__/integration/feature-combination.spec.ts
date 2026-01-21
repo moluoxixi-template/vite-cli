@@ -17,7 +17,7 @@ import { FRAMEWORKS } from '@/constants'
 import {
   checkPackageInDependencies,
   extractImports,
-  resolveImportPath,
+  resolveImportPathInTemplate,
 } from './helpers/import-validator'
 import {
   checkBaseAndFeatures,
@@ -304,21 +304,29 @@ describe('模板验证与功能组合测试', () => {
           for (const imp of imports) {
             // 检查文件导入（相对路径和路径别名）
             if (imp.type === 'relative' || imp.type === 'alias') {
-              const resolved = resolveImportPath(file, imp.path, template, TEMPLATES_DIR)
+              // 解析路径到实际文件路径（resolveImportPathInTemplate 内部会处理补后缀和文件存在性检查）
+              const resolvedFile = resolveImportPathInTemplate(
+                file,
+                imp.path,
+                template,
+                TEMPLATES_DIR,
+              )
 
-              if (!resolved || !fs.existsSync(resolved)) {
+              // 1. 检查跨模板导入（解析后的文件路径是否在当前模板范围内）
+              if (resolvedFile && !resolvedFile.startsWith(template.path)) {
                 const relativePath = path.relative(TEMPLATES_DIR, file)
-                const resolvedInfo = resolved ? path.relative(TEMPLATES_DIR, resolved) : 'unresolved'
-                fileImportErrors.push(
-                  `${relativePath}:${imp.line} - File not found: "${imp.path}" (resolved: ${resolvedInfo})`,
-                )
-              }
-              // 检查导入的文件是否在当前模板范围内（不允许跨模板导入）
-              else if (resolved && !resolved.startsWith(template.path)) {
-                const relativePath = path.relative(TEMPLATES_DIR, file)
-                const importedPath = path.relative(TEMPLATES_DIR, resolved)
+                const importedPath = path.relative(TEMPLATES_DIR, resolvedFile)
                 crossTemplateImportErrors.push(
-                  `${relativePath}:${imp.line} - 跨模板导入不允许: "${imp.path}" (导入自: ${importedPath})`,
+                  `${relativePath}:${imp.line} - 跨模板导入不允许: "${imp.path}" (解析到: ${importedPath})`,
+                )
+                continue // 跳过后续的文件存在性检查
+              }
+
+              // 2. 检查文件是否存在（如果返回 null，说明文件不存在或无法解析）
+              if (!resolvedFile) {
+                const relativePath = path.relative(TEMPLATES_DIR, file)
+                fileImportErrors.push(
+                  `${relativePath}:${imp.line} - File not found: "${imp.path}"`,
                 )
               }
             }

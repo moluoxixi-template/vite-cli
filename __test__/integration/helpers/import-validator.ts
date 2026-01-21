@@ -158,6 +158,112 @@ export function getTemplateDependencyPaths(template: TemplateInfo, templatesDir:
 }
 
 /**
+ * 解析路径别名到当前模板内的实际文件路径（仅用于模板验证，不跨模板查找）
+ * @param template 模板信息
+ * @param aliasPath 别名路径
+ * @param templatesDir 模板根目录
+ * @returns 解析后的实际文件路径（在当前模板内且存在），如果无法解析或文件不存在则返回 null
+ */
+export function resolveAliasPathInTemplate(
+  template: TemplateInfo,
+  aliasPath: string,
+  templatesDir: string,
+): string | null {
+  const paths = getTsConfigPaths(template, templatesDir)
+
+  let relativePath: string | null = null
+
+  if (paths) {
+    // 使用 tsconfig paths 配置
+    for (const [pattern, targets] of Object.entries(paths)) {
+      const regex = new RegExp(`^${pattern.replace('*', '(.*)')}$`)
+      const match = aliasPath.match(regex)
+
+      if (match && targets.length > 0) {
+        let targetPath = targets[0]
+        if (match[1]) {
+          targetPath = targetPath.replace('*', match[1])
+        }
+        relativePath = targetPath.replace(/^\.\//, '')
+        break
+      }
+    }
+    // 如果没有匹配到任何路径，返回 null
+    if (relativePath === null)
+      return null
+  }
+  else {
+    // 默认规则：@/ 映射到 src/
+    if (!aliasPath.startsWith('@/'))
+      return null
+    relativePath = aliasPath.replace('@/', 'src/')
+  }
+
+  // 解析到当前模板内的基础路径
+  const basePath = path.join(template.path, relativePath)
+
+  const fileExtensions = [
+    '.ts',
+    '.tsx',
+    '.js',
+    '.jsx',
+    '.vue',
+    '.scss',
+    '.sass',
+    '.css',
+    '.svg',
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.webp',
+  ]
+
+  // 检查基础路径是否存在以及是文件还是目录
+  if (fs.existsSync(basePath)) {
+    const stat = fs.statSync(basePath)
+
+    if (stat.isDirectory()) {
+      // 如果是目录，补 index，然后用 fileExtensions 补后缀
+      const indexPath = path.join(basePath, 'index')
+      for (const ext of fileExtensions) {
+        const testPath = indexPath + ext
+        if (fs.existsSync(testPath) && fs.statSync(testPath).isFile()) {
+          return testPath
+        }
+      }
+      return null
+    }
+
+    if (stat.isFile()) {
+      // 如果是文件，直接返回
+      return basePath
+    }
+  }
+
+  // 如果基础路径不存在或不是目录，检查是否已有后缀
+  const hasExtension = /\.(?:ts|tsx|js|jsx|vue|scss|sass|css|svg|png|jpg|jpeg|gif|webp)$/.test(basePath)
+
+  if (hasExtension) {
+    // 如果已有后缀，直接检查文件是否存在
+    if (fs.existsSync(basePath) && fs.statSync(basePath).isFile()) {
+      return basePath
+    }
+    return null
+  }
+
+  // 如果没有后缀，尝试用 fileExtensions 补后缀
+  for (const ext of fileExtensions) {
+    const testPath = basePath + ext
+    if (fs.existsSync(testPath) && fs.statSync(testPath).isFile()) {
+      return testPath
+    }
+  }
+
+  return null
+}
+
+/**
  * 解析路径别名（如 @/），支持跨模板依赖
  * @param template 模板信息
  * @param aliasPath 别名路径
@@ -238,6 +344,91 @@ export function resolveAliasPath(
   }
 
   return null
+}
+
+/**
+ * 解析导入路径到当前模板内的实际文件路径（仅用于模板验证，不跨模板查找）
+ * @param currentFile 当前文件路径
+ * @param importPath 导入路径
+ * @param template 模板信息
+ * @param templatesDir 模板根目录
+ * @returns 解析后的实际文件路径（在当前模板内且存在），如果无法解析或文件不存在则返回 null
+ */
+export function resolveImportPathInTemplate(
+  currentFile: string,
+  importPath: string,
+  template: TemplateInfo,
+  templatesDir: string,
+): string | null {
+  if (importPath.startsWith('@/')) {
+    // 别名路径：resolveAliasPathInTemplate 已经处理了补后缀和文件存在性检查
+    return resolveAliasPathInTemplate(template, importPath, templatesDir)
+  }
+  else {
+    // 相对路径：解析到当前模板内，然后判断是文件还是目录
+    const currentDir = path.dirname(currentFile)
+    const basePath = path.resolve(currentDir, importPath)
+
+    const fileExtensions = [
+      '.ts',
+      '.tsx',
+      '.js',
+      '.jsx',
+      '.vue',
+      '.scss',
+      '.sass',
+      '.css',
+      '.svg',
+      '.png',
+      '.jpg',
+      '.jpeg',
+      '.gif',
+      '.webp',
+    ]
+
+    // 检查基础路径是否存在以及是文件还是目录
+    if (fs.existsSync(basePath)) {
+      const stat = fs.statSync(basePath)
+
+      if (stat.isDirectory()) {
+        // 如果是目录，补 index，然后用 fileExtensions 补后缀
+        const indexPath = path.join(basePath, 'index')
+        for (const ext of fileExtensions) {
+          const testPath = indexPath + ext
+          if (fs.existsSync(testPath) && fs.statSync(testPath).isFile()) {
+            return testPath
+          }
+        }
+        return null
+      }
+
+      if (stat.isFile()) {
+        // 如果是文件，直接返回
+        return basePath
+      }
+    }
+
+    // 如果基础路径不存在或不是目录，检查是否已有后缀
+    const hasExtension = /\.(?:ts|tsx|js|jsx|vue|scss|sass|css|svg|png|jpg|jpeg|gif|webp)$/.test(basePath)
+
+    if (hasExtension) {
+      // 如果已有后缀，直接检查文件是否存在
+      if (fs.existsSync(basePath) && fs.statSync(basePath).isFile()) {
+        return basePath
+      }
+      return null
+    }
+
+    // 如果没有后缀，尝试用 fileExtensions 补后缀
+    for (const ext of fileExtensions) {
+      const testPath = basePath + ext
+      if (fs.existsSync(testPath) && fs.statSync(testPath).isFile()) {
+        return testPath
+      }
+    }
+
+    return null
+  }
 }
 
 /**
