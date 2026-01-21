@@ -4,10 +4,10 @@
  */
 
 import { createApp } from 'vue'
-import directives from '@/directives'
-import App from '@/App.vue'
-import getRouter from '@/router'
-import { setupFeatures } from '@/main/index'
+import directives from './directives'
+import App from './App.vue'
+import getRouter from './router'
+import { setupFeatures } from './main/index'
 
 // Import styles
 import '@/assets/styles/main.scss'
