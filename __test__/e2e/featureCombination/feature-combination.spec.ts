@@ -1,5 +1,5 @@
 /**
- * Feature 组合集成测试
+ * Feature 组合 E2E 测试
  * 包含模板完整性检查和功能组合测试
  * 基于文件系统自动扫描 templates/ 目录，生成所有测试组合
  * 当添加新的 template feature 时，测试会自动覆盖
@@ -32,8 +32,8 @@ import { generateTestConfigs } from './helpers/test-config-generator'
 
 // __test__ 目录在项目根目录下，所以需要向上一级
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-// __dirname 是 __test__/integration，需要向上两级到项目根目录
-const TEMPLATES_DIR = path.resolve(__dirname, '../../templates')
+// __dirname 是 __test__/e2e/featureCombination，需要向上三级到项目根目录
+const TEMPLATES_DIR = path.resolve(__dirname, '../../../templates')
 
 // 🔍 自动扫描生成测试配置（基于文件系统）
 const TEST_CONFIGS = generateTestConfigs()
@@ -187,7 +187,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           const distDir = path.join(projectDir, outDir)
 
           if (!fs.existsSync(distDir)) {
-            throw new Error(`未找到 ${outDir} 目录`)
+            expect.fail(`未找到 ${outDir} 目录`)
           }
 
           const files = await fs.readdir(distDir)
@@ -216,7 +216,7 @@ describe('模板验证与功能组合测试', () => {
   describe('结构完整性检查', () => {
     it('所有必需的 base 目录应该存在（common/base、框架 base、微前端 base）', () => {
       if (structureErrors.length > 0) {
-        throw new Error(`结构检查失败:\n${structureErrors.join('\n')}`)
+        expect.fail(`结构检查失败:\n${structureErrors.join('\n')}`)
       }
       expect(structureErrors).toEqual([])
     })
@@ -224,7 +224,7 @@ describe('模板验证与功能组合测试', () => {
     it('constants 中维护的所有 feature 应该存在', () => {
       const { errors: constantsErrors } = checkConstantsFeatures(TEMPLATES_DIR)
       if (constantsErrors.length > 0) {
-        throw new Error(`constants feature 检查失败:\n${constantsErrors.join('\n')}`)
+        expect.fail(`constants feature 检查失败:\n${constantsErrors.join('\n')}`)
       }
       expect(constantsErrors).toEqual([])
     })
@@ -353,20 +353,32 @@ describe('模板验证与功能组合测试', () => {
 
         it(`应该有有效的文件导入 - ${template.name}${fileImportErrors.length > 0 ? ` (${fileImportErrors.length} 个错误)` : ' (通过)'}`, () => {
           if (fileImportErrors.length > 0) {
-            throw new Error(`Found ${fileImportErrors.length} missing file imports:\n${fileImportErrors.join('\n')}`)
+            const errorMessage = `发现 ${fileImportErrors.length} 个文件导入错误：\n${fileImportErrors.join('\n')}`
+            expect.fail(errorMessage)
+          }
+          else {
+            expect(fileImportErrors.length).toBe(0)
           }
         })
 
         it(`应该只从当前模板导入（无跨模板导入）- ${template.name}${crossTemplateImportErrors.length > 0 ? ` (${crossTemplateImportErrors.length} 个错误)` : ' (通过)'}`, () => {
           if (crossTemplateImportErrors.length > 0) {
-            throw new Error(`Found ${crossTemplateImportErrors.length} cross-template imports:\n${crossTemplateImportErrors.slice(0, 10).join('\n')}${crossTemplateImportErrors.length > 10 ? `\n... and ${crossTemplateImportErrors.length - 10} more` : ''}`)
+            const errorMessage = `发现 ${crossTemplateImportErrors.length} 个跨模板导入：\n${crossTemplateImportErrors.slice(0, 10).join('\n')}${crossTemplateImportErrors.length > 10 ? `\n... 还有 ${crossTemplateImportErrors.length - 10} 个` : ''}`
+            expect.fail(errorMessage)
+          }
+          else {
+            expect(crossTemplateImportErrors.length).toBe(0)
           }
         })
 
         it(`所有包导入都应该在 package.json 中声明 - ${template.name}${packageImportErrors.length > 0 ? ` (${packageImportErrors.length} 个错误)` : ' (通过)'}`, () => {
           if (packageImportErrors.length > 0) {
-            const summary = `Missing packages: ${Array.from(missingPackages).join(', ')}`
-            throw new Error(`Found ${packageImportErrors.length} missing package declarations:\n${summary}\n\n${packageImportErrors.slice(0, 10).join('\n')}${packageImportErrors.length > 10 ? `\n... and ${packageImportErrors.length - 10} more` : ''}`)
+            const summary = `缺失的包: ${Array.from(missingPackages).join(', ')}`
+            const errorMessage = `发现 ${packageImportErrors.length} 个包导入声明错误：\n${summary}\n\n${packageImportErrors.slice(0, 10).join('\n')}${packageImportErrors.length > 10 ? `\n... 还有 ${packageImportErrors.length - 10} 个` : ''}`
+            expect.fail(errorMessage)
+          }
+          else {
+            expect(packageImportErrors.length).toBe(0)
           }
         })
       })
@@ -378,7 +390,7 @@ describe('模板验证与功能组合测试', () => {
     // 如果结构检查失败，跳过所有测试
     if (structureErrors.length > 0) {
       it.skip('跳过测试：结构检查失败', () => {
-        throw new Error(`结构检查失败:\n${structureErrors.join('\n')}`)
+        expect.fail(`结构检查失败:\n${structureErrors.join('\n')}`)
       })
       return
     }

@@ -7,12 +7,11 @@
   "scripts": {
     "test": "vitest",
     "test:unit": "vitest run unit",
-    "test:integration": "vitest run integration",
     "test:e2e": "vitest run e2e",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e"
+    "test:all": "pnpm test:unit && pnpm test:e2e"
   },
   "devDependencies": {
     "@types/fs-extra": "catalog:type",
