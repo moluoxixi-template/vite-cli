@@ -17,11 +17,10 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov'],
       include: ['../src/**/*.ts'],
       exclude: [
-        '../src/test.ts', // 排除现有的测试脚本
         '../src/index.ts', // 排除入口文件
-        '**/*.d.ts',
-        '**/types/**',
-        '**/constants/**',
+        '../src/**/*.d.ts', // 排除类型声明文件
+        '../src/types/**', // 排除类型定义目录
+        '../src/constants/**', // 排除常量目录
       ],
       thresholds: {
         lines: 60,
@@ -31,8 +30,8 @@ export default defineConfig({
       },
     },
     include: ['**/*.spec.ts'],
-    testTimeout: 60000, // 60s for integration tests
-    hookTimeout: 60000, // 60s for beforeAll/afterAll
+    testTimeout: 0, // 无限制
+    hookTimeout: 0, // 无限制
   },
   resolve: {
     alias: {

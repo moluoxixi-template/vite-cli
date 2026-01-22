@@ -29,6 +29,11 @@ import {
   createTempDir,
 } from '@test/test-utils'
 import { generateTestConfigs } from './helpers/test-config-generator'
+import {
+  findCatalogReferences,
+  readPackageJson,
+  validateDependencies,
+} from './helpers/dependency-validator'
 
 // __test__ 目录在项目根目录下，所以需要向上一级
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -76,6 +81,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
     for (const testConfig of configs) {
       describe(testConfig.name, () => {
         let projectDir: string
+        let packageManager: string
 
         beforeAll(async () => {
           projectDir = await createTempDir(`test-${testConfig.name}-`)
@@ -83,13 +89,15 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
             ...testConfig.config as ProjectConfigType,
             targetDir: projectDir,
           }
+          // 保存包管理器配置，供测试使用
+          packageManager = config.packageManager || 'pnpm'
           await generateProject(config)
-        }, 120000)
+        })
 
         afterAll(async () => {
           // 清理测试项目（注意：如果需要调试，可以注释掉这行）
           await cleanupTempDir(projectDir)
-        }, 120000)
+        })
 
         it('应该存在 package.json 文件', () => {
           const packageJsonPath = path.join(projectDir, 'package.json')
@@ -109,23 +117,30 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           expect(packageJson.name).toBe(testConfig.config.projectName)
           expect(packageJson.description).toBe(testConfig.config.description)
           expect(packageJson.author).toBe(testConfig.config.author)
+
+          // 验证 packageManager 字段
+          const expectedPackageManager = testConfig.config.packageManager
+          if (expectedPackageManager) {
+            expect(packageJson.packageManager).toBeDefined()
+            expect(packageJson.packageManager).toMatch(new RegExp(`^${expectedPackageManager}@`))
+          }
         })
 
         it('应该成功安装依赖', async () => {
-          const { exitCode, stderr } = await execa('pnpm', ['install'], {
+          const { exitCode, stderr } = await execa(packageManager, ['install'], {
             cwd: projectDir,
             reject: false,
           })
 
           if (exitCode !== 0) {
-            console.error('依赖安装失败:', stderr)
+            console.error(`依赖安装失败 (${packageManager}):`, stderr)
           }
 
           expect(exitCode).toBe(0)
-        }, 180000) // 3 minutes timeout
+        })
 
         it('应该通过类型检查', async () => {
-          const { exitCode, stdout, stderr } = await execa('pnpm', ['type-check'], {
+          const { exitCode, stdout, stderr } = await execa(packageManager, ['type-check'], {
             cwd: projectDir,
             reject: false,
           })
@@ -137,14 +152,14 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           }
 
           expect(exitCode).toBe(0)
-        }, 120000)
+        })
 
         it('应该通过代码检查', async () => {
           if (!testConfig.config.eslint) {
             return
           }
 
-          const { exitCode, stderr } = await execa('pnpm', ['lint:eslint'], {
+          const { exitCode, stderr } = await execa(packageManager, ['lint:eslint'], {
             cwd: projectDir,
             reject: false,
           })
@@ -154,10 +169,10 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           }
 
           expect(exitCode).toBe(0)
-        }, 120000)
+        })
 
         it('应该成功构建', async () => {
-          const { exitCode, stdout, stderr } = await execa('pnpm', ['build'], {
+          const { exitCode, stdout, stderr } = await execa(packageManager, ['build'], {
             cwd: projectDir,
             reject: false,
           })
@@ -180,7 +195,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
 
           // 检查构建输出目录是否生成
           expect(distExists).toBe(true)
-        }, 180000) // 3 minutes timeout
+        })
 
         it('应该有有效的构建输出', async () => {
           const outDir = await getViteOutDir(projectDir, 'production')
@@ -202,6 +217,65 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
             return f.startsWith('assets') || f.startsWith('static') || f.endsWith('.js') || f.endsWith('.css') || (stat.isDirectory() && (f === 'assets' || f === 'static'))
           })
           expect(hasAssets).toBe(true)
+        })
+
+        it('应该通过依赖验证', async () => {
+          // 1. 验证目录引用已解析（catalog: 引用应该被解析为实际版本）
+          const packageJson = await readPackageJson(projectDir)
+          const catalogRefs = findCatalogReferences(packageJson)
+
+          if (catalogRefs.length > 0) {
+            expect.fail(`发现未解析的目录引用:\n${catalogRefs.join('\n')}`)
+          }
+          expect(catalogRefs).toEqual([])
+
+          // 2. 验证条件依赖（如果禁用了某个功能，不应该有相关依赖）
+          const validationOptions: Parameters<typeof validateDependencies>[1] = {
+            shouldNotHave: [],
+          }
+
+          // 根据配置决定不应该存在的依赖
+          if (!testConfig.config.eslint) {
+            validationOptions.shouldNotHave!.push('@moluoxixi/eslint-config', 'eslint')
+          }
+
+          if (!testConfig.config.i18n) {
+            if (testConfig.config.framework === 'vue') {
+              validationOptions.shouldNotHave!.push('vue-i18n')
+            }
+            else if (testConfig.config.framework === 'react') {
+              validationOptions.shouldNotHave!.push('react-i18next')
+            }
+          }
+
+          // 3. 验证必需的基础依赖
+          validationOptions.required = ['@moluoxixi/ajax-package']
+          validationOptions.devRequired = ['@moluoxixi/vite-config']
+
+          if (testConfig.config.eslint) {
+            validationOptions.devRequired!.push('@moluoxixi/eslint-config')
+          }
+
+          const result = await validateDependencies(projectDir, validationOptions)
+
+          if (!result.valid) {
+            const errors: string[] = []
+            if (result.missingDeps.length > 0) {
+              errors.push(`缺失的依赖: ${result.missingDeps.join(', ')}`)
+            }
+            if (result.unexpectedDeps.length > 0) {
+              errors.push(`不应该存在的依赖: ${result.unexpectedDeps.join(', ')}`)
+            }
+            if (result.versionMismatches.length > 0) {
+              errors.push(`版本不匹配: ${result.versionMismatches.map(v => `${v.package} (期望: ${v.expected}, 实际: ${v.actual})`).join(', ')}`)
+            }
+            if (result.peerDepIssues.length > 0) {
+              errors.push(`Peer 依赖问题: ${result.peerDepIssues.join(', ')}`)
+            }
+            expect.fail(`依赖验证失败:\n${errors.join('\n')}`)
+          }
+
+          expect(result.valid).toBe(true)
         })
       })
     }

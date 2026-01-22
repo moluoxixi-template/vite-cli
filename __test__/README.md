@@ -10,8 +10,6 @@ __test__/                           # 独立的测试 workspace
 ├── tsconfig.json                  # 测试 TypeScript 配置
 ├── vitest.config.ts               # Vitest 配置
 ├── helpers/                       # 测试辅助工具
-│   ├── dependency-validator.ts   # 依赖验证工具
-│   ├── test-fixtures.ts          # 测试固定数据
 │   └── test-utils.ts             # 通用测试工具
 ├── unit/                          # 单元测试
 │   ├── core/
@@ -19,11 +17,14 @@ __test__/                           # 独立的测试 workspace
 │   └── utils/
 │       ├── deepMerge.spec.ts     # 深度合并测试
 │       └── sortDependencies.spec.ts # 依赖排序测试
-├── integration/                   # 集成测试
-│   └── feature-combination.spec.ts # Feature 组合测试
 └── e2e/                          # E2E 测试
-    ├── project-generation.spec.ts # 项目生成测试
-    └── dependency-validation.spec.ts # 依赖验证测试
+    └── featureCombination/      # 功能组合 E2E 测试
+        ├── feature-combination.spec.ts # 功能组合测试（包含所有 E2E 测试）
+        └── helpers/              # 功能组合测试辅助工具
+            ├── dependency-validator.ts # 依赖验证工具
+            ├── import-validator.ts # 导入验证工具
+            ├── template-validator.ts # 模板验证工具
+            └── test-config-generator.ts # 测试配置生成器
 ```
 
 ## 🔧 为什么使用 Monorepo？
@@ -52,56 +53,47 @@ __test__/                           # 独立的测试 workspace
 | `unit/utils/sortDependencies.spec.ts` | 依赖排序功能 | 字母排序、空对象、scoped 包处理 |
 | `unit/core/feature.spec.ts` | Feature 映射转换 | UI 库映射、路由模式映射、布尔特性映射 |
 
-**测试场景：** 25 个测试用例
+**测试场景：** 覆盖所有核心功能的单元测试
 
 ### 集成测试（Integration Tests）
-测试多个模块组合的功能，验证 feature 组合后的代码隔离是否正确。
+集成测试包含在 E2E 测试文件中，专注于验证模板文件的代码隔离性。
 
-| 测试项 | 验证内容 |
-|-------|---------|
-| 跨模板导入检查 | 没有跨模板引用（如 `../../templates/`），确保代码隔离正确 |
+**测试内容：**
+- **模板结构完整性检查**：验证所有必需的 base 目录和 feature 目录存在
+- **文件导入验证**：确保模板文件没有跨模板引用（如 `../../templates/`），保证代码隔离正确
+- **包导入声明验证**：所有包导入都在对应模板的 package.json 中声明
 
-**职责说明：** 集成测试专注于验证功能组合后的代码隔离性，确保生成的项目代码不会引用模板目录。文件生成和依赖验证由 E2E 测试负责。
+**职责说明：** 集成测试专注于验证模板文件的代码隔离性，确保模板之间不会相互引用。项目生成、依赖验证等完整流程由 E2E 测试负责。
 
-**测试配置：**
-- ✅ Vue + Element Plus + Manual Routes（完整配置）
-- ✅ Vue + Element Plus + Page Routes
-- ✅ Vue + Element Plus + qiankun（微前端）
-- ✅ Vue + Ant Design Vue（最小配置）
-- ⏸️ React 测试（等待 React 模板完成）
-
-**测试场景：** 32 个测试用例（跳过 16 个 React 测试）
+**测试范围：** 自动扫描所有模板（Vue/React × base/features × 微前端等），覆盖所有模板的导入路径验证
 
 ### E2E 测试（End-to-End Tests）
 测试完整的项目生成流程，包括依赖安装、类型检查、构建等。
 
-#### 依赖验证测试 (`dependency-validation.spec.ts`)
-专门负责依赖相关的验证，使用 `validateDependencies` 工具进行详细检查。
+所有 E2E 测试都集中在 `featureCombination/feature-combination.spec.ts` 文件中，基于文件系统自动扫描生成所有测试组合。
 
-| 测试项 | 验证内容 |
-|-------|---------|
-| 目录引用解析 | 所有 `catalog:` 引用都被替换为实际版本号 |
-| 条件依赖 | 禁用功能时不应该有对应依赖（如禁用 eslint 时不应有 eslint 依赖） |
-| 基础依赖 | 所有项目都应该有必需的 @moluoxixi 依赖 |
+**测试内容：**
+- **集成测试部分（模板验证，作为前置检查）**：
+  - 模板结构完整性检查：验证所有必需的 base 目录和 feature 目录存在
+  - 源代码文件验证：扫描并验证所有源代码文件
+  - 文件导入验证：确保没有跨模板导入（代码隔离正确）
+  - 包导入声明验证：所有包导入都在对应模板的 package.json 中声明
+- **E2E 测试部分（项目生成与验证）**：
+  - 项目生成：为每个功能组合生成完整项目
+  - package.json 验证：验证文件结构和元数据（type、scripts、dependencies、devDependencies、name、description、author）
+  - 依赖安装：`pnpm install` 成功
+  - 依赖验证：
+    - Catalog 引用解析：所有 `catalog:` 引用都被替换为实际版本号
+    - 条件依赖：禁用功能时不应该有对应依赖（如禁用 eslint 时不应有 eslint 依赖）
+    - 基础依赖：所有项目都应该有必需的 @moluoxixi 依赖
+  - 类型检查：`pnpm type-check` 通过
+  - 代码检查：`pnpm lint:eslint` 通过（如果启用了 ESLint）
+  - 项目构建：`pnpm build` 成功，生成构建产物（使用 vite.config 中的 outDir）
+  - 构建产物验证：dist 包含 index.html 和资源文件
 
-#### 项目生成测试 (`project-generation.spec.ts`)
-测试完整的项目生成流程，包括文件生成、依赖安装、类型检查、构建等。
+**测试配置：** 自动扫描生成所有功能组合（Vue/React × UI库 × 路由模式 × 微前端 × 包管理器等）
 
-| 测试阶段 | 验证内容 | 说明 |
-|---------|---------|------|
-| 项目生成 | 生成完整的项目文件 | 包含所有必需文件 |
-| package.json 结构和元数据 | type、scripts、dependencies、devDependencies、name、description、author | 文件结构完整，元数据正确 |
-| 依赖安装 | `pnpm install` 成功 | 验证依赖可安装性 |
-| 类型检查 | `pnpm type-check` 通过 | TypeScript 类型正确 |
-| Lint 检查 | `pnpm lint:eslint` 通过 | 代码风格符合规范 |
-| 项目构建 | `pnpm build` 成功 | 生成 dist 产物（使用 vite.config 中的 outDir） |
-| 产物验证 | dist 包含 index.html 和资源 | 构建产物完整 |
-
-**测试配置：**
-- ✅ Vue + Element Plus（完整配置）
-- ⏸️ React + Ant Design（等待 React 模板完成）
-
-**注意：** E2E 测试运行时间较长（5-10 分钟），需要网络连接。
+**注意：** E2E 测试运行时间较长（根据测试组合数量，通常 10-30 分钟），需要网络连接。
 
 ## 运行测试
 
@@ -113,11 +105,6 @@ pnpm test
 ### 运行单元测试
 ```bash
 pnpm test:unit
-```
-
-### 运行集成测试
-```bash
-pnpm test:integration
 ```
 
 ### 运行 E2E 测试
@@ -160,44 +147,43 @@ pnpm test:ui
 
 ### 2. 集成测试（Integration Tests）
 
-测试多个模块组合在一起的功能，验证 feature 组合后的代码隔离是否正确。
+集成测试包含在 E2E 测试文件中，专注于验证模板文件的代码隔离性。
 
 **测试内容：**
-- Import 路径验证（确保没有跨模板引用，代码隔离正确）
+- 模板结构完整性检查（所有必需的 base 目录和 feature 目录存在）
+- 文件导入验证（确保没有跨模板引用，代码隔离正确）
+- 包导入声明验证（所有包导入都在对应模板的 package.json 中声明）
 
-**职责说明：** 集成测试专注于验证代码隔离性，确保生成的项目代码不会引用模板目录。文件生成和依赖验证由 E2E 测试负责。
+**职责说明：** 集成测试专注于验证模板文件的代码隔离性，确保模板之间不会相互引用。项目生成、依赖验证等完整流程由 E2E 测试负责。
 
-**运行时间：** 10-30 秒
+**运行时间：** 10-30 秒（作为 E2E 测试的前置检查）
 
 ### 3. E2E 测试（End-to-End Tests）
 
-测试完整的项目生成流程，分为两个专门的测试文件：
-
-#### 3.1 依赖验证测试 (`dependency-validation.spec.ts`)
-
-专门负责依赖相关的详细验证。
+测试完整的项目生成流程，所有测试都集中在 `featureCombination/feature-combination.spec.ts` 文件中。
 
 **测试内容：**
+- **集成测试部分（模板验证，作为前置检查）**：
+  - 模板结构完整性检查
+  - 源代码文件验证
+  - 文件导入验证（无跨模板导入）
+  - 包导入声明验证
+- **E2E 测试部分（项目生成与验证）**：
+  - 项目文件生成（为每个功能组合生成完整项目）
+  - package.json 结构和元数据验证
+  - 依赖安装成功
+  - 依赖验证（Catalog 引用解析、条件依赖、基础依赖）
+  - TypeScript 类型检查通过
+  - ESLint 检查通过（如果启用）
+  - 项目构建成功（使用 vite.config 中配置的 outDir）
+  - 构建产物验证
+
+**依赖验证包含：**
 - Catalog 引用解析（确保所有 `catalog:` 引用都被替换为实际版本号）
 - 条件依赖验证（禁用功能时不应该有对应依赖）
 - 基础依赖验证（必需的 @moluoxixi 依赖）
 
-**运行时间：** 1-2 分钟
-
-#### 3.2 项目生成测试 (`project-generation.spec.ts`)
-
-测试完整的项目生成和构建流程。
-
-**测试内容：**
-- 项目文件生成
-- 依赖安装成功
-- TypeScript 类型检查通过
-- ESLint 检查通过
-- 项目构建成功（使用 vite.config 中配置的 outDir）
-- 构建产物验证
-- 项目元数据验证
-
-**运行时间：** 5-10 分钟（因为需要安装依赖和构建）
+**运行时间：** 根据测试组合数量，通常 10-30 分钟
 
 **注意：** E2E 测试需要网络连接和较长时间，建议在 CI 环境中运行。
 
