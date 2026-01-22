@@ -21,6 +21,7 @@
     "execa": "^9.6.1",
     "fs-extra": "catalog:build",
     "typescript": "catalog:dev",
+    "vite": "catalog:dev",
     "vitest": "^4.0.17"
   }
 }
