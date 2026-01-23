@@ -43,6 +43,20 @@ const TEMPLATES_DIR = path.resolve(__dirname, '../../../templates')
 // 🔍 自动扫描生成测试配置（基于文件系统）
 const TEST_CONFIGS = generateTestConfigs()
 
+// 收集所有临时目录，在测试结束后统一清理
+const tempDirsToCleanup: string[] = []
+
+/**
+ * 获取执行 npm scripts 的命令参数
+ * npm 需要 `npm run <script>`，而 pnpm 可以直接 `pnpm <script>`
+ * @param packageManager - 包管理器名称
+ * @param script - 脚本名称
+ * @returns 命令参数数组
+ */
+function getRunArgs(packageManager: string, script: string): string[] {
+  return packageManager === 'npm' ? ['run', script] : [script]
+}
+
 /**
  * 获取 Vite 配置中的输出目录
  * @param projectRoot - 项目根目录路径
@@ -141,7 +155,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
         })
 
         it('应该通过类型检查', async () => {
-          const { exitCode, stdout, stderr } = await execa(packageManager, ['type-check'], {
+          const { exitCode, stdout, stderr } = await execa(packageManager, getRunArgs(packageManager, 'type-check'), {
             cwd: projectDir,
             reject: false,
           })
@@ -160,7 +174,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
             return
           }
 
-          const { exitCode, stderr } = await execa(packageManager, ['lint:eslint'], {
+          const { exitCode, stderr } = await execa(packageManager, getRunArgs(packageManager, 'lint:eslint'), {
             cwd: projectDir,
             reject: false,
           })
@@ -173,7 +187,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
         })
 
         it('应该成功构建', async () => {
-          const { exitCode, stdout, stderr } = await execa(packageManager, ['build'], {
+          const { exitCode, stdout, stderr } = await execa(packageManager, getRunArgs(packageManager, 'build'), {
             cwd: projectDir,
             reject: false,
           })
