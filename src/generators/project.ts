@@ -6,6 +6,7 @@
 
 import type { ProjectConfigType } from '../types/index.ts'
 
+import fs from 'node:fs'
 import path from 'node:path'
 
 import { FILE_CONSTANTS, FRAMEWORKS } from '../constants/index.ts'
@@ -117,4 +118,12 @@ export async function generateProject(config: ProjectConfigType): Promise<void> 
     config.author,
     config.packageManager,
   )
+
+  // 4. 清理包管理器特定文件（只有 yarn 需要 .yarnrc.yml）
+  if (config.packageManager !== 'yarn') {
+    const yarnrcPath = path.join(targetDir, '.yarnrc.yml')
+    if (fs.existsSync(yarnrcPath)) {
+      fs.unlinkSync(yarnrcPath)
+    }
+  }
 }
