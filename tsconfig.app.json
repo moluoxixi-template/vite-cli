@@ -5,8 +5,6 @@
       "DOM",
       "ESNext"
     ],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
     "types": [
       "vite/client"
     ],

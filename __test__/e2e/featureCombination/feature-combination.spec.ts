@@ -108,9 +108,10 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           await generateProject(config)
         })
 
-        afterAll(async () => {
-          // 清理测试项目（注意：如果需要调试，可以注释掉这行）
-          await cleanupTempDir(projectDir)
+        afterAll(() => {
+          // 将目录添加到待清理列表，测试结束后统一清理
+          // 这样清理失败不会打断测试流程
+          tempDirsToCleanup.push(projectDir)
         })
 
         it('应该存在 package.json 文件', () => {
@@ -300,6 +301,26 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
 // 模板验证与功能组合测试
 describe('模板验证与功能组合测试', () => {
   const { templates, errors: structureErrors } = checkBaseAndFeatures(TEMPLATES_DIR)
+
+  // 测试结束后统一清理所有临时目录
+  afterAll(async () => {
+    if (tempDirsToCleanup.length === 0) {
+      return
+    }
+
+    console.log(`\n🧹 清理 ${tempDirsToCleanup.length} 个临时测试目录...`)
+    const results = await Promise.allSettled(
+      tempDirsToCleanup.map(dir => cleanupTempDir(dir)),
+    )
+
+    const failed = results.filter(r => r.status === 'rejected')
+    if (failed.length > 0) {
+      console.warn(`⚠️ ${failed.length} 个目录清理失败（Windows 文件锁定），系统会自动清理`)
+    }
+    else {
+      console.log('✅ 所有临时目录已清理')
+    }
+  })
 
   // 1. 检查 common 和框架中是否存在 base 和可选 feature
   describe('结构完整性检查', () => {

@@ -5,8 +5,9 @@
   ],
   "compilerOptions": {
     "target": "ESNext",
-    "jsx": "preserve",
+    "module": "ESNext",
     "moduleResolution": "Bundler",
+    "jsx": "preserve",
     "resolveJsonModule": true,
     "allowJs": true,
     "strict": true,

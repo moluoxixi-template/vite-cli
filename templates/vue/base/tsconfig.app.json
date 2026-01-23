@@ -1,8 +1,10 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "lib": [
+      "DOM",
+      "ESNext"
+    ],
     "types": [
       "vite/client"
     ],
@@ -12,6 +14,7 @@
       "@/*": ["./src/*"]
     }
   },
+  "include": ["src"],
   "vueCompilerOptions": {
     "plugins": [
       "@vue-macros/volar/define-models",

@@ -1,14 +1,11 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
-    "types": ["node"],
     "noEmit": false,
     "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true
+    "rewriteRelativeImportExtensions": true,
+    "types": ["node"],
+    "composite": true
   },
   "include": [
     "eslint.config.*"

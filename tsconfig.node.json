@@ -4,8 +4,6 @@
     "lib": [
       "ESNext"
     ],
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
     "noEmit": false,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,

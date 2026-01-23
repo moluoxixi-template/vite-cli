@@ -4,8 +4,6 @@
     "lib": [
       "ESNext"
     ],
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
     "outDir": "./dist",
     "rootDir": "./src",
     "noEmit": false,
