@@ -9,7 +9,6 @@
   "scripts": {
     "dev": "vite",
     "submodule:update": "cd .cursor && git pull && cd .. && git submodule update --init --recursive --remote",
-    "postinstall": "npm run submodule:update",
     "build": "vite build --mode production",
     "build:zip": "vite build --mode production && tsx scripts/build.mts",
     "preview": "vite preview",
