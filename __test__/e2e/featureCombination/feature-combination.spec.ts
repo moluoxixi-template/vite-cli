@@ -127,6 +127,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
         })
 
         it('应该成功安装依赖', async () => {
+          console.log(`📦 使用包管理器: ${packageManager}`)
           const { exitCode, stderr } = await execa(packageManager, ['install'], {
             cwd: projectDir,
             reject: false,

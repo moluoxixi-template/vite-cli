@@ -16,6 +16,8 @@ export interface PackageJson {
   author?: string
   /** 包管理器及版本 */
   packageManager?: string
+  /** 脚本命令 */
+  scripts?: Record<string, string>
   /** 生产依赖 */
   dependencies?: Record<string, string>
   /** 开发依赖 */
