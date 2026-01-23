@@ -21,7 +21,7 @@
     "test": "pnpm --filter @moluoxixi/vite-cli-test test:all",
     "type-check": "tsc --noEmit",
     "lint:eslint": "eslint . --fix",
-    "submodule:update": "git submodule update --init --recursive --remote",
+    "submodule:update": "cd .cursor && git pull && cd .. && git submodule update --init --recursive --remote",
     "lint-staged": "lint-staged",
     "commit": "git add . && git-cz",
     "version:patch": "pnpm version patch --no-git-tag-version",
