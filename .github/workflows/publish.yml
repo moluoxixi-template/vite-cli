@@ -15,10 +15,35 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
+  # 安全扫描任务
+  # 检查依赖是否存在已知漏洞
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+      - run: pnpm install
+      # 安全审计：检查 high 及以上级别的漏洞
+      # 使用 || true 避免因漏洞导致 CI 失败（仅作为警告）
+      # 如需严格模式，移除 || true
+      - name: Security audit
+        run: pnpm audit --audit-level=high || true
+
   # 测试任务
   # 在所有发布操作之前运行，确保代码质量
+  # 使用矩阵策略在多个平台和 Node.js 版本上测试
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: ['lts/*']
+        # 可选：测试多个 Node.js 版本
+        # node: ['18', '20', '22']
+    runs-on: ${{ matrix.os }}
     steps:
       # 检出代码
       - uses: actions/checkout@v6
@@ -27,7 +52,7 @@ jobs:
       # 设置 Node.js 运行环境
       - uses: actions/setup-node@v6
         with:
-          node-version: 'lts/*'
+          node-version: ${{ matrix.node }}
       # 安装项目依赖
       - run: pnpm install
       # 运行所有测试（单元测试、集成测试、E2E 测试）
@@ -37,8 +62,8 @@ jobs:
   # 仅在分支推送时运行（tag 推送时会被跳过）
   # 自动将 package.json 中的版本号 patch 版本 +1，并提交回仓库
   bump-version:
-    # 依赖测试任务，确保测试通过后才执行
-    needs: [test]
+    # 依赖测试任务和安全扫描，确保测试通过后才执行
+    needs: [test, security]
     # 只在分支推送时运行，tag 推送时跳过此任务
     if: github.ref_type == 'branch'
     # 使用 Publish 环境进行部署保护，需要审批才能执行

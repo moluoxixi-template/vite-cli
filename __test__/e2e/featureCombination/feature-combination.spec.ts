@@ -34,6 +34,7 @@ import {
   readPackageJson,
   validateDependencies,
 } from './helpers/dependency-validator'
+import { collectSnapshotData } from './helpers/snapshot-helper'
 
 // __test__ 目录在项目根目录下，所以需要向上一级
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -294,6 +295,18 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           }
 
           expect(result.valid).toBe(true)
+        })
+
+        // 快照测试：验证生成的项目结构和关键文件的稳定性
+        it('生成的项目结构和依赖应该匹配快照', async () => {
+          const snapshotData = await collectSnapshotData(
+            projectDir,
+            testConfig.config.framework as string,
+          )
+
+          // 使用 Vitest 的 toMatchSnapshot
+          // 快照文件会自动保存在 __snapshots__ 目录
+          expect(snapshotData).toMatchSnapshot()
         })
       })
     }

@@ -15,6 +15,7 @@ dist
 # 测试产物
 test-verify
 test-output
+test-results
 coverage
 
 # 文档

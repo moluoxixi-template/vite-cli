@@ -5,7 +5,7 @@
   "private": true,
   "description": "Test suite for @moluoxixi/create-app",
   "scripts": {
-    "test": "vitest",
+    "test": "vitest run",
     "test:unit": "vitest run unit",
     "test:e2e": "vitest run e2e",
     "test:watch": "vitest watch",

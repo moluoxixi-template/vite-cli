@@ -10,12 +10,27 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    // 第一个测试失败后立即停止（确保模板完整性检查失败时，不执行后续测试）
-    bail: 1,
+
+    // ========== 测试执行策略 ==========
+    // 不使用 bail，运行所有测试以显示所有错误
+    // bail: 1,
+
     // 并行执行配置
     pool: 'threads',
     // E2E 测试文件内的测试并发执行
     fileParallelism: true,
+
+    // ========== 超时配置 ==========
+    // 测试超时：5 分钟（E2E 测试需要安装依赖和构建，可能需要较长时间）
+    testTimeout: 5 * 60 * 1000,
+    // Hook（beforeAll/afterAll）超时：2 分钟（E2E 测试的 beforeAll 需要生成项目）
+    hookTimeout: 2 * 60 * 1000,
+
+    // ========== 重试机制 ==========
+    // E2E 测试可能因网络波动失败，允许重试 1 次
+    retry: 1,
+
+    // ========== 覆盖率配置 ==========
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
@@ -33,9 +48,19 @@ export default defineConfig({
         statements: 60,
       },
     },
+
+    // ========== 测试报告 ==========
+    reporters: [
+      'default',
+      // JUnit 报告格式，用于 CI 集成（Jenkins、GitLab CI 等）
+      ['junit', { outputFile: './test-results/junit.xml' }],
+    ],
+
     include: ['**/*.spec.ts'],
-    testTimeout: 0, // 无限制
-    hookTimeout: 0, // 无限制
+
+    // ========== 输出配置 ==========
+    // 显示慢测试（超过 1 秒）
+    slowTestThreshold: 1000,
   },
   resolve: {
     alias: {

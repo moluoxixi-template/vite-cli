@@ -20,9 +20,11 @@ __test__/                           # 独立的测试 workspace
 └── e2e/                          # E2E 测试
     └── featureCombination/      # 功能组合 E2E 测试
         ├── feature-combination.spec.ts # 功能组合测试（包含所有 E2E 测试）
+        ├── __snapshots__/        # 快照测试文件（自动生成）
         └── helpers/              # 功能组合测试辅助工具
             ├── dependency-validator.ts # 依赖验证工具
             ├── import-validator.ts # 导入验证工具
+            ├── snapshot-helper.ts # 快照测试工具
             ├── template-validator.ts # 模板验证工具
             └── test-config-generator.ts # 测试配置生成器
 ```
@@ -90,8 +92,24 @@ __test__/                           # 独立的测试 workspace
   - 代码检查：`pnpm lint:eslint` 通过（如果启用了 ESLint）
   - 项目构建：`pnpm build` 成功，生成构建产物（使用 vite.config 中的 outDir）
   - 构建产物验证：dist 包含 index.html 和资源文件
+  - **快照测试**：验证生成的项目结构和依赖列表的稳定性
 
 **测试配置：** 自动扫描生成所有功能组合（Vue/React × UI库 × 路由模式 × 微前端 × 包管理器等）
+
+### 快照测试（Snapshot Tests）
+
+快照测试用于检测生成项目的意外变更，确保模板渲染的稳定性。
+
+**测试内容：**
+- 项目目录结构
+- package.json 依赖列表（包名，不含版本号）
+- 关键配置文件内容（tsconfig.json、vite.config.ts 等）
+
+**快照更新：**
+当模板有意更改时，需要更新快照：
+```bash
+pnpm test -- -u
+```
 
 **注意：** E2E 测试运行时间较长（根据测试组合数量，通常 10-30 分钟），需要网络连接。
 
@@ -237,7 +255,50 @@ pnpm test:coverage
 2. 创建 Pull Request
 3. 手动触发 GitHub Actions
 
-详见 `.github/workflows/publish.yml`
+### 工作流文件
+
+| 文件 | 触发条件 | 功能 |
+|-----|---------|------|
+| `.github/workflows/ci.yml` | Pull Request | PR 检查（lint、单元测试、多平台 E2E 测试） |
+| `.github/workflows/publish.yml` | Push to main / Tag | 发布流程（测试、安全扫描、版本自增、npm 发布） |
+
+### 多平台测试矩阵
+
+测试在以下环境中运行，确保跨平台兼容性：
+
+| 操作系统 | Node.js |
+|---------|---------|
+| Ubuntu (Linux) | LTS |
+| Windows | LTS |
+| macOS | LTS |
+
+### 安全扫描
+
+CI 流程包含依赖安全扫描：
+- 使用 `pnpm audit` 检查已知漏洞
+- 检查 high 级别及以上的安全问题
+- 扫描结果作为警告显示，不阻塞流程
+
+本地运行安全扫描：
+```bash
+pnpm audit --audit-level=high
+```
+
+### 测试配置
+
+| 配置项 | 值 | 说明 |
+|-------|-----|------|
+| 测试超时 | 5 分钟 | E2E 测试需要安装依赖和构建 |
+| Hook 超时 | 2 分钟 | beforeAll/afterAll 超时 |
+| 重试次数 | 1 次 | 网络波动导致的失败会自动重试 |
+| 慢测试阈值 | 1 秒 | 超过此时间的测试会被标记 |
+
+### 测试报告
+
+测试运行后会生成以下报告：
+- **控制台输出**：默认报告器
+- **JUnit XML**：`test-results/junit.xml`（用于 CI 集成）
+- **覆盖率报告**：`coverage/` 目录（运行 `pnpm test:coverage` 时生成）
 
 ## 调试测试
 

@@ -1,0 +1,74 @@
+name: CI
+
+# PR 检查工作流
+# 在 Pull Request 时运行测试，确保代码质量
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 安全扫描任务
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+      - run: pnpm install
+      - name: Security audit
+        run: pnpm audit --audit-level=high || true
+
+  # 代码质量检查
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+      - run: pnpm install
+      - name: Type check
+        run: pnpm type-check
+      - name: Lint
+        run: pnpm lint
+
+  # 单元测试（快速反馈）
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+      - run: pnpm install
+      - name: Run unit tests
+        run: pnpm test:unit
+
+  # E2E 测试（多平台矩阵）
+  e2e-test:
+    needs: [lint, unit-test]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+      - run: pnpm install
+      - name: Run E2E tests
+        run: pnpm test:e2e
+
