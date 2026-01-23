@@ -145,7 +145,7 @@ function getPackageManagerVersion(packageManager: string): string {
   const versions: Record<string, string> = {
     pnpm: '10.8.0',
     npm: '10.9.0',
-    yarn: '4.1.0',
+    yarn: '1.22.22',
   }
   return versions[packageManager] || versions.pnpm
 }
