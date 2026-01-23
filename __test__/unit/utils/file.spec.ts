@@ -58,8 +58,14 @@ describe('validatePath', () => {
       expect(() => validatePath('../../../etc/passwd')).toThrow('不安全的路径')
     })
 
-    it('应该拒绝包含 ~ 的路径', () => {
+    it('应该拒绝包含 ~/ 的路径（home 目录）', () => {
       expect(() => validatePath('~/secret/file')).toThrow('不安全的路径')
+    })
+
+    it('应该允许 Vite 路径别名（如 ~pages）', () => {
+      // ~pages 是 vite-plugin-pages 的路径别名，应该允许
+      expect(() => validatePath('~pages/index')).not.toThrow()
+      expect(() => validatePath('~page')).not.toThrow()
     })
 
     it('应该拒绝超出 baseDir 范围的路径', () => {

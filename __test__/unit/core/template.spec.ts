@@ -187,7 +187,7 @@ describe('renderTemplate', () => {
         .toThrow('不安全的路径')
     })
 
-    it('应该拒绝包含 ~ 的路径', () => {
+    it('应该拒绝包含 ~/ 的路径（home 目录）', () => {
       expect(() => renderTemplate('~/secret', destDir))
         .toThrow('不安全的路径')
     })

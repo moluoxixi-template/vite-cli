@@ -69,7 +69,7 @@ describe('installDependencies', () => {
         .toThrow('不安全的路径')
     })
 
-    it('应该拒绝包含 ~ 的工作目录', async () => {
+    it('应该拒绝包含 ~/ 的工作目录（home 目录）', async () => {
       const maliciousCwd = '~/secret'
       await expect(installDependencies('pnpm', maliciousCwd))
         .rejects

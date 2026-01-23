@@ -15,8 +15,13 @@ import fs from 'fs-extra'
  * @throws {Error} 如果路径不安全
  */
 export function validatePath(filePath: string, baseDir?: string): void {
-  // 检查路径遍历攻击（.. 和 ~）
-  if (filePath.includes('..') || filePath.includes('~')) {
+  // 检查路径遍历攻击（..）
+  if (filePath.includes('..')) {
+    throw new Error(`不安全的路径: ${filePath}`)
+  }
+
+  // 检查 home 目录路径（~/ 或 ~\），但允许 Vite 别名如 ~pages、~page
+  if (/~[/\\]/.test(filePath)) {
     throw new Error(`不安全的路径: ${filePath}`)
   }
 
