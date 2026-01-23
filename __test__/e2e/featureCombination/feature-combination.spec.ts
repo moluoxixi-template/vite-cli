@@ -91,7 +91,8 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
     return
   }
 
-  describe(`${frameworkName} 项目`, () => {
+  // 使用 describe.concurrent 并行执行不同项目配置的测试
+  describe.concurrent(`${frameworkName} 项目`, () => {
     for (const testConfig of configs) {
       describe(testConfig.name, () => {
         let projectDir: string

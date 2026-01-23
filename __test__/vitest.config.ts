@@ -12,6 +12,10 @@ export default defineConfig({
     environment: 'node',
     // 第一个测试失败后立即停止（确保模板完整性检查失败时，不执行后续测试）
     bail: 1,
+    // 并行执行配置
+    pool: 'threads',
+    // E2E 测试文件内的测试并发执行
+    fileParallelism: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
