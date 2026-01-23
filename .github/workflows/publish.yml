@@ -89,10 +89,6 @@ jobs:
   release:
     # 依赖版本号自增任务，确保测试通过且版本号递增后才执行
     needs: [bump-version]
-    # 条件：无论版本号自增任务是成功还是被跳过，都执行发布任务
-    # - success: 版本号自增成功（分支推送场景）
-    # - skipped: 版本号自增被跳过（tag 推送场景）
-    if: always() && (needs.bump-version.result == 'success' || needs.bump-version.result == 'skipped')
     # 使用 Publish 环境进行部署保护，需要审批才能执行
     environment: Publish
     runs-on: ubuntu-latest
