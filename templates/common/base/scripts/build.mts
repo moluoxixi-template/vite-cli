@@ -24,7 +24,7 @@ async function buildZip(): Promise<void> {
     const viteConfig = await resolveConfig({}, 'build', 'production')
     const buildoutputDir = viteConfig.build.outDir
 
-    const appCode = process.env.VITE_APP_CODE || 'app'
+    const appCode = process.env.VITE_APP_CODE
     const rootPath = path.resolve()
     const distPath = path.join(rootPath, buildoutputDir)
     const outputPath = path.join(rootPath, `${appCode}.zip`)
