@@ -37,7 +37,7 @@ async function render(props: Record<string, unknown> = {}): Promise<void> {
 
   if (container) {
     const root = container.querySelector('#app')
-    app.mount(root)
+    app.mount(root!)
   }
   else {
     app.mount('#app')
