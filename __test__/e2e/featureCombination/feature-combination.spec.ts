@@ -92,9 +92,10 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
   }
 
   // 使用 describe.concurrent 并行执行不同项目配置的测试
+  // 但每个项目内部的测试必须按顺序执行（安装依赖 → 类型检查 → 构建）
   describe.concurrent(`${frameworkName} 项目`, () => {
     for (const testConfig of configs) {
-      describe(testConfig.name, () => {
+      describe.sequential(testConfig.name, () => {
         let projectDir: string
         let packageManager: string
 
