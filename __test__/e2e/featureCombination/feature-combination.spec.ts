@@ -8,7 +8,7 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { execa } from 'execa'
 // TODO: 暂时禁用构建测试
 // import { resolveConfig } from 'vite'
@@ -26,7 +26,7 @@ import {
   scanSourceFiles,
 } from './helpers/template-validator'
 import {
-  cleanupTempDir,
+  // cleanupTempDir,
   createTempDir,
 } from '@test/test-utils'
 import { generateTestConfigs } from './helpers/test-config-generator'
@@ -46,8 +46,8 @@ const TEMPLATES_DIR = path.resolve(__dirname, '../../../templates')
 // 🔍 自动扫描生成测试配置（基于文件系统）
 const TEST_CONFIGS = generateTestConfigs()
 
-// 收集所有临时目录，在测试结束后统一清理
-const tempDirsToCleanup: string[] = []
+// TODO: 暂时禁用清理临时目录
+// const tempDirsToCleanup: string[] = []
 
 /**
  * 获取执行 npm scripts 的命令参数
@@ -114,11 +114,10 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           await generateProject(config)
         })
 
-        afterAll(() => {
-          // 将目录添加到待清理列表，测试结束后统一清理
-          // 这样清理失败不会打断测试流程
-          tempDirsToCleanup.push(projectDir)
-        })
+        // TODO: 暂时禁用清理临时目录
+        // afterAll(() => {
+        //   tempDirsToCleanup.push(projectDir)
+        // })
 
         it('应该存在 package.json 文件', () => {
           const packageJsonPath = path.join(projectDir, 'package.json')
@@ -321,25 +320,25 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
 describe('模板验证与功能组合测试', () => {
   const { templates, errors: structureErrors } = checkBaseAndFeatures(TEMPLATES_DIR)
 
-  // 测试结束后统一清理所有临时目录
-  afterAll(async () => {
-    if (tempDirsToCleanup.length === 0) {
-      return
-    }
+  // TODO: 暂时禁用清理临时目录
+  // afterAll(async () => {
+  //   if (tempDirsToCleanup.length === 0) {
+  //     return
+  //   }
 
-    console.log(`\n🧹 清理 ${tempDirsToCleanup.length} 个临时测试目录...`)
-    const results = await Promise.allSettled(
-      tempDirsToCleanup.map(dir => cleanupTempDir(dir)),
-    )
+  //   console.log(`\n🧹 清理 ${tempDirsToCleanup.length} 个临时测试目录...`)
+  //   const results = await Promise.allSettled(
+  //     tempDirsToCleanup.map(dir => cleanupTempDir(dir)),
+  //   )
 
-    const failed = results.filter(r => r.status === 'rejected')
-    if (failed.length > 0) {
-      console.warn(`⚠️ ${failed.length} 个目录清理失败（Windows 文件锁定），系统会自动清理`)
-    }
-    else {
-      console.log('✅ 所有临时目录已清理')
-    }
-  })
+  //   const failed = results.filter(r => r.status === 'rejected')
+  //   if (failed.length > 0) {
+  //     console.warn(`⚠️ ${failed.length} 个目录清理失败（Windows 文件锁定），系统会自动清理`)
+  //   }
+  //   else {
+  //     console.log('✅ 所有临时目录已清理')
+  //   }
+  // })
 
   // 1. 检查 common 和框架中是否存在 base 和可选 feature
   describe('结构完整性检查', () => {
