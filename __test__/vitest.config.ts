@@ -21,10 +21,10 @@ export default defineConfig({
     fileParallelism: true,
 
     // ========== 超时配置 ==========
-    // 测试超时：5 分钟（E2E 测试需要安装依赖和构建，可能需要较长时间）
-    testTimeout: 5 * 60 * 1000,
-    // Hook（beforeAll/afterAll）超时：2 分钟（E2E 测试的 beforeAll 需要生成项目）
-    hookTimeout: 2 * 60 * 1000,
+    // 测试超时：10 分钟（E2E 测试需要安装依赖和类型检查，可能需要较长时间）
+    testTimeout: 10 * 60 * 1000,
+    // Hook（beforeAll/afterAll）超时：3 分钟（E2E 测试的 beforeAll 需要生成项目）
+    hookTimeout: 3 * 60 * 1000,
 
     // ========== 重试机制 ==========
     // E2E 测试可能因网络波动失败，允许重试 1 次
