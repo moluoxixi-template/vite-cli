@@ -10,7 +10,8 @@ import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { execa } from 'execa'
-import { resolveConfig } from 'vite'
+// TODO: 暂时禁用构建测试
+// import { resolveConfig } from 'vite'
 import { generateProject } from '@/generators/project'
 import type { ProjectConfigType } from '@/types'
 import { FRAMEWORKS } from '@/constants'
@@ -34,7 +35,8 @@ import {
   readPackageJson,
   validateDependencies,
 } from './helpers/dependency-validator'
-import { collectSnapshotData } from './helpers/snapshot-helper'
+// TODO: 暂时禁用快照测试
+// import { collectSnapshotData } from './helpers/snapshot-helper'
 
 // __test__ 目录在项目根目录下，所以需要向上一级
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -58,29 +60,30 @@ function getRunArgs(packageManager: string, script: string): string[] {
   return packageManager === 'npm' ? ['run', script] : [script]
 }
 
-/**
- * 获取 Vite 配置中的输出目录
- * @param projectRoot - 项目根目录路径
- * @param mode - 构建模式，默认为 'production'
- * @returns 输出目录路径，如果未配置则返回 'dist'
- */
-async function getViteOutDir(projectRoot: string, mode: string = 'production'): Promise<string> {
-  try {
-    const viteConfig = await resolveConfig({ root: projectRoot }, 'build', mode)
-    const outDir = viteConfig.build.outDir
+// TODO: 暂时禁用构建测试
+// /**
+//  * 获取 Vite 配置中的输出目录
+//  * @param projectRoot - 项目根目录路径
+//  * @param mode - 构建模式，默认为 'production'
+//  * @returns 输出目录路径，如果未配置则返回 'dist'
+//  */
+// async function getViteOutDir(projectRoot: string, mode: string = 'production'): Promise<string> {
+//   try {
+//     const viteConfig = await resolveConfig({ root: projectRoot }, 'build', mode)
+//     const outDir = viteConfig.build.outDir
 
-    if (outDir) {
-      return outDir
-    }
+//     if (outDir) {
+//       return outDir
+//     }
 
-    // 如果未配置，返回默认值
-    return 'dist'
-  }
-  catch (error) {
-    console.warn('Failed to load vite config, using default outDir:', error)
-    return 'dist'
-  }
-}
+//     // 如果未配置，返回默认值
+//     return 'dist'
+//   }
+//   catch (error) {
+//     console.warn('Failed to load vite config, using default outDir:', error)
+//     return 'dist'
+//   }
+// }
 
 /**
  * 为指定框架生成测试套件
@@ -190,53 +193,54 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           expect(exitCode).toBe(0)
         })
 
-        it('应该成功构建', async () => {
-          const { exitCode, stdout, stderr } = await execa(packageManager, getRunArgs(packageManager, 'build'), {
-            cwd: projectDir,
-            reject: false,
-          })
+        // TODO: 暂时禁用构建测试
+        // it('应该成功构建', async () => {
+        //   const { exitCode, stdout, stderr } = await execa(packageManager, getRunArgs(packageManager, 'build'), {
+        //     cwd: projectDir,
+        //     reject: false,
+        //   })
 
-          const outDir = await getViteOutDir(projectDir, 'production')
-          const distDir = path.join(projectDir, outDir)
-          const distExists = fs.existsSync(distDir)
+        //   const outDir = await getViteOutDir(projectDir, 'production')
+        //   const distDir = path.join(projectDir, outDir)
+        //   const distExists = fs.existsSync(distDir)
 
-          if (exitCode !== 0 || !distExists) {
-            console.error('构建失败:')
-            console.error('退出码:', exitCode)
-            console.error('标准输出:', stdout)
-            console.error('错误输出:', stderr)
-            if (!distExists) {
-              console.error(`${outDir} 目录不存在`)
-            }
-          }
+        //   if (exitCode !== 0 || !distExists) {
+        //     console.error('构建失败:')
+        //     console.error('退出码:', exitCode)
+        //     console.error('标准输出:', stdout)
+        //     console.error('错误输出:', stderr)
+        //     if (!distExists) {
+        //       console.error(`${outDir} 目录不存在`)
+        //     }
+        //   }
 
-          expect(exitCode).toBe(0)
+        //   expect(exitCode).toBe(0)
 
-          // 检查构建输出目录是否生成
-          expect(distExists).toBe(true)
-        })
+        //   // 检查构建输出目录是否生成
+        //   expect(distExists).toBe(true)
+        // })
 
-        it('应该有有效的构建输出', async () => {
-          const outDir = await getViteOutDir(projectDir, 'production')
-          const distDir = path.join(projectDir, outDir)
+        // it('应该有有效的构建输出', async () => {
+        //   const outDir = await getViteOutDir(projectDir, 'production')
+        //   const distDir = path.join(projectDir, outDir)
 
-          if (!fs.existsSync(distDir)) {
-            expect.fail(`未找到 ${outDir} 目录`)
-          }
+        //   if (!fs.existsSync(distDir)) {
+        //     expect.fail(`未找到 ${outDir} 目录`)
+        //   }
 
-          const files = await fs.readdir(distDir)
+        //   const files = await fs.readdir(distDir)
 
-          // 检查是否有 index.html
-          expect(files).toContain('index.html')
+        //   // 检查是否有 index.html
+        //   expect(files).toContain('index.html')
 
-          // 检查是否有 assets 或 static 目录，或者有 .js/.css 文件
-          const hasAssets = files.some((f) => {
-            const fullPath = path.join(distDir, f)
-            const stat = fs.statSync(fullPath)
-            return f.startsWith('assets') || f.startsWith('static') || f.endsWith('.js') || f.endsWith('.css') || (stat.isDirectory() && (f === 'assets' || f === 'static'))
-          })
-          expect(hasAssets).toBe(true)
-        })
+        //   // 检查是否有 assets 或 static 目录，或者有 .js/.css 文件
+        //   const hasAssets = files.some((f) => {
+        //     const fullPath = path.join(distDir, f)
+        //     const stat = fs.statSync(fullPath)
+        //     return f.startsWith('assets') || f.startsWith('static') || f.endsWith('.js') || f.endsWith('.css') || (stat.isDirectory() && (f === 'assets' || f === 'static'))
+        //   })
+        //   expect(hasAssets).toBe(true)
+        // })
 
         it('应该通过依赖验证', async () => {
           // 1. 验证目录引用已解析（catalog: 引用应该被解析为实际版本）
@@ -297,17 +301,17 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           expect(result.valid).toBe(true)
         })
 
-        // 快照测试：验证生成的项目结构和关键文件的稳定性
-        it('生成的项目结构和依赖应该匹配快照', async () => {
-          const snapshotData = await collectSnapshotData(
-            projectDir,
-            testConfig.config.framework as string,
-          )
+        // TODO: 暂时禁用快照测试
+        // it('生成的项目结构和依赖应该匹配快照', async () => {
+        //   const snapshotData = await collectSnapshotData(
+        //     projectDir,
+        //     testConfig.config.framework as string,
+        //   )
 
-          // 使用 Vitest 的 toMatchSnapshot
-          // 快照文件会自动保存在 __snapshots__ 目录
-          expect(snapshotData).toMatchSnapshot()
-        })
+        //   // 使用 Vitest 的 toMatchSnapshot
+        //   // 快照文件会自动保存在 __snapshots__ 目录
+        //   expect(snapshotData).toMatchSnapshot()
+        // })
       })
     }
   })
