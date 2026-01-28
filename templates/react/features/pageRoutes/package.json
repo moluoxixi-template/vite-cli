@@ -1,5 +1,9 @@
 {
   "dependencies": {
     "react-router-dom": "^7.1.3"
+  },
+  "devDependencies": {
+    "@moluoxixi/vite-config": "latest",
+    "vite-plugin-pages": "^0.33.2"
   }
 }

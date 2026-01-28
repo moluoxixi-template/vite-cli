@@ -13,7 +13,7 @@ const config = ViteConfig(({ mode }) => {
   const appTitle = viteEnv.VITE_APP_TITLE
   const port = viteEnv.VITE_APP_PORT
 
-  // 加载所有 feature 配置
+  // 加载所有 feature 配置（与 ViteConfigType 结构一致）
   const featureConfig = loadFeatureConfigs({ viteEnv, mode, appCode })
 
   return {
@@ -22,6 +22,7 @@ const config = ViteConfig(({ mode }) => {
     appCode,
     port,
     autoComponent: true,
+    ...featureConfig,
     viteConfig: mergeConfig(
       {
         build: {
@@ -49,7 +50,7 @@ const config = ViteConfig(({ mode }) => {
           },
         },
       },
-      featureConfig,
+      featureConfig.viteConfig ?? {},
     ),
   }
 })
