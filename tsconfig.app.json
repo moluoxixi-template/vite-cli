@@ -1,8 +1,10 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "lib": [
+      "DOM",
+      "ESNext"
+    ],
     "types": [
       "vite/client"
     ],
@@ -16,10 +18,11 @@
       "@vue-macros/volar/define-emits"
     ]
   },
+  "include": [
+    "templates/**/*"
+  ],
   "exclude": [
-    "dist",
-    "node_modules",
-    "cypress",
-    "vite.config.ts"
+    "templates/**/vite.config.ts",
+    "templates/**/vite/**/*.ts"
   ]
 }

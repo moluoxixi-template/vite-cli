@@ -1,17 +1,10 @@
 {
-  "lib": [
-    "DOM",
-    "ESNext"
-  ],
   "compilerOptions": {
     "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "jsx": "preserve",
     "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    },
     "resolveJsonModule": true,
     "allowJs": true,
     "strict": true,
