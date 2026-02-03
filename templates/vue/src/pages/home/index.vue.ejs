@@ -1,0 +1,78 @@
+<template>
+  <div class="home-page">
+    <h1>首页</h1>
+    <p>这是一个示例页面，展示如何使用 API 服务</p>
+    
+    <div class="example-section">
+      <h2>API 使用示例</h2>
+      <button @click="handleGetUserList">获取用户列表</button>
+      <button @click="handleGetUserInfo">获取用户信息</button>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+/**
+ * 首页组件
+ * 展示 API 使用示例
+ */
+import { getUserList, getUserInfo } from '@/apis'
+
+/**
+ * 获取用户列表
+ */
+async function handleGetUserList() {
+  try {
+    const res = await getUserList({
+      pageNo: 1,
+      pageSize: 10,
+    })
+    console.log('User list:', res.data)
+  }
+  catch (error) {
+    console.error('Get user list failed:', error)
+  }
+}
+
+/**
+ * 获取用户信息
+ */
+async function handleGetUserInfo() {
+  try {
+    const res = await getUserInfo()
+    console.log('User info:', res.data)
+  }
+  catch (error) {
+    console.error('Get user info failed:', error)
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.home-page {
+  padding: 20px;
+  
+  h1 {
+    color: #333;
+    margin-bottom: 16px;
+  }
+  
+  .example-section {
+    margin-top: 24px;
+    
+    button {
+      margin-right: 12px;
+      padding: 8px 16px;
+      background: #3A77FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      
+      &:hover {
+        background: #2d5fcc;
+      }
+    }
+  }
+}
+</style>

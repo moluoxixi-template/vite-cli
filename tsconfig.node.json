@@ -4,13 +4,20 @@
     "lib": [
       "ESNext"
     ],
-    "noEmit": false,
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "noEmit": true,
     "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true,
     "composite": true
   },
   "include": [
-    "templates/**/vite.config.ts",
-    "templates/**/vite/**/*.ts"
+    "src/**/*",
+    "eslint.config.ts",
+    "tsconfig*.json"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "templates"
   ]
 }

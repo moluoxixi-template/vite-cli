@@ -1,0 +1,52 @@
+/**
+ * 首页组件
+ * 展示 API 使用示例
+ */
+
+import { getUserList, getUserInfo } from '@/apis'
+
+function Home() {
+  /**
+   * 获取用户列表
+   */
+  async function handleGetUserList() {
+    try {
+      const res = await getUserList({
+        pageNo: 1,
+        pageSize: 10,
+      })
+      console.log('User list:', res.data)
+    }
+    catch (error) {
+      console.error('Get user list failed:', error)
+    }
+  }
+
+  /**
+   * 获取用户信息
+   */
+  async function handleGetUserInfo() {
+    try {
+      const res = await getUserInfo()
+      console.log('User info:', res.data)
+    }
+    catch (error) {
+      console.error('Get user info failed:', error)
+    }
+  }
+
+  return (
+    <div className="home-page">
+      <h1>首页</h1>
+      <p>这是一个示例页面，展示如何使用 API 服务</p>
+
+      <div className="example-section">
+        <h2>API 使用示例</h2>
+        <button onClick={handleGetUserList}>获取用户列表</button>
+        <button onClick={handleGetUserInfo}>获取用户信息</button>
+      </div>
+    </div>
+  )
+}
+
+export default Home

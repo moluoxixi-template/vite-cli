@@ -1,0 +1,38 @@
+module.exports = {
+  types: [
+    { value: 'fix', name: 'fix:      修复缺陷' },
+    { value: 'feat', name: 'feat:     新增功能，迭代项目需求' },
+    {
+      value: 'style',
+      name: 'style:    代码格式修改, 注意不是 css 修改',
+    },
+    {
+      value: 'refactor',
+      name: 'refactor: 重构代码，非新增功能也非修复缺陷',
+    },
+    {
+      value: 'perf',
+      name: 'perf:     优化相关，比如提升性能、体验',
+    },
+    {
+      value: 'chore',
+      name: 'chore:    其他修改, 比如改变构建流程、或者增加依赖库、工具等',
+    },
+    { value: 'revert', name: 'revert:   回滚版本，撤销某次代码提交' },
+    { value: 'docs', name: 'docs:    更新文档，仅修改文档不修改代码' },
+    { value: 'test', name: 'test:     新增测试，追加测试用例验证代码' },
+    { value: 'ci', name: 'ci:      更新脚本，改动CI或执行脚本配置' },
+  ],
+  messages: {
+    type: '选择你要提交的更改类型:',
+    scope: '此更改的范围是什么(例如组件或文件名)(可选):',
+    customScope: '请输入自定义的更改范围(可选):',
+    subject: '写一个简短的变更描述(必填):',
+    body: '提供更详细的变更描述(可选按回车跳过):',
+    breaking: '列出任何破坏性更改(可选按回车跳过):',
+    footer: '列出此更改关闭的issues(可选按回车跳过):',
+    confirmCommit: '确认提交上述内容?',
+  },
+  subjectLimit: 100,
+  skipQuestions: ['scope', 'customScope', 'body', 'breaking', 'footer'],
+}

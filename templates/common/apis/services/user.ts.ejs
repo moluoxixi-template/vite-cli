@@ -1,0 +1,69 @@
+/**
+ * 用户相关 API 服务
+ */
+
+import { defaultApi } from '../request'
+import type {
+  ApiResponse,
+  LoginParams,
+  LoginResponse,
+  PageParams,
+  PageResponse,
+  UserInfo,
+} from '../types'
+
+/**
+ * 用户登录
+ * @param params 登录参数
+ * @returns 登录响应
+ */
+export async function login(params: LoginParams) {
+  return defaultApi.post<ApiResponse<LoginResponse>>('/auth/login', params)
+}
+
+/**
+ * 获取当前用户信息
+ * @returns 用户信息
+ */
+export async function getUserInfo() {
+  return defaultApi.get<ApiResponse<UserInfo>>('/user/info')
+}
+
+/**
+ * 获取用户列表（分页）
+ * @param params 分页参数
+ * @returns 用户列表
+ */
+export async function getUserList(params: PageParams) {
+  return defaultApi.get<ApiResponse<PageResponse<UserInfo>>>('/user/list', {
+    params,
+  })
+}
+
+/**
+ * 创建用户
+ * @param data 用户数据
+ * @returns 创建的用户信息
+ */
+export async function createUser(data: Partial<UserInfo>) {
+  return defaultApi.post<ApiResponse<UserInfo>>('/user/create', data)
+}
+
+/**
+ * 更新用户信息
+ * @param id 用户 ID
+ * @param data 更新的用户数据
+ * @returns 更新后的用户信息
+ */
+export async function updateUser(id: string, data: Partial<UserInfo>) {
+  return defaultApi.put<ApiResponse<UserInfo>>(`/user/${id}`, data)
+}
+
+/**
+ * 删除用户
+ * @param id 用户 ID
+ * @returns 删除结果
+ */
+export async function deleteUser(id: string) {
+  return defaultApi.delete<ApiResponse<void>>(`/user/${id}`)
+}

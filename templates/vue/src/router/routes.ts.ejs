@@ -1,0 +1,39 @@
+/**
+ * 路由配置定义（手动路由模式）
+ * 手动定义所有路由
+ */
+
+import type { RouteRecordRaw } from 'vue-router'
+
+/**
+ * 路由配置数组
+ */
+const routes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    name: 'layout',
+    component: () => import('./layout.vue'),
+    children: [
+      {
+        path: 'home',
+        name: 'home',
+        component: () => import('@/pages/home/index.vue'),
+        meta: {
+          title: '首页',
+          keep: false,
+        },
+      },
+      {
+        path: 'about',
+        name: 'about',
+        component: () => import('@/pages/about/index.vue'),
+        meta: {
+          title: '关于',
+          keep: false,
+        },
+      },
+    ],
+  },
+]
+
+export default routes

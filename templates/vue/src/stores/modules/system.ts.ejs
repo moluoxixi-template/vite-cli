@@ -1,0 +1,60 @@
+/**
+ * 系统状态管理
+ * 管理主题、布局等系统级状态
+ */
+
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import { store } from '@/stores'
+
+export const systemStore = defineStore(
+  'system',
+  () => {
+    // 主题颜色
+    const themeColor = ref('#3A77FF')
+    // 布局类型
+    const layout = ref('<%= isElementPlus ? "element" : "AntDesign" %>')
+    // 系统代码
+    const systemCode = ref(import.meta.env.VITE_APP_CODE || '')
+
+    /**
+     * 设置主题颜色
+     * @param color 主题颜色
+     */
+    function setTheme(color: string) {
+      themeColor.value = color
+    }
+
+    /**
+     * 设置布局类型
+     * @param layoutType 布局类型
+     */
+    function setLayout(layoutType: string) {
+      layout.value = layoutType
+    }
+
+    /**
+     * 设置系统代码
+     * @param code 系统代码
+     */
+    function setSystemCode(code: string) {
+      systemCode.value = code
+    }
+
+    return {
+      themeColor,
+      layout,
+      systemCode,
+      setTheme,
+      setLayout,
+      setSystemCode,
+    }
+  },
+  {
+    persist: true,
+  },
+)
+
+export function useSystemStore() {
+  return systemStore(store)
+}

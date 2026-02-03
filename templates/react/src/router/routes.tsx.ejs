@@ -1,0 +1,31 @@
+/**
+ * 路由配置定义（手动路由模式）
+ * 手动定义所有路由
+ */
+
+import type { RouteObject } from 'react-router-dom'
+import Layout from '@/layouts'
+import Home from '@/pages/home'
+import About from '@/pages/about'
+
+/**
+ * 路由配置数组
+ */
+const routes: RouteObject[] = [
+  {
+    path: '/',
+    element: <Layout />,
+    children: [
+      {
+        path: 'home',
+        element: <Home />,
+      },
+      {
+        path: 'about',
+        element: <About />,
+      },
+    ],
+  },
+]
+
+export default routes

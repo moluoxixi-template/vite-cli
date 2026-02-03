@@ -1,9 +1,0 @@
-/**
- * 工具函数导出
- */
-
-// 导出通用工具函数
-export * from './common'
-
-// 导出 Vue 特定的工具函数
-export * from './modifyComponent'

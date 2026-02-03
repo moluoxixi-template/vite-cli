@@ -1,0 +1,77 @@
+/**
+ * 用户状态管理
+ * 管理用户信息、登录状态等
+ */
+
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import { login, getUserInfo } from '@/apis'
+
+interface UserState {
+  token: string
+  userInfo: any | null
+  userLogin: (username: string, password: string) => Promise<void>
+  fetchUserInfo: () => Promise<void>
+  getToken: () => string
+  logout: () => void
+}
+
+export const useUserStore = create<UserState>()(
+  persist(
+    (set, get) => ({
+      token: '',
+      userInfo: null,
+
+      /**
+       * 用户登录
+       * @param username 用户名
+       * @param password 密码
+       */
+      async userLogin(username: string, password: string) {
+        try {
+          const res = await login({ username, password })
+          set({
+            token: res.data.token,
+            userInfo: res.data.userInfo,
+          })
+        }
+        catch (error) {
+          console.error('Login failed:', error)
+          throw error
+        }
+      },
+
+      /**
+       * 获取用户信息
+       */
+      async fetchUserInfo() {
+        try {
+          const res = await getUserInfo()
+          set({ userInfo: res.data })
+        }
+        catch (error) {
+          console.error('Get user info failed:', error)
+          throw error
+        }
+      },
+
+      /**
+       * 获取 token
+       * @returns token
+       */
+      getToken() {
+        return get().token
+      },
+
+      /**
+       * 退出登录
+       */
+      logout() {
+        set({ token: '', userInfo: null })
+      },
+    }),
+    {
+      name: 'user-storage',
+    },
+  ),
+)

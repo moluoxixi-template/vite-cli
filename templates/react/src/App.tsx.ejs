@@ -1,0 +1,33 @@
+/**
+ * 根组件
+ * 作为应用的入口组件，使用文件系统路由
+ */
+
+<% if (config.routeMode === 'file-system') { -%>
+import { Suspense } from 'react'
+import { useRoutes } from 'react-router-dom'
+import { routes } from './router'
+import Layout from '@/layouts'
+
+function App() {
+  return (
+    <Layout>
+      <Suspense fallback={<p>Loading...</p>}>
+        {useRoutes(routes)}
+      </Suspense>
+    </Layout>
+  )
+}
+<% } else { -%>
+import { Outlet } from 'react-router-dom'
+
+function App() {
+  return (
+    <div className="app">
+      <Outlet />
+    </div>
+  )
+}
+<% } -%>
+
+export default App

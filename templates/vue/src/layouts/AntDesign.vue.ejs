@@ -1,0 +1,107 @@
+<template>
+  <AConfigProvider>
+    <ALayout
+      class="h-full"
+<% if (config.qiankun) { -%>
+      :class="{ 'h-screen!': !qiankunWindow.__POWERED_BY_QIANKUN__ }"
+<% } else { -%>
+      :class="{ 'h-screen!': true }"
+<% } -%>
+    >
+      <ALayoutHeader
+<% if (config.qiankun) { -%>
+        v-if="!qiankunWindow.__POWERED_BY_QIANKUN__"
+<% } -%>
+        class="headerbox"
+      >
+        <AMenu
+          v-model:selectedKeys="selectedKeys"
+          mode="horizontal"
+          theme="dark"
+        >
+          <template v-for="(route, index) in routes" :key="route.path || index">
+            <AMenuItem
+              v-if="!route.children?.length"
+              @click="handleMenuClick(route)"
+            >
+              {{ route.meta?.title || route.name || route.path }}
+            </AMenuItem>
+            <ASubMenu v-else :title="route.meta?.title || route.name">
+              <AMenuItem
+                v-for="child in route.children"
+                :key="child.path"
+                @click="handleMenuClick(child)"
+              >
+                {{ child.meta?.title || child.name || child.path }}
+              </AMenuItem>
+            </ASubMenu>
+          </template>
+        </AMenu>
+      </ALayoutHeader>
+      <ALayoutContent style="padding: 24px; background: #fff">
+        <RouterView v-slot="{ Component, route }">
+          <Transition name="fade">
+            <KeepAlive v-if="route.meta.keep">
+              <Component :is="Component" :key="route.path" />
+            </KeepAlive>
+            <component :is="Component" v-else :key="route.path" />
+          </Transition>
+        </RouterView>
+      </ALayoutContent>
+    </ALayout>
+  </AConfigProvider>
+</template>
+
+<script lang="ts" setup>
+/**
+ * Ant Design Vue 布局组件
+ */
+<% if (config.routeMode === 'file-system') { -%>
+import routes from '~pages'
+<% } else { -%>
+import routes from '@/router/routes'
+<% } -%>
+<% if (config.qiankun) { -%>
+import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
+<% } -%>
+import {
+  ConfigProvider as AConfigProvider,
+  Layout as ALayout,
+  LayoutContent as ALayoutContent,
+  LayoutHeader as ALayoutHeader,
+  Menu as AMenu,
+  MenuItem as AMenuItem,
+  SubMenu as ASubMenu,
+} from 'ant-design-vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+<% if (config.routeMode === 'file-system') { -%>
+// 文件系统路由模式，使用第一个路由作为默认选中
+const selectedKeys = ref([routes[0]?.path || '/'])
+<% } else { -%>
+// 手动路由模式，使用第一个子路由作为默认选中
+const selectedKeys = ref([routes[0]?.children?.[0]?.path || '/'])
+<% } -%>
+
+function handleMenuClick(route: any) {
+  if (route.path) {
+    router.push(route.path)
+    selectedKeys.value = [route.path]
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.headerbox {
+  padding: 0;
+  
+  :deep(.ant-menu) {
+    line-height: 64px;
+    display: flex;
+    justify-content: center;
+  }
+}
+</style>
+

@@ -1,0 +1,31 @@
+/**
+ * 国际化配置
+ * 使用 vue-i18n 进行国际化
+ */
+
+import { createI18n } from 'vue-i18n'
+import zh from './lang/zh'
+import en from './lang/en'
+import es from './lang/es'
+
+const messages = {
+  zh,
+  en,
+  es,
+}
+
+// 从 localStorage 获取保存的语言，或使用浏览器语言
+const savedLanguage = window.localStorage.getItem('language')
+let language = navigator.language.split('-')[0]
+if (!savedLanguage && language) {
+  window.localStorage.setItem('language', language)
+}
+language = savedLanguage || language
+
+const i18n = createI18n({
+  legacy: false,
+  locale: language,
+  messages,
+})
+
+export default i18n

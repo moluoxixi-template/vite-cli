@@ -1,125 +1,48 @@
 /**
  * 依赖安装工具
- * 执行包管理器安装依赖
+ * 执行包管理器安装命令
  */
 
-import type { PackageManagerType } from '../types/index.ts'
-
-import { exec, spawn } from 'node:child_process'
-import { promisify } from 'node:util'
-
-import { PACKAGE_MANAGERS } from '../constants/index.ts'
-import { validatePath } from './file.ts'
-
-const execAsync = promisify(exec) // exec 用于 initGit 函数
-
-/** 重试延迟基数（毫秒） */
-const RETRY_DELAY_BASE_MS = 1000
+import type { PackageManager } from '../types'
+import { execSync } from 'node:child_process'
 
 /**
- * 验证命令参数安全性
- * @param packageManager 包管理器类型
- * @param cwd 工作目录
- * @throws {Error} 如果包管理器类型不支持或路径不安全
- */
-function validateInstallParams(packageManager: PackageManagerType, cwd: string): void {
-  // 验证包管理器类型（从常量中获取）
-  if (!PACKAGE_MANAGERS.includes(packageManager)) {
-    throw new Error(`不支持的包管理器: ${packageManager}`)
-  }
-
-  // 验证工作目录路径（防止路径遍历攻击）
-  validatePath(cwd)
-}
-
-/**
- * 安装依赖
+ * 安装项目依赖
  * @param packageManager 包管理器
- * @param cwd 工作目录
- * @param retries 重试次数，默认 0（不重试）
- * @returns Promise<void>
- * @throws {Error} 如果安装失败
+ * @param targetDir 目标目录
  */
-export async function installDependencies(
-  packageManager: PackageManagerType,
-  cwd: string,
-  retries = 0,
-): Promise<void> {
-  // 验证参数安全性
-  validateInstallParams(packageManager, cwd)
-
-  const commands: Record<PackageManagerType, string> = {
-    pnpm: 'pnpm install',
-    npm: 'npm install',
-    yarn: 'yarn install',
-  }
-
-  const command = commands[packageManager]
-
-  let lastError: Error | undefined
-
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      // 使用 spawn 以支持实时输出
-      await new Promise<void>((resolve, reject) => {
-        const [cmd, ...args] = command.split(' ')
-        const child = spawn(cmd, args, {
-          cwd,
-          stdio: 'inherit', // 直接输出到终端
-          shell: true, // Windows 需要 shell
-        })
-
-        child.on('close', (code) => {
-          if (code === 0) {
-            resolve()
-          }
-          else {
-            reject(new Error(`命令退出，退出码: ${code}`))
-          }
-        })
-
-        child.on('error', (error) => {
-          reject(error)
-        })
-      })
-      return // 成功则返回
-    }
-    catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error))
-      if (attempt < retries) {
-        // 等待后重试（指数退避）
-        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_BASE_MS * (attempt + 1)))
-      }
-    }
-  }
-
-  // 所有重试都失败，抛出详细错误
-  throw new Error(
-    `依赖安装失败 (${packageManager}): ${lastError?.message || '未知错误'}\n`
-    + `工作目录: ${cwd}\n`
-    + `命令: ${command}`,
-    { cause: lastError },
-  )
-}
-
-/**
- * 初始化 Git 仓库
- * @param cwd 工作目录
- * @param projectName 项目名称，用于生成提交信息
- * @returns Promise<void>
- */
-export async function initGit(cwd: string, projectName: string): Promise<void> {
+export function installDependencies(
+  packageManager: PackageManager,
+  targetDir: string,
+): void {
   try {
-    // 验证路径安全性
-    validatePath(cwd)
+    console.log(`\nInstalling dependencies with ${packageManager}...`)
 
-    await execAsync('git init', { cwd })
-    // 添加 AIRules 子模块
-    await execAsync('git submodule add -b main https://github.com/moluoxixi/AIRules.git .cursor', { cwd })
-    await execAsync('git add .', { cwd })
-    await execAsync(`git commit -m "feat: initialize ${projectName}"`, { cwd })
+    // 根据包管理器执行不同的安装命令
+    let command: string
+    switch (packageManager) {
+      case 'pnpm':
+        command = 'pnpm install'
+        break
+      case 'yarn':
+        command = 'yarn install'
+        break
+      case 'npm':
+      default:
+        command = 'npm install'
+        break
+    }
+
+    // 执行安装命令
+    execSync(command, {
+      cwd: targetDir,
+      stdio: 'inherit',
+    })
+
+    console.log('\n✅ Dependencies installed successfully!')
   }
-  catch {
-    // Git 初始化失败不影响项目创建，静默失败
+  catch (error) {
+    console.error('\n❌ Failed to install dependencies:', error)
+    throw error
   }
 }

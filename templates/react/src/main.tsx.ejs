@@ -1,0 +1,121 @@
+/**
+ * 应用入口文件
+ * 初始化 React 应用并挂载到 DOM
+ */
+
+<% if (config.qiankun) { -%>
+import type { QiankunProps } from 'vite-plugin-qiankun/dist/helper'
+import { qiankunWindow, renderWithQiankun } from 'vite-plugin-qiankun/dist/helper'
+<% } -%>
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+<% if (config.sentry) { -%>
+import { initSentry } from '@/utils/sentry'
+<% } -%>
+<% if (config.routeMode === 'file-system') { -%>
+import { BrowserRouter } from 'react-router-dom'
+import App from './App'
+<% } else { -%>
+import { RouterProvider } from 'react-router-dom'
+import { router } from './router'
+<% } -%>
+
+// 导入样式文件
+<% if (isAntDesign) { -%>
+import 'antd/dist/reset.css'
+<% } -%>
+import '@/assets/styles/main.scss'
+import '@/assets/fonts/index.css'
+
+<% if (config.qiankun) { -%>
+/**
+ * 渲染应用（支持 qiankun 微前端）
+ * @param props qiankun 传递的 props
+ */
+function render(props: QiankunProps = {}) {
+  const { container } = props
+  const rootElement = container
+    ? container.querySelector('#app')
+    : document.querySelector('#app')
+
+  if (!rootElement) {
+    throw new Error('Root element not found')
+  }
+
+  const root = createRoot(rootElement)
+
+<% if (config.sentry) { -%>
+  // 初始化 Sentry（生产环境标准配置）
+  initSentry()
+
+<% } -%>
+<% if (config.routeMode === 'file-system') { -%>
+  root.render(
+    <StrictMode>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </StrictMode>,
+  )
+<% } else { -%>
+  root.render(
+    <StrictMode>
+      <RouterProvider router={router} />
+    </StrictMode>,
+  )
+<% } -%>
+}
+
+// 独立运行时
+if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
+  render({})
+}
+else {
+  renderWithQiankun({
+    mount(props: QiankunProps) {
+      render(props)
+    },
+    bootstrap() {
+      // qiankun 启动钩子
+    },
+    unmount() {
+      // qiankun 卸载钩子
+    },
+    update() {
+      // qiankun 更新钩子
+    },
+  })
+}
+<% } else { -%>
+/**
+ * 独立运行模式
+ */
+const rootElement = document.querySelector('#app')
+
+if (!rootElement) {
+  throw new Error('Root element not found')
+}
+
+const root = createRoot(rootElement)
+
+<% if (config.sentry) { -%>
+// 初始化 Sentry（生产环境标准配置）
+initSentry()
+
+<% } -%>
+<% if (config.routeMode === 'file-system') { -%>
+root.render(
+  <StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </StrictMode>,
+)
+<% } else { -%>
+root.render(
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>,
+)
+<% } -%>
+<% } -%>

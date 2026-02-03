@@ -1,0 +1,127 @@
+<%
+// 构建 dependencies 对象
+const dependencies = {}
+
+// UI 库依赖
+if (isAntDesign) {
+  dependencies['@ant-design/icons'] = 'catalog:build'
+  dependencies['antd'] = 'catalog:build'
+}
+
+// 核心依赖
+dependencies['@moluoxixi/ajax-package'] = 'catalog:build'
+dependencies['@moluoxixi/class-names'] = 'catalog:build'
+dependencies['crypto-js'] = 'catalog:build'
+dependencies['dayjs'] = 'catalog:build'
+dependencies['lodash-es'] = 'catalog:build'
+dependencies['radash'] = 'catalog:build'
+dependencies['react'] = 'catalog:build'
+dependencies['react-dom'] = 'catalog:build'
+dependencies['react-router-dom'] = 'catalog:build'
+dependencies['uuid'] = 'catalog:build'
+dependencies['zustand'] = 'catalog:build'
+
+// 可选依赖
+if (config.i18n) {
+  dependencies['i18next'] = 'catalog:build'
+  dependencies['react-i18next'] = 'catalog:build'
+}
+
+if (config.routeMode === 'file-system') {
+  dependencies['vite-plugin-pages'] = 'catalog:build'
+}
+
+if (config.qiankun) {
+  dependencies['vite-plugin-qiankun'] = 'catalog:build'
+}
+
+if (config.sentry) {
+  dependencies['@sentry/react'] = 'catalog:build'
+  dependencies['@sentry/vite-plugin'] = 'catalog:build'
+}
+
+// 按字母排序
+const sortedDependencies = Object.keys(dependencies).sort().reduce((obj, key) => {
+  obj[key] = dependencies[key]
+  return obj
+}, {})
+
+// 构建完整的 package.json 对象
+const packageJson = {
+  name: config.projectName,
+  version: '0.0.0',
+  type: 'module',
+  private: true,
+  engines: {
+    node: '>=20.18.0'
+  },
+  packageManager: 'pnpm@10.8.0',
+  scripts: {
+    dev: 'vite',
+    build: 'vite build --mode production',
+    'build:zip': 'vite build --mode production && tsx scripts/build.mts',
+    preview: 'vite preview',
+    'type-check': 'tsc --noEmit',
+    'lint:eslint': 'eslint . --fix',
+    prepare: 'node .husky/install.mjs',
+    'lint-staged': 'lint-staged',
+    commit: 'git add . && git-cz'
+  },
+  postcss: {
+    plugins: {
+      tailwindcss: {},
+      autoprefixer: {}
+    }
+  },
+  'lint-staged': {
+    '*.{js,jsx,ts,tsx,css,scss,less}': [
+      'eslint --fix --no-warn-ignored'
+    ]
+  },
+  config: {
+    commitizen: {
+      path: 'cz-customizable'
+    },
+    'cz-customizable': {
+      config: '.cz-config.cjs'
+    }
+  },
+  dependencies: sortedDependencies,
+  devDependencies: {
+    '@commitlint/cli': 'catalog:dev',
+    '@commitlint/config-conventional': 'catalog:dev',
+    '@moluoxixi/ajax-package': 'catalog:dev',
+    '@moluoxixi/css-module-global-root-plugin': 'catalog:dev',
+    '@moluoxixi/eslint-config': 'catalog:dev',
+    '@moluoxixi/vite-config': 'catalog:dev',
+    '@types/crypto-js': 'catalog:type',
+    '@types/lodash-es': 'catalog:type',
+    '@types/node': 'catalog:type',
+    '@types/react': 'catalog:type',
+    '@types/react-dom': 'catalog:type',
+    '@types/uuid': 'catalog:type',
+    '@vitejs/plugin-react': 'catalog:dev',
+    autoprefixer: 'catalog:dev',
+    commitizen: 'catalog:dev',
+    compressing: 'catalog:dev',
+    'cz-customizable': 'catalog:dev',
+    dotenv: 'catalog:dev',
+    eslint: 'catalog:dev',
+    'eslint-plugin-format': 'catalog:dev',
+    husky: 'catalog:dev',
+    jiti: 'catalog:dev',
+    'lint-staged': 'catalog:dev',
+    postcss: 'catalog:dev',
+    sass: 'catalog:dev',
+    'sass-embedded': 'catalog:dev',
+    'sass-loader': 'catalog:dev',
+    tailwindcss: 'catalog:dev',
+    tsx: 'catalog:dev',
+    typescript: 'catalog:dev',
+    vite: 'catalog:dev'
+  },
+  author: config.author || '',
+  license: 'MIT'
+}
+-%>
+<%- JSON.stringify(packageJson, null, 2) %>

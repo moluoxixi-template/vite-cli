@@ -1,70 +1,52 @@
 /**
- * CLI type definitions
- * Define project configuration, template layers and other core types
+ * CLI 类型定义
  */
-
-import type { MicroFrontendEngine } from './features.ts'
-
-export * from './features.ts'
 
 /**
- * Framework type
+ * 框架类型
  */
-export type FrameworkType = 'vue' | 'react'
+export type Framework = 'vue' | 'react'
 
 /**
- * UI library type
+ * UI 库类型
  */
-export type UILibraryType = 'element-plus' | 'ant-design-vue' | 'ant-design'
+export type UILibrary = 'element-plus' | 'ant-design-vue' | 'ant-design'
 
 /**
- * Route mode type
+ * 路由模式类型
  */
-export type RouteModeType = 'manualRoutes' | 'pageRoutes'
+export type RouteMode = 'file-system' | 'manual'
 
 /**
- * Package manager type
+ * 包管理器类型
  */
-export type PackageManagerType = 'pnpm' | 'npm' | 'yarn'
+export type PackageManager = 'pnpm' | 'npm' | 'yarn'
 
 /**
- * Project configuration interface
+ * 项目配置
  */
-export interface ProjectConfigType {
-  /** Project name */
+export interface ProjectConfig {
+  /** 项目名称 */
   projectName: string
-  /** Project description */
+  /** 项目描述 */
   description: string
-  /** Author */
+  /** 作者 */
   author: string
-  /** Framework type */
-  framework: FrameworkType
-  /** UI library (feature name: element-plus | ant-design-vue | ant-design) */
-  uiLibrary: UILibraryType
-  /** Route mode (determines manualRoutes or pageRoutes feature) */
-  routeMode: RouteModeType
-  /** Enable pinia feature (Vue) */
-  pinia?: boolean
-  /** Enable zustand feature (React) */
-  zustand?: boolean
-  /** Enable manualRoutes feature */
-  manualRoutes?: boolean
-  /** Enable pageRoutes feature */
-  pageRoutes?: boolean
-  /** Enable i18n feature */
+  /** 框架类型 */
+  framework: Framework
+  /** UI 库 */
+  uiLibrary: UILibrary
+  /** 路由模式 */
+  routeMode: RouteMode
+  /** 是否启用国际化 */
   i18n: boolean
-  /** Enable micro-frontend support */
-  microFrontend: boolean
-  /** Micro-frontend engine (qiankun, micro-app, etc.) - valid when microFrontend is true */
-  microFrontendEngine?: MicroFrontendEngine
-  /** Enable sentry feature */
+  /** 是否启用微前端支持 */
+  qiankun: boolean
+  /** 是否启用错误监控 */
   sentry: boolean
-  /** Enable eslint feature */
-  eslint: boolean
-  /** Enable husky feature (Git Hooks) */
-  husky: boolean
-  /** Package manager */
-  packageManager: PackageManagerType
-  /** Target directory */
+  /** 包管理器 */
+  packageManager: PackageManager
+  /** 目标目录 */
   targetDir: string
 }
+

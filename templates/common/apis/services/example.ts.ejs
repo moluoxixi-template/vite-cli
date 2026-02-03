@@ -1,0 +1,53 @@
+/**
+ * 示例 API 服务
+ * 展示如何使用 BaseApi 进行各种类型的请求
+ */
+
+import { defaultApi } from '../request'
+import type { ApiResponse, PageParams } from '../types'
+
+/**
+ * 示例：GET 请求（带查询参数）
+ * @param params 查询参数
+ * @returns 数据列表
+ */
+export async function getExampleList(params: PageParams) {
+  return defaultApi.get<ApiResponse<any[]>>('/example/list', { params })
+}
+
+/**
+ * 示例：GET 请求（获取单个资源）
+ * @param id 资源 ID
+ * @returns 资源数据
+ */
+export async function getExampleById(id: string) {
+  return defaultApi.get<ApiResponse<any>>(`/example/${id}`)
+}
+
+/**
+ * 示例：POST 请求（创建资源）
+ * @param data 创建数据
+ * @returns 创建的资源
+ */
+export async function createExample(data: any) {
+  return defaultApi.post<ApiResponse<any>>('/example/create', data)
+}
+
+/**
+ * 示例：PUT 请求（更新资源）
+ * @param id 资源 ID
+ * @param data 更新数据
+ * @returns 更新后的资源
+ */
+export async function updateExample(id: string, data: any) {
+  return defaultApi.put<ApiResponse<any>>(`/example/${id}`, data)
+}
+
+/**
+ * 示例：DELETE 请求（删除资源）
+ * @param id 资源 ID
+ * @returns 删除结果
+ */
+export async function deleteExample(id: string) {
+  return defaultApi.delete<ApiResponse<void>>(`/example/${id}`)
+}

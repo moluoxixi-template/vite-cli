@@ -1,0 +1,91 @@
+/**
+ * Vite 配置文件
+ * 基于 @moluoxixi/vite-config 的配置
+ */
+
+import path from 'node:path'
+import process from 'node:process'
+import cssModuleGlobalRootPlugin from '@moluoxixi/css-module-global-root-plugin'
+import { ViteConfig, wrapperEnv } from '@moluoxixi/vite-config'
+<% if (config.sentry) { -%>
+import { sentryVitePlugin } from '@sentry/vite-plugin'
+<% } -%>
+import { loadEnv } from 'vite'
+
+export default ViteConfig(
+  ({ mode }) => {
+    const env = loadEnv(mode!, process.cwd())
+    const viteEnv = wrapperEnv(env)
+    const rootPath = path.resolve()
+    const appCode = viteEnv.VITE_APP_CODE
+    const appTitle = viteEnv.VITE_APP_TITLE
+    const port = viteEnv.VITE_APP_PORT
+    return {
+      rootPath,
+      appTitle,
+      appCode,
+      port,
+      vue: true,
+      // 自动组件导入
+      autoComponent: true,
+<% if (config.routeMode === 'file-system') { -%>
+      // 文件系统路由（基于 vite-plugin-pages）
+      pageRoutes: true,
+<% } -%>
+      viteConfig: {
+        plugins: [
+<% if (config.sentry) { -%>
+          // Sentry Source Map 上传插件（仅在生产环境且配置了 VITE_SENTRY 时启用）
+          viteEnv.VITE_SENTRY
+          && mode === 'production'
+          && sentryVitePlugin({
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+            org: 'f1f562b9b82f',
+            project: 'javascript-vue',
+            // 仅上传 source map，不上传源码
+            sourcemaps: {
+              assets: './dist/**',
+              ignore: ['node_modules'],
+            },
+            // 设置发布版本
+            release: {
+              name: viteEnv.VITE_APP_VERSION || 'unknown',
+            },
+          }),
+<% } -%>
+        ],
+        server: {
+          proxy: {
+            // 代理配置示例（可根据实际需求修改）
+            '/api': {
+              changeOrigin: true,
+              target: 'http://localhost:3000',
+            },
+          },
+        },
+        css: {
+          postcss: {
+            plugins: [
+              cssModuleGlobalRootPlugin,
+            ],
+          },
+          preprocessorOptions: {
+            scss: {
+              silenceDeprecations: ['legacy-js-api'],
+              api: 'modern-compiler',
+<% if (isElementPlus) { -%>
+              additionalData: (source: string, filename: string) => {
+                if (filename.includes('assets/styles/element/index.scss')) {
+                  return `$namespace: '${appCode || 'el'}';
+                ${source}`
+                }
+                return source
+              },
+<% } -%>
+            },
+          },
+        },
+      },
+    }
+  },
+)

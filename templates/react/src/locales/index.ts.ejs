@@ -1,0 +1,37 @@
+/**
+ * 国际化配置
+ * 使用 react-i18next 进行国际化
+ */
+
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+import zh from './lang/zh'
+import en from './lang/en'
+import es from './lang/es'
+
+const resources = {
+  zh: { translation: zh },
+  en: { translation: en },
+  es: { translation: es },
+}
+
+// 从 localStorage 获取保存的语言，或使用浏览器语言
+const savedLanguage = window.localStorage.getItem('language')
+let language = navigator.language.split('-')[0]
+if (!savedLanguage && language) {
+  window.localStorage.setItem('language', language)
+}
+language = savedLanguage || language
+
+i18n
+  .use(initReactI18next)
+  .init({
+    resources,
+    lng: language,
+    fallbackLng: 'zh',
+    interpolation: {
+      escapeValue: false,
+    },
+  })
+
+export default i18n

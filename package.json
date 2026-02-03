@@ -1,42 +1,20 @@
 {
-  "name": "@moluoxixi/create-app",
-  "version": "2.0.439",
+  "name": "vite-template-cli",
+  "version": "1.0.0",
   "type": "module",
-  "packageManager": "pnpm@10.8.0",
-  "description": "Create Vue/React projects with atomic layered architecture",
+  "description": "Vite template CLI for creating Vue/React projects",
   "main": "dist/index.js",
   "bin": {
-    "create-app": "./dist/index.js"
+    "vite-cli": "./dist/index.js"
   },
-  "files": [
-    "LICENSE.txt",
-    "README.md",
-    "dist",
-    "templates",
-    "!template/**/node_modules/.bin/*"
-  ],
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc --build tsconfig.build.json",
-    "test": "pnpm --filter @moluoxixi/vite-cli-test test:all",
+    "build": "tsc",
     "type-check": "tsc --noEmit",
     "lint:eslint": "eslint . --fix",
-    "submodule:update": "cd .cursor && git pull && cd .. && git submodule update --init --recursive --remote",
+    "prepare": "node .husky/install.mjs",
     "lint-staged": "lint-staged",
-    "commit": "git add . && git-cz",
-    "version:patch": "pnpm version patch --no-git-tag-version",
-    "version:minor": "pnpm version minor --no-git-tag-version",
-    "version:major": "pnpm version major --no-git-tag-version",
-    "version:patch:git": "pnpm version patch",
-    "version:minor:git": "pnpm version minor",
-    "version:major:git": "pnpm version major",
-    "publish:public": "pnpm publish --access public",
-    "publish:beta": "pnpm publish --tag beta --access public",
-    "prepublishOnly": "pnpm build",
-    "release:patch": "pnpm version:patch && pnpm publish:public",
-    "release:minor": "pnpm version:minor && pnpm publish:public",
-    "release:major": "pnpm version:major && pnpm publish:public",
-    "test:local": "pnpm build && node dist/index.js"
+    "commit": "git add . && git-cz"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -57,18 +35,14 @@
     "react",
     "template",
     "cli",
-    "scaffold",
-    "create-vue"
+    "scaffold"
   ],
   "author": "1983531544@qq.com",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/moluoxixi-template/vite-cli.git"
-  },
   "dependencies": {
     "chalk": "catalog:build",
     "commander": "catalog:build",
+    "ejs": "catalog:build",
     "fs-extra": "catalog:build",
     "inquirer": "catalog:build",
     "ora": "catalog:build"
@@ -76,11 +50,11 @@
   "devDependencies": {
     "@commitlint/cli": "catalog:dev",
     "@commitlint/config-conventional": "catalog:dev",
-    "@moluoxixi/eslint-config": "catalog:dev",
+    "@moluoxixi/eslint-config": "latest",
+    "@types/ejs": "catalog:type",
     "@types/fs-extra": "catalog:type",
     "@types/inquirer": "catalog:type",
     "@types/node": "catalog:type",
-    "@vue-macros/volar": "catalog:type",
     "commitizen": "catalog:dev",
     "cz-customizable": "catalog:dev",
     "eslint": "catalog:dev",

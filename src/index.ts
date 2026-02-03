@@ -1,54 +1,32 @@
 #!/usr/bin/env node
 
 /**
- * CLI 入口文件
- * 基于原子化分层叠加架构的项目脚手架
+ * Vite Template CLI
+ * 用于快速创建 Vue 3 或 React 项目的脚手架工具
  */
-
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
 
 import { Command } from 'commander'
+import { createProject } from './commands/create'
+import { getVersion } from './utils/version'
 
-import { createProject } from './commands/index.ts'
-
-/**
- * 获取 package.json 中的版本号
- * @returns 版本号字符串
- */
-function getVersion(): string {
-  try {
-    const __filename = fileURLToPath(import.meta.url)
-    const __dirname = dirname(__filename)
-    const packageJsonPath = join(__dirname, '../package.json')
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
-    return packageJson.version || '1.0.0'
-  }
-  catch {
-    return '1.0.0'
-  }
-}
-
+// 创建 CLI 程序实例
 const program = new Command()
 
+// 配置 CLI 基本信息
 program
-  .name('create-mox')
-  .description('基于原子化分层叠加架构的 Vue/React 项目脚手架')
+  .name('vite-cli')
+  .description('Vite template CLI for creating Vue/React projects')
   .version(getVersion())
 
+// 注册 create 命令
 program
-  .command('create [project-name]')
-  .description('创建新项目')
+  .command('create')
+  .alias('c')
+  .description('Create a new project')
+  .argument('[project-name]', 'Project name')
   .action(async (projectName?: string) => {
     await createProject(projectName)
   })
 
-// 默认命令：直接运行时创建项目
-program
-  .argument('[project-name]', '项目名称')
-  .action(async (projectName?: string) => {
-    await createProject(projectName)
-  })
-
+// 解析命令行参数
 program.parse()
