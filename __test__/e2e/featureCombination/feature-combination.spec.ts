@@ -160,87 +160,6 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           expect(exitCode).toBe(0)
         })
 
-        it('应该通过类型检查', async () => {
-          const { exitCode, stdout, stderr } = await execa(packageManager, getRunArgs(packageManager, 'type-check'), {
-            cwd: projectDir,
-            reject: false,
-          })
-
-          if (exitCode !== 0) {
-            console.error('类型检查失败:')
-            console.error('标准输出:', stdout)
-            console.error('错误输出:', stderr)
-          }
-
-          expect(exitCode).toBe(0)
-        })
-
-        it('应该通过代码检查', async () => {
-          if (!testConfig.config.eslint) {
-            return
-          }
-
-          const { exitCode, stderr } = await execa(packageManager, getRunArgs(packageManager, 'lint:eslint'), {
-            cwd: projectDir,
-            reject: false,
-          })
-
-          if (exitCode !== 0) {
-            console.error('代码检查失败:', stderr)
-          }
-
-          expect(exitCode).toBe(0)
-        })
-
-        // TODO: 暂时禁用构建测试
-        // it('应该成功构建', async () => {
-        //   const { exitCode, stdout, stderr } = await execa(packageManager, getRunArgs(packageManager, 'build'), {
-        //     cwd: projectDir,
-        //     reject: false,
-        //   })
-
-        //   const outDir = await getViteOutDir(projectDir, 'production')
-        //   const distDir = path.join(projectDir, outDir)
-        //   const distExists = fs.existsSync(distDir)
-
-        //   if (exitCode !== 0 || !distExists) {
-        //     console.error('构建失败:')
-        //     console.error('退出码:', exitCode)
-        //     console.error('标准输出:', stdout)
-        //     console.error('错误输出:', stderr)
-        //     if (!distExists) {
-        //       console.error(`${outDir} 目录不存在`)
-        //     }
-        //   }
-
-        //   expect(exitCode).toBe(0)
-
-        //   // 检查构建输出目录是否生成
-        //   expect(distExists).toBe(true)
-        // })
-
-        // it('应该有有效的构建输出', async () => {
-        //   const outDir = await getViteOutDir(projectDir, 'production')
-        //   const distDir = path.join(projectDir, outDir)
-
-        //   if (!fs.existsSync(distDir)) {
-        //     expect.fail(`未找到 ${outDir} 目录`)
-        //   }
-
-        //   const files = await fs.readdir(distDir)
-
-        //   // 检查是否有 index.html
-        //   expect(files).toContain('index.html')
-
-        //   // 检查是否有 assets 或 static 目录，或者有 .js/.css 文件
-        //   const hasAssets = files.some((f) => {
-        //     const fullPath = path.join(distDir, f)
-        //     const stat = fs.statSync(fullPath)
-        //     return f.startsWith('assets') || f.startsWith('static') || f.endsWith('.js') || f.endsWith('.css') || (stat.isDirectory() && (f === 'assets' || f === 'static'))
-        //   })
-        //   expect(hasAssets).toBe(true)
-        // })
-
         it('应该通过依赖验证', async () => {
           // 1. 验证目录引用已解析（catalog: 引用应该被解析为实际版本）
           const packageJson = await readPackageJson(projectDir)
@@ -310,6 +229,114 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
         //   // 使用 Vitest 的 toMatchSnapshot
         //   // 快照文件会自动保存在 __snapshots__ 目录
         //   expect(snapshotData).toMatchSnapshot()
+        // })
+
+        it('应该通过类型检查', async () => {
+          const { exitCode, stdout, stderr } = await execa(packageManager, getRunArgs(packageManager, 'type-check'), {
+            cwd: projectDir,
+            reject: false,
+          })
+
+          if (exitCode !== 0) {
+            console.error('类型检查失败:')
+            console.error('标准输出:', stdout)
+            console.error('错误输出:', stderr)
+          }
+
+          expect(exitCode).toBe(0)
+        })
+
+        it('应该通过代码检查', async () => {
+          if (!testConfig.config.eslint) {
+            return
+          }
+
+          const { exitCode, stderr } = await execa(packageManager, getRunArgs(packageManager, 'lint:eslint'), {
+            cwd: projectDir,
+            reject: false,
+          })
+
+          if (exitCode !== 0) {
+            console.error('代码检查失败:', stderr)
+          }
+
+          expect(exitCode).toBe(0)
+        })
+
+        it('应该成功运行测试', async () => {
+          const packageJson = await fs.readJson(path.join(projectDir, 'package.json'))
+
+          // 检查是否有 test 脚本
+          if (!packageJson.scripts || !packageJson.scripts.test) {
+            console.log('⚠️ 项目未配置 test 脚本，跳过测试运行')
+            return
+          }
+
+          const { exitCode, stdout, stderr } = await execa(packageManager, getRunArgs(packageManager, 'test'), {
+            cwd: projectDir,
+            reject: false,
+            env: {
+              ...process.env,
+              CI: 'true', // 在 CI 环境中运行，避免交互式提示
+            },
+          })
+
+          if (exitCode !== 0) {
+            console.error('测试运行失败:')
+            console.error('标准输出:', stdout)
+            console.error('错误输出:', stderr)
+          }
+
+          expect(exitCode).toBe(0)
+        })
+
+        // TODO: 暂时禁用构建测试
+        // it('应该成功构建', async () => {
+        //   const { exitCode, stdout, stderr } = await execa(packageManager, getRunArgs(packageManager, 'build'), {
+        //     cwd: projectDir,
+        //     reject: false,
+        //   })
+
+        //   const outDir = await getViteOutDir(projectDir, 'production')
+        //   const distDir = path.join(projectDir, outDir)
+        //   const distExists = fs.existsSync(distDir)
+
+        //   if (exitCode !== 0 || !distExists) {
+        //     console.error('构建失败:')
+        //     console.error('退出码:', exitCode)
+        //     console.error('标准输出:', stdout)
+        //     console.error('错误输出:', stderr)
+        //     if (!distExists) {
+        //       console.error(`${outDir} 目录不存在`)
+        //     }
+        //   }
+
+        //   expect(exitCode).toBe(0)
+
+        //   // 检查构建输出目录是否生成
+        //   expect(distExists).toBe(true)
+        // })
+
+        // it('应该有有效的构建输出', async () => {
+        //   const outDir = await getViteOutDir(projectDir, 'production')
+        //   const distDir = path.join(projectDir, outDir)
+
+        //   if (!fs.existsSync(distDir)) {
+        //     expect.fail(`未找到 ${outDir} 目录`)
+        //   }
+
+        //   const files = await fs.readdir(distDir)
+
+        //   // 检查是否有 index.html
+        //   expect(files).toContain('index.html')
+
+        //   // 检查是否有 assets 或 static 目录，或者有 .js/.css 文件
+        //   const hasAssets = files.some((f) => {
+        //     const fullPath = path.join(distDir, f)
+        //     const stat = fs.statSync(fullPath)
+        //     return f.startsWith('assets') || f.startsWith('static') || f.endsWith('.js') || f.endsWith('.css') || (stat.isDirectory() && (f === 'assets' || f === 'assets' || f === 'static'))
+        //   })
+        //   expect(hasAssets).toBe(true)
         // })
       })
     }
