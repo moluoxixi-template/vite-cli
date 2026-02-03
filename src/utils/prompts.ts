@@ -3,7 +3,7 @@
  * 收集用户的项目配置信息
  */
 
-import type { Framework, PackageManager, ProjectConfig, RouteMode, UILibrary } from '../types'
+import type { Framework, PackageManager, ProjectConfig, RouteMode, UILibrary } from '../types/index.ts'
 import process from 'node:process'
 import inquirer from 'inquirer'
 

@@ -3,11 +3,11 @@
  * 处理文件复制、创建目录等操作
  */
 
-import type { ProjectConfig } from '../types'
+import type { ProjectConfig } from '../types/index.ts'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import fs from 'fs-extra'
-import { getTemplatePath, renderTemplate } from './template'
+import { getTemplatePath, renderTemplate } from './template.ts'
 
 /**
  * 复制文件或目录

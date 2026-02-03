@@ -6,10 +6,10 @@
 import process from 'node:process'
 import chalk from 'chalk'
 import ora from 'ora'
-import { generateProject } from '../generators/project'
-import { pathExists } from '../utils/file'
-import { installDependencies } from '../utils/install'
-import { collectProjectConfig } from '../utils/prompts'
+import { generateProject } from '../generators/project.ts'
+import { pathExists } from '../utils/file.ts'
+import { installDependencies } from '../utils/install.ts'
+import { collectProjectConfig } from '../utils/prompts.ts'
 
 /**
  * 创建项目

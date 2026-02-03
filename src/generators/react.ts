@@ -3,9 +3,9 @@
  * 生成 React 项目结构
  */
 
-import type { ProjectConfig } from '../types'
+import type { ProjectConfig } from '../types/index.ts'
 import { join } from 'node:path'
-import { copyAndRenderTemplate } from '../utils/file'
+import { copyAndRenderTemplate } from '../utils/file.ts'
 import {
   createSrcDirs,
   generateApisStructure,
@@ -18,7 +18,7 @@ import {
   generateLocaleFiles,
   generateScriptsFiles,
   generateUtilsFiles,
-} from './common'
+} from './common.ts'
 
 /**
  * 生成 React 项目

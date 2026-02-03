@@ -3,7 +3,7 @@
  * 根据配置生成 package.json 依赖列表
  */
 
-import type { ProjectConfig } from '../types'
+import type { ProjectConfig } from '../types/index.ts'
 
 /**
  * 获取项目依赖

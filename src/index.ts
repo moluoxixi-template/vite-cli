@@ -6,8 +6,8 @@
  */
 
 import { Command } from 'commander'
-import { createProject } from './commands/create'
-import { getVersion } from './utils/version'
+import { createProject } from './commands/create.ts'
+import { getVersion } from './utils/version.ts'
 
 // 创建 CLI 程序实例
 const program = new Command()

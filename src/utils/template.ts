@@ -3,7 +3,7 @@
  * 使用 ejs 渲染模板文件
  */
 
-import type { ProjectConfig } from '../types'
+import type { ProjectConfig } from '../types/index.ts'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'

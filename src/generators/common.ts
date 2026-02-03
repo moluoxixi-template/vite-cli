@@ -3,7 +3,7 @@
  * 提取 Vue 和 React 项目生成器中的公共逻辑
  */
 
-import type { ProjectConfig } from '../types'
+import type { ProjectConfig } from '../types/index.ts'
 import { join } from 'node:path'
 import { copyAndRenderTemplate, createDir } from '../utils/file.ts'
 

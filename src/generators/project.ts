@@ -3,10 +3,10 @@
  * 根据配置生成完整的项目结构
  */
 
-import type { ProjectConfig } from '../types'
-import { createDir } from '../utils/file'
-import { generateReactProject } from './react'
-import { generateVueProject } from './vue'
+import type { ProjectConfig } from '../types/index.ts'
+import { createDir } from '../utils/file.ts'
+import { generateReactProject } from './react.ts'
+import { generateVueProject } from './vue.ts'
 
 /**
  * 生成项目
