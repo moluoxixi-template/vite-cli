@@ -1,4 +1,8 @@
 {
+  "lib": [
+    "DOM",
+    "ESNext"
+  ],
   "compilerOptions": {
     "target": "ESNext",
     "jsx": "preserve",

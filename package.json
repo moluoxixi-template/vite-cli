@@ -17,7 +17,7 @@
     "commit": "git add . && git-cz"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
+    "*.{js,jsx,ts,tsx,vue,css,scss,less}": [
       "eslint --fix --no-warn-ignored"
     ]
   },
@@ -48,9 +48,11 @@
     "ora": "catalog:build"
   },
   "devDependencies": {
+    "eslint-plugin-format": "catalog:dev",
     "@commitlint/cli": "catalog:dev",
     "@commitlint/config-conventional": "catalog:dev",
-    "@moluoxixi/eslint-config": "latest",
+    "@vue-macros/volar": "catalog:type",
+    "@moluoxixi/eslint-config": "catalog:dev",
     "@types/ejs": "catalog:type",
     "@types/fs-extra": "catalog:type",
     "@types/inquirer": "catalog:type",
