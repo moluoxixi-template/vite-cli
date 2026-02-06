@@ -1,23 +1,44 @@
-# user
+# 其他用户配置
 typings
-docs
 
-# 依赖(可选)
-*-lock.*
+# rules(可选)
+.cursor
 
-# Logs
+# 依赖（可选）
+*-lock.yaml
+
+# 测试产物
+.playwright-mcp
+
+# Sentry配置
+.env.sentry-build-plugin
+
+# typescript
+*.tsbuildinfo
+
+# 项目
+node_modules
+.DS_Store
+dist
+dist-ssr
+coverage
+*.local
+/cypress/videos/
+/cypress/screenshots/
+stats.html
+
+# 日志
 logs
 *.log
-*.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# outs
-node_modules
-dist
-*.zip
-*.local
-.DS_Store
-
-# Editor directories and files
+# 编辑器
+.vscode/*
+!.vscode/extensions.json
 .idea
 *.suo
 *.ntvs*
@@ -25,17 +46,3 @@ dist
 *.sln
 *.sw?
 
-# 系统文件
-Thumbs.db
-
-# 测试覆盖率
-coverage
-
-# 环境变量
-.env.local
-.env.*.local
-
-# 缓存
-.cache
-.temp
-*.tsbuildinfo
