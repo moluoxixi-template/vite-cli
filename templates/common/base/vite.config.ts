@@ -5,16 +5,17 @@ import { loadEnv, mergeConfig } from 'vite'
 import process from 'node:process'
 import { loadFeatureConfigs } from './vite/index.ts'
 
-const config = ViteConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd())
-  const viteEnv = wrapperEnv(env)
+const config = ViteConfig(async (env) => {
+  const { mode } = env
+  const envConfig = loadEnv(mode, process.cwd())
+  const viteEnv = wrapperEnv(envConfig)
   const rootPath = path.resolve()
   const appCode = viteEnv.VITE_APP_CODE
   const appTitle = viteEnv.VITE_APP_TITLE
   const port = viteEnv.VITE_APP_PORT
 
   // 加载所有 feature 配置（与 ViteConfigType 结构一致）
-  const featureConfig = loadFeatureConfigs({ viteEnv, mode, appCode })
+  const featureConfig = await loadFeatureConfigs({ ...env, viteEnv, mode, appCode })
 
   return {
     rootPath,

@@ -4,6 +4,7 @@
  */
 
 import type { ViteConfigType, ViteFeatureContext } from '@moluoxixi/vite-config'
+import { defineConfig } from 'vite'
 
 /**
  * 获取 Element Plus Vite 配置
@@ -12,7 +13,7 @@ import type { ViteConfigType, ViteFeatureContext } from '@moluoxixi/vite-config'
  * @returns Config 配置（与 ViteConfigType 结构一致）
  */
 export default ({ appCode }: ViteFeatureContext): Partial<ViteConfigType> => ({
-  viteConfig: {
+  viteConfig: defineConfig((_env) => ({
     css: {
       preprocessorOptions: {
         scss: {
@@ -26,5 +27,5 @@ export default ({ appCode }: ViteFeatureContext): Partial<ViteConfigType> => ({
         },
       },
     },
-  },
+  })),
 })

@@ -5,6 +5,7 @@
 import process from 'node:process'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import type { ViteConfigType, ViteFeatureContext } from '@moluoxixi/vite-config'
+import { defineConfig } from 'vite'
 
 /**
  * 获取 Sentry Vite 配置
@@ -14,7 +15,7 @@ import type { ViteConfigType, ViteFeatureContext } from '@moluoxixi/vite-config'
  * @returns Config 配置（与 ViteConfigType 结构一致）
  */
 export default ({ viteEnv, mode }: ViteFeatureContext): Partial<ViteConfigType> => ({
-  viteConfig: {
+  viteConfig: defineConfig((_env) => ({
     plugins: [
       viteEnv.VITE_SENTRY && mode === 'production' && sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -28,6 +29,6 @@ export default ({ viteEnv, mode }: ViteFeatureContext): Partial<ViteConfigType> 
           name: viteEnv.VITE_APP_VERSION || 'unknown',
         },
       }),
-    ].filter(Boolean),
-  },
+    ].filter(Boolean) as any,
+  })),
 })

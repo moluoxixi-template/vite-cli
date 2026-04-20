@@ -9,12 +9,14 @@ import { createJiti } from 'jiti'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const _require = createJiti(import.meta.url, { interopDefault: true })
 
+import type { ConfigEnv } from 'vite'
+
 /**
  * 加载所有 feature 的 Vite 配置
  * @param ctx - feature 配置上下文
  * @returns 合并后的 Config 配置（与 ViteConfigType 结构一致）
  */
-export function loadFeatureConfigs(ctx: ViteFeatureContext): Partial<ViteConfigType> {
+export async function loadFeatureConfigs(ctx: ViteFeatureContext & ConfigEnv): Promise<Partial<ViteConfigType>> {
   const featuresDir = path.resolve(__dirname, 'features')
 
   if (!fs.existsSync(featuresDir)) {
@@ -32,10 +34,15 @@ export function loadFeatureConfigs(ctx: ViteFeatureContext): Partial<ViteConfigT
       const config = mod.default(ctx) as Partial<ViteConfigType> | undefined
       if (config) {
         // 提取 viteConfig 单独合并
-        const { viteConfig, ...restConfig } = config
-        if (viteConfig && typeof viteConfig !== 'function') {
-          viteConfigs.push(viteConfig)
+        let { viteConfig, ...restConfig } = config
+        
+        if (viteConfig) {
+          if (typeof viteConfig === 'function') {
+             viteConfig = await viteConfig(ctx)
+          }
+          viteConfigs.push(viteConfig as UserConfig)
         }
+        
         // 合并其他配置（pageRoutes, autoComponent 等）
         mergedConfig = { ...mergedConfig, ...restConfig }
       }
