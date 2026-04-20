@@ -3,22 +3,19 @@
  * 导入 Element Plus 样式，包括 qiankun 修复
  */
 
-import type { App } from 'vue'
-import type { Router } from 'vue-router'
+import type { UserModule } from '@/types'
 
 // 导入 Element Plus 样式，包括 qiankun 修复
 import '@/assets/styles/element/index.scss'
 import '@/assets/styles/element/fixQiankun.scss'
 
-/** 执行顺序 - 样式应该尽早加载 */
-export const order = 5
+
 
 /**
  * 设置 Element Plus
- * @param _app - Vue 应用实例（未使用，样式已导入）
- * @param _router - Vue Router 实例（未使用）
+ * @param ctx - Vue 应用上下文（未使用，样式已导入）
  */
-export function setup(_app: App, _router: Router): void {
+export const install: UserModule = (_ctx) => {
   // Element Plus 通过 unplugin-vue-components 自动导入
   // 只需要导入样式
 }

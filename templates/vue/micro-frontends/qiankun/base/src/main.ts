@@ -6,10 +6,10 @@
 import { qiankunWindow, renderWithQiankun } from 'vite-plugin-qiankun/dist/helper'
 import { createApp } from 'vue'
 import directives from '@/directives'
-import { store } from '@/stores'
 import App from '@/App.vue'
 import getRouter from '@/router'
 import { setupFeatures } from './main/index'
+import type { AppContext } from '@/types'
 
 // Import styles
 import './assets/styles/main.scss'
@@ -28,10 +28,15 @@ async function render(props: Record<string, unknown> = {}): Promise<void> {
   directives(app)
   const router = getRouter(props)
 
-  // Setup all features (i18n, sentry, etc.)
-  await setupFeatures(app, router)
+  const ctx: AppContext = {
+    app,
+    router,
+    isClient: typeof window !== 'undefined'
+  }
 
-  app.use(store)
+  // Setup all features (i18n, sentry, pinia, etc.)
+  await setupFeatures(ctx)
+
   app.use(router)
   app.config.warnHandler = () => null
 

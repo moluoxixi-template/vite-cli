@@ -8,6 +8,7 @@ import directives from '@/directives'
 import App from '@/App.vue'
 import getRouter from '@/router'
 import { setupFeatures } from '@/main/index'
+import type { AppContext } from '@/types'
 
 // Import styles
 import '@/assets/styles/main.scss'
@@ -22,8 +23,14 @@ async function initApp(): Promise<void> {
 
   directives(app)
 
+  const ctx: AppContext = {
+    app,
+    router,
+    isClient: typeof window !== 'undefined'
+  }
+
   // Setup all features (pinia, i18n, sentry, etc.)
-  await setupFeatures(app, router)
+  await setupFeatures(ctx)
 
   app.use(router)
   app.config.warnHandler = () => null
