@@ -121,7 +121,7 @@ export async function generateProject(config: ProjectConfigType): Promise<void> 
   )
 
   // 4. 生成最终入口和 Vite 配置，移除脚手架内部 loader
-  finalizeProjectOutput(config)
+  await finalizeProjectOutput(config)
 
   // 5. 清理包管理器特定文件（只有 yarn 需要 .yarnrc.yml）
   if (config.packageManager !== 'yarn') {

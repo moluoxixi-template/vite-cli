@@ -7,6 +7,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { FILE_CONSTANTS } from '../constants/index.ts'
+import { PROJECT_ATOM_FILE } from './projectAtom.ts'
 import type { PackageJson } from '../types/packageJson.ts'
 import { deepMerge } from '../utils/deepMerge.ts'
 import { validatePath } from '../utils/file.ts'
@@ -53,6 +54,11 @@ export function renderTemplate(src: string, dest: string): void {
 
     // 跳过 .ejs 文件（不再使用）
     if (filename.endsWith(FILE_CONSTANTS.EJS_EXTENSION)) {
+      return
+    }
+
+    // 跳过项目输出 atom，atom 只供脚手架生成阶段读取
+    if (filename === PROJECT_ATOM_FILE) {
       return
     }
 

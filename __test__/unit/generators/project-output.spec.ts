@@ -62,6 +62,7 @@ describe('普通 Vite 项目输出', () => {
 
     expect(await fs.pathExists(path.join(tempDir, 'src/main'))).toBe(false)
     expect(await fs.pathExists(path.join(tempDir, 'vite'))).toBe(false)
+    expect(await fs.pathExists(path.join(tempDir, 'atom.mjs'))).toBe(false)
 
     const mainContent = await readGeneratedFile('src/main.ts')
     expect(mainContent).toContain('import { store } from \'@/stores\'')

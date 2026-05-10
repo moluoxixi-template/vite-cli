@@ -1,13 +1,24 @@
 /**
  * 生成项目输出整理模块
- * 在模板叠加完成后，把脚手架内部组合结果收敛为普通 Vite 项目文件。
+ * 在模板叠加完成后读取各模板 atom.mjs，把贡献合成为普通 Vite 项目文件。
  */
 
+import type { ProjectOutputComposition } from './projectAtom.ts'
 import type { PackageJson } from '../types/packageJson.ts'
 import type { ProjectConfigType } from '../types/index.ts'
 
 import fs from 'fs-extra'
 import path from 'node:path'
+
+import {
+  composeProjectOutput,
+  loadProjectAtoms,
+} from './projectAtom.ts'
+import {
+  getCommonFeatures,
+  getFrameworkFeatures,
+} from './feature.ts'
+import { getTemplatesDir } from '../utils/file.ts'
 
 const REMOVED_VITE_BLACK_BOX_DEPS = [
   '@moluoxixi/vite-config',
@@ -18,12 +29,16 @@ const REMOVED_VITE_BLACK_BOX_DEPS = [
 /**
  * 完成生成项目的最终输出整理。
  * @param config 项目配置
- * @throws {Error} 如果最终文件写入或 package.json 清理失败
+ * @throws {Error} 如果最终文件写入、atom 读取或 package.json 清理失败
  */
-export function finalizeProjectOutput(config: ProjectConfigType): void {
+export async function finalizeProjectOutput(config: ProjectConfigType): Promise<void> {
   removeRuntimeLoaderDirs(config.targetDir)
-  writeMainEntry(config)
-  writeViteConfig(config)
+  const atomDirs = collectProjectAtomDirs(config)
+  const atoms = await loadProjectAtoms(atomDirs)
+  const output = composeProjectOutput(atoms)
+
+  writeMainEntry(config, output)
+  writeViteConfig(config, output)
   removeViteBlackBoxDependencies(config.targetDir)
 }
 
@@ -37,27 +52,131 @@ function removeRuntimeLoaderDirs(targetDir: string): void {
 }
 
 /**
+ * 收集当前项目配置启用的模板 atom 目录。
+ * @param config 项目配置
+ * @returns 按模板叠加顺序排列的目录
+ */
+function collectProjectAtomDirs(config: ProjectConfigType): string[] {
+  const templatesDir = getTemplatesDir()
+  const atomDirs = [
+    path.join(templatesDir, 'common', 'base'),
+    path.join(templatesDir, config.framework, 'base'),
+  ]
+
+  atomDirs.push(...collectCommonFeatureAtomDirs(config, templatesDir))
+  atomDirs.push(...collectFrameworkFeatureAtomDirs(config, templatesDir))
+
+  if (config.microFrontend && config.microFrontendEngine) {
+    atomDirs.push(path.join(
+      templatesDir,
+      config.framework,
+      'micro-frontends',
+      config.microFrontendEngine,
+      'base',
+    ))
+  }
+
+  atomDirs.push(...collectMicroFrontendFeatureAtomDirs(config, templatesDir))
+
+  return atomDirs
+}
+
+/**
+ * 收集公共 feature 的 atom 目录。
+ * @param config 项目配置
+ * @param templatesDir 模板根目录
+ * @returns 启用的公共 feature 目录
+ */
+function collectCommonFeatureAtomDirs(config: ProjectConfigType, templatesDir: string): string[] {
+  const availableFeatures = getCommonFeatures()
+  const featureDirs: string[] = []
+
+  for (const [key, value] of Object.entries(config)) {
+    if (value === true && availableFeatures.includes(key)) {
+      featureDirs.push(path.join(templatesDir, 'common', 'features', key))
+    }
+  }
+
+  return featureDirs
+}
+
+/**
+ * 收集框架 feature 的 atom 目录。
+ * @param config 项目配置
+ * @param templatesDir 模板根目录
+ * @returns 启用的框架 feature 目录
+ */
+function collectFrameworkFeatureAtomDirs(config: ProjectConfigType, templatesDir: string): string[] {
+  const availableFeatures = getFrameworkFeatures(config.framework)
+  const featureDirs: string[] = []
+
+  for (const [key, value] of Object.entries(config)) {
+    if (value === true && availableFeatures.includes(key)) {
+      featureDirs.push(path.join(templatesDir, config.framework, 'features', key))
+    }
+  }
+
+  if (config.uiLibrary && availableFeatures.includes(config.uiLibrary)) {
+    featureDirs.push(path.join(templatesDir, config.framework, 'features', config.uiLibrary))
+  }
+
+  return featureDirs
+}
+
+/**
+ * 收集微前端 feature 的 atom 目录。
+ * @param config 项目配置
+ * @param templatesDir 模板根目录
+ * @returns 启用的微前端 feature 目录
+ */
+function collectMicroFrontendFeatureAtomDirs(config: ProjectConfigType, templatesDir: string): string[] {
+  if (!config.microFrontend || !config.microFrontendEngine) {
+    return []
+  }
+
+  const microFrontendFeaturesPath = path.join(
+    templatesDir,
+    config.framework,
+    'micro-frontends',
+    config.microFrontendEngine,
+    'features',
+  )
+  if (!fs.existsSync(microFrontendFeaturesPath)) {
+    return []
+  }
+
+  const availableFeatures = fs.readdirSync(microFrontendFeaturesPath).filter((item) => {
+    const itemPath = path.join(microFrontendFeaturesPath, item)
+    return fs.statSync(itemPath).isDirectory()
+  })
+  const featureDirs: string[] = []
+
+  for (const [key, value] of Object.entries(config)) {
+    if (value === true && availableFeatures.includes(key)) {
+      featureDirs.push(path.join(microFrontendFeaturesPath, key))
+    }
+  }
+
+  if (config.uiLibrary && availableFeatures.includes(config.uiLibrary)) {
+    featureDirs.push(path.join(microFrontendFeaturesPath, config.uiLibrary))
+  }
+
+  return featureDirs
+}
+
+/**
  * 写入框架对应的最终入口文件。
  * @param config 项目配置
- * @throws {Error} 如果框架不受支持
+ * @param output atom 合并后的输出模型
+ * @throws {Error} 如果框架或入口模式不受支持
  */
-function writeMainEntry(config: ProjectConfigType): void {
-  const mainEntryPath = path.join(
-    config.targetDir,
-    'src',
-    config.framework === 'react' ? 'main.tsx' : 'main.ts',
-  )
-
-  let content: string
-  if (config.framework === 'vue') {
-    content = createVueMainEntry(config)
-  }
-  else if (config.framework === 'react') {
-    content = createReactMainEntry(config)
-  }
-  else {
+function writeMainEntry(config: ProjectConfigType, output: ProjectOutputComposition): void {
+  if (config.framework !== 'vue') {
     throw new Error(`不支持的框架: ${config.framework}`)
   }
+
+  const mainEntryPath = path.join(config.targetDir, 'src', 'main.ts')
+  const content = createVueMainEntry(output)
 
   fs.ensureDirSync(path.dirname(mainEntryPath))
   fs.writeFileSync(mainEntryPath, content)
@@ -65,68 +184,28 @@ function writeMainEntry(config: ProjectConfigType): void {
 
 /**
  * 生成 Vue 项目的最终入口文件内容。
- * @param config 项目配置
+ * @param output atom 合并后的输出模型
+ * @returns main.ts 文件内容
+ * @throws {Error} 如果入口模式不受支持
+ */
+function createVueMainEntry(output: ProjectOutputComposition): string {
+  if (output.main.mode === 'vue-standard') {
+    return createVueStandardMainEntry(output)
+  }
+  if (output.main.mode === 'vue-qiankun') {
+    return createVueQiankunMainEntry(output)
+  }
+
+  throw new Error(`不支持的 Vue 入口模式: ${output.main.mode as string}`)
+}
+
+/**
+ * 生成普通 Vue 项目的入口文件内容。
+ * @param output atom 合并后的输出模型
  * @returns main.ts 文件内容
  */
-function createVueMainEntry(config: ProjectConfigType): string {
-  if (config.microFrontend && config.microFrontendEngine === 'qiankun') {
-    return createVueQiankunMainEntry(config)
-  }
-
-  const imports = [
-    '/**',
-    ' * Vue 应用入口文件',
-    ' * 由 create-app 在生成阶段按已选能力合成。',
-    ' */',
-    '',
-    'import { createApp } from \'vue\'',
-    'import directives from \'@/directives\'',
-    'import App from \'@/App.vue\'',
-    'import getRouter from \'@/router\'',
-  ]
-
-  if (config.pinia) {
-    imports.push('import { store } from \'@/stores\'')
-  }
-  if (config.i18n) {
-    imports.push('import i18n from \'@/locales\'')
-  }
-  if (config.sentry) {
-    imports.push('import { initSentry } from \'@/utils/sentry\'')
-  }
-
-  imports.push(
-    '',
-    'import \'@/assets/styles/main.scss\'',
-    'import \'@/assets/fonts/index.css\'',
-  )
-
-  if (config.uiLibrary === 'element-plus') {
-    imports.push('import \'@/assets/styles/element/index.scss\'')
-  }
-
-  const uses = [
-    '  directives(app)',
-  ]
-
-  if (config.pinia) {
-    uses.push('  app.use(store)')
-  }
-  uses.push('  app.use(router)')
-  if (config.i18n) {
-    uses.push('  app.use(i18n)')
-  }
-  if (config.sentry) {
-    uses.push(
-      '',
-      '  initSentry(app, router, {',
-      '    dsn: import.meta.env.VITE_SENTRY_DSN,',
-      '    environment: import.meta.env.MODE,',
-      '  })',
-    )
-  }
-
-  return `${imports.join('\n')}
+function createVueStandardMainEntry(output: ProjectOutputComposition): string {
+  return `${createMainImports(output, 'Vue 应用入口文件')}
 
 /**
  * 初始化并挂载 Vue 应用。
@@ -135,7 +214,7 @@ function bootstrap(): void {
   const app = createApp(App)
   const router = getRouter()
 
-${uses.join('\n')}
+${createVueAppSetup(output)}
 
   app.mount('#app')
 }
@@ -145,65 +224,12 @@ bootstrap()
 }
 
 /**
- * 生成 Vue + Qiankun 项目的最终入口文件内容。
- * @param config 项目配置
+ * 生成 Vue + Qiankun 项目的入口文件内容。
+ * @param output atom 合并后的输出模型
  * @returns main.ts 文件内容
  */
-function createVueQiankunMainEntry(config: ProjectConfigType): string {
-  const imports = [
-    '/**',
-    ' * Vue 微前端应用入口文件',
-    ' * 由 create-app 在生成阶段按已选能力合成。',
-    ' */',
-    '',
-    'import { qiankunWindow, renderWithQiankun } from \'vite-plugin-qiankun/dist/helper\'',
-    'import { createApp } from \'vue\'',
-    'import directives from \'@/directives\'',
-    'import App from \'@/App.vue\'',
-    'import getRouter from \'@/router\'',
-  ]
-
-  if (config.pinia) {
-    imports.push('import { store } from \'@/stores\'')
-  }
-  if (config.i18n) {
-    imports.push('import i18n from \'@/locales\'')
-  }
-  if (config.sentry) {
-    imports.push('import { initSentry } from \'@/utils/sentry\'')
-  }
-
-  imports.push(
-    '',
-    'import \'@/assets/styles/main.scss\'',
-    'import \'@/assets/fonts/index.css\'',
-  )
-
-  if (config.uiLibrary === 'element-plus') {
-    imports.push('import \'@/assets/styles/element/index.scss\'')
-  }
-
-  const uses = [
-    '  directives(app)',
-  ]
-  if (config.pinia) {
-    uses.push('  app.use(store)')
-  }
-  uses.push('  app.use(router)')
-  if (config.i18n) {
-    uses.push('  app.use(i18n)')
-  }
-  if (config.sentry) {
-    uses.push(
-      '',
-      '  initSentry(app, router, {',
-      '    dsn: import.meta.env.VITE_SENTRY_DSN,',
-      '    environment: import.meta.env.MODE,',
-      '  })',
-    )
-  }
-
-  return `${imports.join('\n')}
+function createVueQiankunMainEntry(output: ProjectOutputComposition): string {
+  return `${createMainImports(output, 'Vue 微前端应用入口文件')}
 
 let app: ReturnType<typeof createApp> | null = null
 
@@ -234,7 +260,7 @@ function render(props: Record<string, unknown> = {}): void {
   app = createApp(App)
   const router = getRouter(props)
 
-${uses.join('\n')}
+${createVueAppSetup(output)}
 
   app.mount(resolveMountTarget(container))
 }
@@ -259,265 +285,62 @@ else {
 }
 
 /**
- * 生成 React 项目的最终入口文件内容。
- * @param config 项目配置
- * @returns main.tsx 文件内容
+ * 创建 main.ts 的 import 区块。
+ * @param output atom 合并后的输出模型
+ * @param title 入口文件标题
+ * @returns import 文本
  */
-function createReactMainEntry(config: ProjectConfigType): string {
-  if (config.microFrontend && config.microFrontendEngine === 'qiankun') {
-    return createReactQiankunMainEntry(config)
-  }
-
-  const imports = [
+function createMainImports(output: ProjectOutputComposition, title: string): string {
+  return [
     '/**',
-    ' * React 应用入口文件',
+    ` * ${title}`,
     ' * 由 create-app 在生成阶段按已选能力合成。',
     ' */',
     '',
-    'import React from \'react\'',
-    'import ReactDOM from \'react-dom/client\'',
-    'import { RouterProvider } from \'react-router-dom\'',
-    'import { createRouter } from \'@/router\'',
+    ...output.main.imports,
+  ].join('\n')
+}
+
+/**
+ * 创建 Vue 应用插件安装和初始化代码。
+ * @param output atom 合并后的输出模型
+ * @returns 已缩进的代码块
+ */
+function createVueAppSetup(output: ProjectOutputComposition): string {
+  const lines = [
+    ...output.main.setup,
+    ...output.main.appSetup,
+    ...output.main.appUses,
+    'app.use(router)',
+    ...output.main.afterSetup,
+    ...output.main.afterAppUses,
   ]
 
-  if (config.i18n) {
-    imports.push('import \'@/locales\'')
-  }
-  if (config.sentry) {
-    imports.push('import { initSentry } from \'@/utils/sentry\'')
-  }
-
-  imports.push(
-    '',
-    'import \'@/assets/styles/main.scss\'',
-    'import \'@/assets/fonts/index.css\'',
-  )
-
-  if (config.uiLibrary === 'ant-design') {
-    imports.push('import \'antd/dist/reset.css\'')
-  }
-
-  const sentrySetup = config.sentry
-    ? `  initSentry({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-    environment: import.meta.env.MODE,
-  })
-
-`
-    : ''
-
-  return `${imports.join('\n')}
-
-/**
- * 获取 React 根节点，缺失时直接暴露配置错误。
- * @returns React 根 DOM 节点
- * @throws {Error} 当页面中不存在 #root 节点
- */
-function getRootElement(): HTMLElement {
-  const rootElement = document.getElementById('root')
-  if (!rootElement) {
-    throw new Error('Root element #root not found')
-  }
-  return rootElement
-}
-
-/**
- * 初始化并挂载 React 应用。
- */
-function bootstrap(): void {
-${sentrySetup}  const router = createRouter()
-  const root = ReactDOM.createRoot(getRootElement())
-
-  root.render(
-    <React.StrictMode>
-      <RouterProvider router={router} />
-    </React.StrictMode>,
-  )
-}
-
-bootstrap()
-`
-}
-
-/**
- * 生成 React + Qiankun 项目的最终入口文件内容。
- * @param config 项目配置
- * @returns main.tsx 文件内容
- */
-function createReactQiankunMainEntry(config: ProjectConfigType): string {
-  const imports = [
-    '/**',
-    ' * React 微前端应用入口文件',
-    ' * 由 create-app 在生成阶段按已选能力合成。',
-    ' */',
-    '',
-    'import { qiankunWindow, renderWithQiankun } from \'vite-plugin-qiankun/dist/helper\'',
-    'import React from \'react\'',
-    'import ReactDOM from \'react-dom/client\'',
-    'import { RouterProvider } from \'react-router-dom\'',
-    'import { createRouter } from \'@/router\'',
-  ]
-
-  if (config.i18n) {
-    imports.push('import \'@/locales\'')
-  }
-  if (config.sentry) {
-    imports.push('import { initSentry } from \'@/utils/sentry\'')
-  }
-
-  imports.push(
-    '',
-    'import \'@/assets/styles/main.scss\'',
-    'import \'@/assets/fonts/index.css\'',
-  )
-
-  if (config.uiLibrary === 'ant-design') {
-    imports.push('import \'antd/dist/reset.css\'')
-  }
-
-  const sentrySetup = config.sentry
-    ? `  initSentry({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-    environment: import.meta.env.MODE,
-  })
-
-`
-    : ''
-
-  return `${imports.join('\n')}
-
-let root: ReturnType<typeof ReactDOM.createRoot> | null = null
-
-/**
- * 解析 React 应用挂载节点，避免 qiankun 容器缺失时静默失败。
- * @param container qiankun 传入的容器节点
- * @returns React 可挂载的 DOM 节点
- * @throws {Error} 当页面中不存在 #root 节点
- */
-function resolveRootElement(container?: Element): Element {
-  if (container) {
-    const target = container.querySelector('#root')
-    if (!target) {
-      throw new Error('Qiankun container missing #root mount target')
-    }
-    return target
-  }
-
-  const target = document.getElementById('root')
-  if (!target) {
-    throw new Error('Root element #root not found')
-  }
-  return target
-}
-
-/**
- * 渲染 React 应用，独立运行和 qiankun 挂载共用同一流程。
- * @param props qiankun 传入的生命周期属性
- */
-function render(props: Record<string, unknown> = {}): void {
-${sentrySetup}  const { container } = props as { container?: Element }
-  const basename = qiankunWindow.__POWERED_BY_QIANKUN__
-    ? (qiankunWindow as { __INJECTED_PUBLIC_PATH_BY_QIANKUN__?: string }).__INJECTED_PUBLIC_PATH_BY_QIANKUN__?.split('/')[1]
-    : undefined
-  const router = createRouter({ basename })
-
-  root = ReactDOM.createRoot(resolveRootElement(container))
-  root.render(
-    <React.StrictMode>
-      <RouterProvider router={router} />
-    </React.StrictMode>,
-  )
-}
-
-if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
-  render({})
-}
-else {
-  renderWithQiankun({
-    mount(props: Record<string, unknown>) {
-      render(props)
-    },
-    bootstrap() {},
-    unmount() {
-      root?.unmount()
-      root = null
-    },
-    update() {},
-  })
-}
-`
+  return indentLines(lines.filter(Boolean), 2)
 }
 
 /**
  * 写入最终 Vite 配置文件。
  * @param config 项目配置
+ * @param output atom 合并后的输出模型
+ * @throws {Error} 如果框架不受支持
  */
-function writeViteConfig(config: ProjectConfigType): void {
-  const viteConfigPath = path.join(config.targetDir, 'vite.config.ts')
-  let content: string
-  if (config.framework === 'vue') {
-    content = createVueViteConfig(config)
-  }
-  else if (config.framework === 'react') {
-    content = createReactViteConfig(config)
-  }
-  else {
+function writeViteConfig(config: ProjectConfigType, output: ProjectOutputComposition): void {
+  if (config.framework !== 'vue') {
     throw new Error(`不支持的框架: ${config.framework}`)
   }
 
-  fs.writeFileSync(viteConfigPath, content)
+  const viteConfigPath = path.join(config.targetDir, 'vite.config.ts')
+  fs.writeFileSync(viteConfigPath, createVueViteConfig(output))
 }
 
 /**
  * 生成 Vue 项目的透明 Vite 配置。
- * @param config 项目配置
+ * @param output atom 合并后的输出模型
  * @returns vite.config.ts 文件内容
  */
-function createVueViteConfig(config: ProjectConfigType): string {
-  const imports = createViteConfigBaseImports([
-    'import vue from \'@vitejs/plugin-vue\'',
-    config.pageRoutes ? 'import Pages from \'vite-plugin-pages\'' : '',
-    config.sentry ? 'import { sentryVitePlugin } from \'@sentry/vite-plugin\'' : '',
-    config.microFrontend ? 'import qiankun from \'vite-plugin-qiankun\'' : '',
-    config.uiLibrary === 'element-plus' ? 'import AutoImport from \'unplugin-auto-import/vite\'' : '',
-    config.uiLibrary === 'element-plus' ? 'import Components from \'unplugin-vue-components/vite\'' : '',
-    config.uiLibrary === 'element-plus' ? 'import { ElementPlusResolver } from \'unplugin-vue-components/resolvers\'' : '',
-  ])
-
-  const pluginLines = [
-    '  const plugins: PluginOption[] = [vue()]',
-  ]
-
-  if (config.pageRoutes) {
-    pluginLines.push(
-      '',
-      '  plugins.push(Pages({',
-      '    dirs: \'src/pages\',',
-      '    extensions: [\'vue\'],',
-      '    exclude: [\'**/components/**\', \'**/__tests__/**\'],',
-      '  }))',
-    )
-  }
-
-  if (config.uiLibrary === 'element-plus') {
-    pluginLines.push(
-      '',
-      '  plugins.push(AutoImport({',
-      '    imports: [\'vue\'],',
-      '    resolvers: [ElementPlusResolver()],',
-      '    dts: \'typings/auto-imports.d.ts\',',
-      '  }))',
-      '  plugins.push(Components({',
-      '    resolvers: [ElementPlusResolver()],',
-      '    globs: [],',
-      '    dts: \'typings/components.d.ts\',',
-      '  }))',
-    )
-  }
-
-  appendSharedVitePlugins(pluginLines, config, 'javascript-vue')
-
-  return `${imports}
+function createVueViteConfig(output: ProjectOutputComposition): string {
+  return `${createViteConfigImports(output)}
 
 /**
  * 创建 Vue 项目的 Vite 配置。
@@ -526,7 +349,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd())
   const appCode = env.VITE_APP_CODE || ''
 
-${pluginLines.join('\n')}
+  const plugins: PluginOption[] = []
+${indentLines(output.vite.plugins, 2)}
 
   return {
     base: appCode ? \`/\${appCode}\` : '/',
@@ -554,7 +378,7 @@ ${pluginLines.join('\n')}
         scss: {
           silenceDeprecations: ['legacy-js-api'],
           api: 'modern-compiler',
-${createElementPlusScssConfig(config)}        },
+${createScssOptions(output)}        },
       },
     },
   }
@@ -563,86 +387,11 @@ ${createElementPlusScssConfig(config)}        },
 }
 
 /**
- * 生成 React 项目的透明 Vite 配置。
- * @param config 项目配置
- * @returns vite.config.ts 文件内容
+ * 创建 Vite 配置的 import 区块。
+ * @param output atom 合并后的输出模型
+ * @returns import 文本
  */
-function createReactViteConfig(config: ProjectConfigType): string {
-  const imports = createViteConfigBaseImports([
-    'import react from \'@vitejs/plugin-react\'',
-    config.pageRoutes ? 'import Pages from \'vite-plugin-pages\'' : '',
-    config.sentry ? 'import { sentryVitePlugin } from \'@sentry/vite-plugin\'' : '',
-    config.microFrontend ? 'import qiankun from \'vite-plugin-qiankun\'' : '',
-  ])
-
-  const pluginLines = [
-    '  const plugins: PluginOption[] = [react()]',
-  ]
-
-  if (config.pageRoutes) {
-    pluginLines.push(
-      '',
-      '  plugins.push(Pages({',
-      '    dirs: \'src/pages\',',
-      '    extensions: [\'tsx\', \'jsx\'],',
-      '    exclude: [\'**/components/**\', \'**/__tests__/**\'],',
-      '  }))',
-    )
-  }
-
-  appendSharedVitePlugins(pluginLines, config, 'javascript-react')
-
-  return `${imports}
-
-/**
- * 创建 React 项目的 Vite 配置。
- */
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd())
-  const appCode = env.VITE_APP_CODE || ''
-
-${pluginLines.join('\n')}
-
-  return {
-    base: appCode ? \`/\${appCode}\` : '/',
-    plugins,
-    resolve: {
-      alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url)),
-      },
-    },
-    build: {
-      outDir: 'dist',
-    },
-    server: {
-      host: '0.0.0.0',
-      port: Number(env.VITE_APP_PORT || 3000),
-      proxy: {
-        '/api': {
-          changeOrigin: true,
-          target: 'http://localhost:3000',
-        },
-      },
-    },
-    css: {
-      preprocessorOptions: {
-        scss: {
-          silenceDeprecations: ['legacy-js-api'],
-          api: 'modern-compiler',
-        },
-      },
-    },
-  }
-})
-`
-}
-
-/**
- * 创建 Vite 配置的公共 import 区块。
- * @param extraImports 按功能动态追加的 import 语句
- * @returns 去重后的 import 文本
- */
-function createViteConfigBaseImports(extraImports: string[]): string {
+function createViteConfigImports(output: ProjectOutputComposition): string {
   return [
     '/**',
     ' * Vite 配置文件',
@@ -653,69 +402,39 @@ function createViteConfigBaseImports(extraImports: string[]): string {
     'import { fileURLToPath, URL } from \'node:url\'',
     'import type { PluginOption } from \'vite\'',
     'import { defineConfig, loadEnv } from \'vite\'',
-    ...extraImports.filter(Boolean),
+    ...output.vite.imports,
   ].join('\n')
 }
 
 /**
- * 追加微前端和 Sentry 的共享 Vite 插件配置。
- * @param pluginLines 插件配置代码行
- * @param config 项目配置
- * @param sentryProject Sentry 项目名
+ * 创建 SCSS 扩展配置代码。
+ * @param output atom 合并后的输出模型
+ * @returns 已缩进并带结尾换行的 SCSS 配置片段
  */
-function appendSharedVitePlugins(
-  pluginLines: string[],
-  config: ProjectConfigType,
-  sentryProject: string,
-): void {
-  if (config.microFrontend) {
-    pluginLines.push(
-      '',
-      '  plugins.push(qiankun(appCode || \'app\', {',
-      '    useDevMode: mode === \'development\',',
-      '  }))',
-    )
-  }
-
-  if (config.sentry) {
-    pluginLines.push(
-      '',
-      '  if (env.VITE_SENTRY === \'true\' && mode === \'production\') {',
-      '    plugins.push(sentryVitePlugin({',
-      '      authToken: process.env.SENTRY_AUTH_TOKEN,',
-      '      org: \'f1f562b9b82f\',',
-      `      project: '${sentryProject}',`,
-      '      sourcemaps: {',
-      '        assets: \'./dist/**\',',
-      '        ignore: [\'node_modules\'],',
-      '      },',
-      '      release: {',
-      '        name: env.VITE_APP_VERSION || \'unknown\',',
-      '      },',
-      '    }))',
-      '  }',
-    )
-  }
-}
-
-/**
- * 生成 Element Plus 所需的 SCSS 命名空间配置。
- * @param config 项目配置
- * @returns SCSS 配置代码片段
- */
-function createElementPlusScssConfig(config: ProjectConfigType): string {
-  if (config.uiLibrary !== 'element-plus') {
+function createScssOptions(output: ProjectOutputComposition): string {
+  if (output.vite.scssOptions.length === 0) {
     return ''
   }
 
-  return `          additionalData(source: string, filename: string) {
-            if (filename.includes('assets/styles/element/index.scss')) {
-              return \`$namespace: \${env.VITE_APP_CODE || 'el'};
-\${source}\`
-            }
-            return source
-          },
-`
+  return `${indentLines(output.vite.scssOptions, 10)}\n`
+}
+
+/**
+ * 按指定空格数缩进代码行。
+ * @param lines 代码行或多行代码块数组
+ * @param spaces 缩进空格数
+ * @returns 缩进后的代码文本
+ */
+function indentLines(lines: string[], spaces: number): string {
+  if (lines.length === 0) {
+    return ''
+  }
+
+  const prefix = ' '.repeat(spaces)
+  return lines
+    .flatMap(line => line.split('\n'))
+    .map(line => (line ? `${prefix}${line}` : ''))
+    .join('\n')
 }
 
 /**
