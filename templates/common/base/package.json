@@ -16,7 +16,7 @@
   },
   "postcss": {
     "plugins": {
-      "tailwindcss": {},
+      "@tailwindcss/postcss": {},
       "autoprefixer": {}
     }
   },
@@ -30,8 +30,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@moluoxixi/css-module-global-root-plugin": "latest",
-    "@moluoxixi/vite-config": "latest",
+    "@tailwindcss/postcss": "^4.0.0",
     "@types/crypto-js": "^4.2.2",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.14.0",
@@ -39,7 +38,6 @@
     "autoprefixer": "^10.4.20",
     "compressing": "^1.10.1",
     "dotenv": "^16.5.0",
-    "jiti": "^2.4.2",
     "postcss": "^8.5.3",
     "sass": "^1.87.0",
     "sass-embedded": "^1.87.0",

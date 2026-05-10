@@ -97,7 +97,6 @@ export async function createProject(projectName?: string): Promise<void> {
     // 显示特性信息
     console.log(chalk.blue('已启用的 @moluoxixi 依赖:'))
     console.log(chalk.gray('  @moluoxixi/eslint-config@latest'))
-    console.log(chalk.gray('  @moluoxixi/vite-config@latest'))
     console.log(chalk.gray('  @moluoxixi/ajax-package@latest'))
     console.log('')
   }

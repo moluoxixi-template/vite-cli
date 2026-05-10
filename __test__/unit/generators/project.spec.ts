@@ -21,6 +21,10 @@ vi.mock('@/core/template', () => ({
   updatePackageJsonMetadata: vi.fn(),
 }))
 
+vi.mock('@/core/projectOutput', () => ({
+  finalizeProjectOutput: vi.fn(),
+}))
+
 vi.mock('@/utils/file', async (importOriginal) => {
   const original = await importOriginal() as Record<string, unknown>
   return {
@@ -216,6 +220,15 @@ describe('generateProject', () => {
         'Me',
         'pnpm',
       )
+    })
+
+    it('应该在模板和元数据处理后整理最终项目输出', async () => {
+      const config = createTestConfig({ targetDir: tempDir })
+      const { finalizeProjectOutput } = await import('@/core/projectOutput')
+
+      await generateProject(config)
+
+      expect(finalizeProjectOutput).toHaveBeenCalledWith(config)
     })
   })
 

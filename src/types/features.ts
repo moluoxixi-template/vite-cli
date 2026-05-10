@@ -12,10 +12,8 @@
  */
 export const MOLUOXIXI_DEPS = {
   '@moluoxixi/eslint-config': 'latest',
-  '@moluoxixi/vite-config': 'latest',
   '@moluoxixi/ajax-package': 'latest',
   '@moluoxixi/class-names': 'latest',
-  '@moluoxixi/css-module-global-root-plugin': 'latest',
 } as const
 
 /**

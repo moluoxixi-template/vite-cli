@@ -4,11 +4,17 @@
  */
 
 import eslintConfig from '@moluoxixi/eslint-config'
+import vuePlugin from 'eslint-plugin-vue'
 
 export default eslintConfig({
   ignores: [
     'package.json',
+    '**/package.json',
+    'pnpm-workspace.yaml',
   ],
+  plugins: {
+    vue: vuePlugin,
+  },
   rules: {
     // import排序
     'perfectionist/sort-imports': 'off',

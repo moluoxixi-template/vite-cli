@@ -45,10 +45,8 @@ npm create @moluoxixi/app
 | 依赖包 | 用途 |
 |--------|------|
 | `@moluoxixi/eslint-config` | ESLint 统一配置 |
-| `@moluoxixi/vite-config` | Vite 构建配置 |
 | `@moluoxixi/ajax-package` | HTTP 请求封装 |
 | `@moluoxixi/class-names` | CSS 类名工具 |
-| `@moluoxixi/css-module-global-root-plugin` | CSS Module 插件 |
 
 ## 源码目录结构
 
