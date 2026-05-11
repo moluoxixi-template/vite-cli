@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import type { propsType, subMenuRouteType } from './_types'
+import type { propsType, subMenuRouteType } from './types'
 
 import { ElMenuItem, ElSubMenu } from 'element-plus'
 

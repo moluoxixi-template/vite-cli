@@ -48,6 +48,36 @@ async function readGeneratedFile(filePath: string): Promise<string> {
   return fs.readFile(path.join(tempDir, filePath), 'utf-8')
 }
 
+/**
+ * 收集目标项目中所有以下划线开头的目录。
+ * @param rootDir 目标项目根目录
+ * @param relativeDir 当前递归目录，相对于目标项目根目录
+ * @returns 以下划线开头的目录相对路径列表
+ */
+async function collectUnderscorePrefixedDirectories(
+  rootDir: string,
+  relativeDir = '',
+): Promise<string[]> {
+  const currentDir = path.join(rootDir, relativeDir)
+  const entries = await fs.readdir(currentDir, { withFileTypes: true })
+  const directories: string[] = []
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) {
+      continue
+    }
+
+    const entryRelativePath = path.join(relativeDir, entry.name)
+    if (entry.name.startsWith('_')) {
+      directories.push(entryRelativePath)
+    }
+
+    directories.push(...await collectUnderscorePrefixedDirectories(rootDir, entryRelativePath))
+  }
+
+  return directories
+}
+
 afterEach(async () => {
   if (tempDir && await fs.pathExists(tempDir)) {
     await fs.remove(tempDir)
@@ -84,5 +114,23 @@ describe('普通 Vite 项目输出', () => {
     expect(packageJson.devDependencies).toHaveProperty('@vitejs/plugin-vue')
     expect(packageJson.devDependencies).not.toHaveProperty('@moluoxixi/vite-config')
     expect(packageJson.devDependencies).not.toHaveProperty('@moluoxixi/css-module-global-root-plugin')
+
+    expect(await collectUnderscorePrefixedDirectories(tempDir)).toEqual([])
+  })
+
+  it('应该在 qiankun 项目中不生成下划线开头目录', async () => {
+    tempDir = path.join(process.cwd(), '__test__', 'temp-output-test', `qiankun-${Date.now()}`)
+
+    await generateProject(createConfig({
+      projectName: 'atomized-qiankun-output',
+      microFrontend: true,
+      microFrontendEngine: 'qiankun',
+      husky: true,
+      sentry: false,
+    }))
+
+    expect(await fs.pathExists(path.join(tempDir, 'src/components/SubMenu/src/types'))).toBe(true)
+    expect(await fs.pathExists(path.join(tempDir, 'src/components/SubMenu/src/_types'))).toBe(false)
+    expect(await collectUnderscorePrefixedDirectories(tempDir)).toEqual([])
   })
 })
