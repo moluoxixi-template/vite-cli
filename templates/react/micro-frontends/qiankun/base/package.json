@@ -3,7 +3,6 @@
     "vite-plugin-qiankun": "^1.0.15"
   },
   "devDependencies": {
-    "vite": "6.2.4",
-    "@moluoxixi/vite-config": "latest"
+    "vite": "6.2.4"
   }
 }

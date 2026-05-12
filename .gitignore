@@ -9,6 +9,7 @@ typings
 
 # 测试产物
 .playwright-mcp
+__test__/test-results/
 
 # Sentry配置
 .env.sentry-build-plugin

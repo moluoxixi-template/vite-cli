@@ -15,6 +15,7 @@ import {
   renderFrameworkFeatures,
   renderMicroFrontendFeatures,
 } from '../core/feature.ts'
+import { finalizeProjectOutput } from '../core/projectOutput.ts'
 import { renderTemplate, updatePackageJsonMetadata } from '../core/template.ts'
 import { emptyDir, getTemplatesDir } from '../utils/file.ts'
 
@@ -119,7 +120,10 @@ export async function generateProject(config: ProjectConfigType): Promise<void> 
     config.packageManager,
   )
 
-  // 4. 清理包管理器特定文件（只有 yarn 需要 .yarnrc.yml）
+  // 4. 生成最终入口和 Vite 配置，移除脚手架内部 loader
+  await finalizeProjectOutput(config)
+
+  // 5. 清理包管理器特定文件（只有 yarn 需要 .yarnrc.yml）
   if (config.packageManager !== 'yarn') {
     const yarnrcPath = path.join(targetDir, '.yarnrc.yml')
     if (fs.existsSync(yarnrcPath)) {

@@ -191,7 +191,26 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
 
           // 3. 验证必需的基础依赖
           validationOptions.required = ['@moluoxixi/ajax-package']
-          validationOptions.devRequired = ['@moluoxixi/vite-config']
+          validationOptions.devRequired = [
+            testConfig.config.framework === 'vue'
+              ? '@vitejs/plugin-vue'
+              : '@vitejs/plugin-react',
+          ]
+          validationOptions.shouldNotHave!.push(
+            '@moluoxixi/vite-config',
+            '@moluoxixi/css-module-global-root-plugin',
+          )
+
+          if (testConfig.config.routeMode === 'pageRoutes') {
+            validationOptions.devRequired!.push('vite-plugin-pages')
+          }
+
+          if (testConfig.config.uiLibrary === 'element-plus') {
+            validationOptions.devRequired!.push(
+              'unplugin-auto-import',
+              'unplugin-vue-components',
+            )
+          }
 
           if (testConfig.config.eslint) {
             validationOptions.devRequired!.push('@moluoxixi/eslint-config')

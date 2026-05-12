@@ -84,6 +84,7 @@
     "commitizen": "catalog:dev",
     "cz-customizable": "catalog:dev",
     "eslint": "catalog:dev",
+    "eslint-plugin-vue": "^10.9.1",
     "husky": "catalog:dev",
     "lint-staged": "catalog:dev",
     "tsx": "catalog:dev",
