@@ -1,5 +1,6 @@
 # 其他用户配置
 typings
+.codegraph
 
 # rules(可选)
 .cursor
