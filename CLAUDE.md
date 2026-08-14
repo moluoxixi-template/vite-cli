@@ -1,103 +1,22 @@
-# 项目规范
+<!-- MOLUOXIXI:START -->
+# Moluoxixi Instructions
 
-# 前端工程架构与代码规范
+These instructions are for AI assistants working in this project.
 
-在执行任何前端代码生成、重构或结构化任务时，必须没有例外地遵守以下物理架构与代码交付红线。
+This project is managed by the Moluoxixi-distributed Moluoxixi workflow. The working knowledge you need lives under `.moluoxixi/`:
 
-## 0. 适用边界
+- `.moluoxixi/workflow.md` — development phases, when to create tasks, skill routing
+- `.moluoxixi/spec/` — package- and layer-scoped coding guidelines (read before writing code in a given layer)
+- `.moluoxixi/spec-proposals/` — pending knowledge proposals; never treat them as approved guidance until promoted
+- `.moluoxixi/workspace/` — per-developer journals and session traces
+- `.moluoxixi/tasks/` — active and archived tasks (PRDs, research, jsonl context)
 
-- **项目事实优先**：先读取当前项目的框架版本、构建配置、测试入口和既有目录约定；不得为了套用本规范擅自升级依赖、改写项目架构或伪造验证入口。
-- **Vue 3.5+ 约束范围**：现代 Vue 语法只强制适用于已确认支持 Vue 3.5+ 与相关宏的 Vue 代码。React、非 Vue 代码或旧版 Vue 项目只适用目录、门面、测试和交付规则；若版本不匹配，必须在交付中说明约束。
-- **业务路由模块例外**：`views/`、`pages/`、`app/`、`routes/` 等框架路由扫描目录下的页面聚合模块不属于独立包根目录，严禁为了制造层级再包一层 `src/`；其内部职责目录仍递归遵守门面规则。
+If a Moluoxixi command is available on your platform (e.g. `/moluoxixi:finish-work`, `/moluoxixi:continue`), prefer it over manual steps. Not every platform exposes every command.
 
-## 1. 门面模式与统一入口
+If you're using Codex or another agent-capable tool, additional project-scoped helpers may live in:
+- `.agents/skills/` — reusable Moluoxixi skills
+- `.codex/agents/` — optional custom subagents
 
-- 职责目录如 `components/`、`utils/`、`types/`、`composables/`、`hooks/` 必须对外表现为黑盒。
-- 职责目录下必须存在 `index.ts` 作为统一转发出口。
-- 包外、模块外和跨职责目录调用方禁止 Deep Import，必须通过门面引入。
-- 类型定义必须在类型目录的 `index.ts` 中通过 `export type * from './xxx'` 统一暴露。
-- 值导出优先使用显式命名导出，禁止用无差别 `export *` 暴露内部实现。
-- 框架扫描目录、测试目录、样例目录、资产目录、样式目录、构建产物目录和 generated 目录不强制提供 `index.ts`。
+Managed by Moluoxixi. Edits outside this block are preserved; edits inside may be overwritten by a future project-local update.
 
-## 2. 独立模块与组件目录骨架
-
-- 根目录只承载对外契约和工程配置；对外生产 API 只能通过唯一根 `index.ts` 暴露。
-- 所有具体逻辑、组件、样式代码必须收敛在 `src/` 内部，并递归遵守门面规则。
-- 可复用 Props、Emits、Expose、Slots、Model、Ref、工具函数参数或返回类型必须收敛到 `src/types/`。
-- 外部应用或其他模块只能引入该包根 `index.ts`，禁止直接读取其 `src/` 内部文件。
-- 只有私有、叶子、无 API、无导出类型、无跨目录复用、无生产职责拆分的展示组件，才允许保持单文件。
-
-## 3. 开发评审门槛
-
-- 触发以下任一条件时，禁止直接生成生产代码或测试代码；必须先输出《前端实现与测试设计报告》，等待开发者确认后再进入生成阶段：
-  - 新增、重构或拆分公共组件、可复用业务模块、工具函数、hooks/composables、类型契约或对外导出 API。
-  - 涉及跨模块状态、路由、权限、表单、请求、缓存、上传、编辑器、图表、拖拽、复杂交互或用户可见核心流程。
-  - 需要决定测试分层、Mock/fixture 策略、浏览器测试范围、覆盖率边界或异常路径验证方式。
-  - 修改目录边界、门面出口、导入路径、构建配置、测试配置、组件库契约或框架集成方式。
-  - 需求存在多个合理实现方案、验收标准不明确、存在迁移成本，或可能影响可访问性、性能、错误处理和数据安全。
-- 同时满足以下条件时，可跳过前置评审直接实现，并在交付说明中报告依据：纯展示或样式微调、单文件叶子组件、无公共导出契约变化、无新增状态或异步流程、无跨模块交互、测试策略可直接沿用现有模式、存在可精准执行的验证脚本。
-- 《前端实现与测试设计报告》必须包含：项目事实证据、改动范围、接口/类型契约、实现方案、测试分层与用例清单、Mock/fixture 策略、风险点和验证命令。报告阶段只允许读取和分析，不得创建或修改生产代码与测试文件。
-
-## 4. 强制测试交付要求
-
-- 进入实现阶段后，修改组件、核心工具逻辑、公共类型契约或可复用业务模块时，必须同步交付高质量测试代码。
-- 测试文件必须放置在目标代码同级的 `__test__/` 目录下；跨模块 E2E 才允许放在项目根级 `__e2e__/`。
-- 单元、工具函数、类型契约和组件基础挂载测试优先使用 Vitest；真实浏览器交互必须使用 Playwright 或项目既有真实浏览器测试工具。
-- 禁止只写“能渲染/能跑通”的烟雾测试，必须验证实际契约、交互和核心边界条件。
-
-## 5. 现代 Vue 语法强制红线
-
-- Vue 3.5+ 声明 `v-model` 双向绑定契约时，强制使用 `defineModel`。
-- 模板 DOM 或组件实例引用强制使用 Vue 3.5+ 的 `useTemplateRef`。
-- Props 声明强制使用基于类型的 `defineProps`；需要默认值时配合 `withDefaults`。
-
-## 6. Vue 组件契约
-
-- 执行 Vue 前端代码生成、重构或评审任务时，必须先确认当前项目的 Vue 版本、构建配置、测试入口和既有组件写法。
-- 可复用 Props、Emits、Expose、Slots、Model、Ref 类型必须收敛到类型目录，并通过门面出口暴露。
-- 修改公共组件或组件库公共契约时，必须先输出实现与测试设计报告；普通业务组件只在影响 PRD、API 或测试事实时同步文档。
-- 组件测试必须验证真实 Props、事件、插槽、模型绑定、可访问性状态和关键交互，不得只保留“能挂载”烟雾测试。
-
-# 项目文档知识库
-
-## 读取顺序
-
-- 当任务涉及架构、模块边界、需求、接口联调、组件实现、测试设计、业务流程、字段口径、验收标准或用户提到具体业务域时，必须先检索并读取 `docs/`。
-- 优先读取 `docs/map.md`，再读取相关目录的 `index.md`，最后按关键词读取命中的业务文档。
-- 涉及架构、分层、依赖方向、部署、权限模型或技术选型时，必须读取 `docs/architecture/index.md`、`docs/architecture/overview.md` 和相关 ADR。
-- 涉及接口、联调、请求封装、错误处理、分页、鉴权或 Mock 时，必须读取 `docs/api/_protocol.md` 和相关业务接口文档。
-- 若相关内容未在分类目录中找到，必须读取 `docs/other/index.md`，检查是否存在待整理的旧文档入口。
-- 检索关键词必须包含用户原始业务词、可能的英文名、接口路径、页面路由、组件名、实体名和领域缩写。
-- 若相关文档存在，以文档为业务事实来源，再结合 CodeGraph 分析代码结构；不得只凭代码反推需求。
-- 若文档与代码、用户口径或其它文档冲突，必须停止并报告冲突位置；不得静默用代码覆盖文档事实。
-- 若相关文档缺失，交付中标记 `MISSING docs`，并说明已检索的关键词和路径。
-
-## 读取边界
-
-- `docs/` 是项目内部知识库；`out-components/`、`out-api/` 是对外复用产物，不属于通用文档读取入口。
-- 只有用户任务明确涉及组件库对外契约、API 对外契约、消费方联调或场景专属规则要求时，才读取对应 `out-*` 目录。
-- 初始化前归档到 `docs/other/imported/` 的旧文档只能作为来源证据；未转换为标准分类文档前，不得作为长期业务事实使用。
-
-## 维护规则
-
-- 新增或修改架构、PRD、API、组件、测试文档时，必须分别使用 `architecture-docs`、`prd-docs`、`api-docs`、`components-docs`、`test-docs`，并同步更新目录 `index.md` 与 `docs/map.md`。
-- 文档按业务域独立成篇；例如 `docs/prds/采购订单.md`、`docs/api/采购订单.md`、`docs/test/采购订单.md`。
-- 全局接口协议维护在 `docs/api/_protocol.md`；业务接口文档不得重复定义冲突协议。
-- 架构决策维护在 `docs/architecture/decisions/`，影响模块边界、技术选型、数据模型、接口协议或部署拓扑时必须记录 ADR。
-- 前端项目可包含 `docs/components/`；后端项目不强制创建组件文档目录。
-- 初始化前已存在但暂未归类的文档登记在 `docs/other/index.md`；整理旧文档时必须先评估归属，不得自动移动或覆盖用户文档。
-- 不得把需求、接口、组件和测试内容混写到同一个文档；跨文档关系通过链接引用。
-
-## 代码变更与文档同步
-
-- 修改代码前，若任务涉及业务行为、接口契约、组件契约、架构边界、测试策略、权限、状态机、数据一致性或用户可见流程，必须先读取相关 docs。
-- 修改代码过程中发现实现与 docs 不一致时，必须停止并报告冲突；不得静默让代码覆盖文档事实。
-- 修改代码后，若行为、接口、组件、架构或测试策略发生变化，必须同步更新对应 docs、目录 `index.md` 和 `docs/map.md`。
-- 若本次代码变更不需要更新 docs，交付中必须说明 `N/A docs` 及理由；若应更新但信息不足，标记 `MISSING docs update` 并说明缺口。
-
-## 评审门槛
-
-- L0 可直接执行：已有边界内的小补充、事实明确的字段或示例更新、沿用现有模式的低风险测试。
-- L1 先输出变更摘要：轻微结构调整、索引或 `docs/map.md` 更新、不会改变公共契约的文档拆分。
-- L2 必须先输出设计或拆分报告并等待开发者确认：架构边界、接口协议、错误码体系、分页策略、组件库契约、PRD 业务域拆分、测试策略、Mock/fixture 策略、E2E/联调范围、权限/状态机/数据一致性规则。
-- 若无法判断属于哪个等级，按更高等级处理；不得用低等级绕过评审。
+<!-- MOLUOXIXI:END -->
