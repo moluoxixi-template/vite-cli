@@ -210,6 +210,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
               : '@vitejs/plugin-react',
           ]
           validationOptions.shouldNotHave!.push(
+            '@antfu/eslint-config',
             '@moluoxixi/vite-config',
             '@moluoxixi/css-module-global-root-plugin',
           )
@@ -226,7 +227,11 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           }
 
           if (testConfig.config.eslint) {
-            validationOptions.devRequired!.push('@moluoxixi/eslint-config')
+            validationOptions.devRequired!.push('@moluoxixi/eslint-config', 'eslint')
+            validationOptions.shouldNotHave!.push(
+              '@eslint-react/eslint-plugin',
+              'eslint-plugin-react-refresh',
+            )
           }
 
           const result = await validateDependencies(projectDir, validationOptions)

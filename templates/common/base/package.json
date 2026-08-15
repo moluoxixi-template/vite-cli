@@ -11,8 +11,7 @@
     "submodule:update": "cd .cursor && git pull && cd .. && git submodule update --init --recursive --remote",
     "build": "vite build --mode production",
     "build:zip": "vite build --mode production && tsx scripts/build.mts",
-    "preview": "vite preview",
-    "lint:eslint": "eslint ."
+    "preview": "vite preview"
   },
   "postcss": {
     "plugins": {

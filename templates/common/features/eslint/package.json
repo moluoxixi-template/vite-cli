@@ -1,8 +1,10 @@
 {
+  "scripts": {
+    "lint:eslint": "eslint ."
+  },
   "devDependencies": {
     "@moluoxixi/eslint-config": "0.0.16",
     "eslint": "^9.22.0",
-    "eslint-plugin-format": "^1.0.1",
-    "eslint-plugin-vue": "^10.9.1"
+    "eslint-plugin-format": "^1.0.1"
   }
 }

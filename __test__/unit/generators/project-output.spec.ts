@@ -88,7 +88,7 @@ describe('普通 Vite 项目输出', () => {
   it('应该在 Vue 项目中合成最终 main.ts 和 vite.config.ts', async () => {
     tempDir = path.join(process.cwd(), '__test__', 'temp-output-test', `vue-${Date.now()}`)
 
-    await generateProject(createConfig())
+    await generateProject(createConfig({ eslint: true }))
 
     expect(await fs.pathExists(path.join(tempDir, 'src/main'))).toBe(false)
     expect(await fs.pathExists(path.join(tempDir, 'vite'))).toBe(false)
@@ -120,8 +120,21 @@ describe('普通 Vite 项目输出', () => {
 
     const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
     expect(packageJson.devDependencies).toHaveProperty('@vitejs/plugin-vue')
+    expect(packageJson.devDependencies).toHaveProperty('@moluoxixi/eslint-config', '0.0.16')
+    expect(packageJson.devDependencies).toHaveProperty('eslint')
+    expect(packageJson.devDependencies).not.toHaveProperty('@antfu/eslint-config')
+    expect(packageJson.devDependencies).not.toHaveProperty('@eslint-react/eslint-plugin')
+    expect(packageJson.devDependencies).not.toHaveProperty('eslint-plugin-react-refresh')
     expect(packageJson.devDependencies).not.toHaveProperty('@moluoxixi/vite-config')
     expect(packageJson.devDependencies).not.toHaveProperty('@moluoxixi/css-module-global-root-plugin')
+    expect(packageJson.scripts).toHaveProperty('lint:eslint', 'eslint .')
+
+    const eslintConfig = await readGeneratedFile('eslint.config.ts')
+    expect(eslintConfig).toContain('from \'@moluoxixi/eslint-config\'')
+    expect(eslintConfig).not.toContain('react:')
+    expect(eslintConfig).not.toContain('typescript:')
+    expect(eslintConfig).not.toContain('vue:')
+    expect(eslintConfig).not.toContain('eslint-plugin-vue')
 
     expect(await collectUnderscorePrefixedDirectories(tempDir)).toEqual([])
   })
@@ -144,6 +157,9 @@ describe('普通 Vite 项目输出', () => {
     expect(elementLayout).not.toContain(':namespace=')
     const elementStyles = await readGeneratedFile('src/assets/styles/element/index.scss')
     expect(elementStyles).not.toContain('$namespace')
+    const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
+    expect(packageJson.scripts).not.toHaveProperty('lint:eslint')
+    expect(await fs.pathExists(path.join(tempDir, 'eslint.config.ts'))).toBe(false)
     expect(await collectUnderscorePrefixedDirectories(tempDir)).toEqual([])
   })
 
@@ -156,6 +172,7 @@ describe('普通 Vite 项目输出', () => {
       uiLibrary: 'ant-design',
       pinia: false,
       zustand: true,
+      eslint: true,
       microFrontend: false,
     }))
 
@@ -173,6 +190,20 @@ describe('普通 Vite 项目输出', () => {
     expect(viteConfig).toContain('import react from \'@vitejs/plugin-react\'')
     expect(viteConfig).toContain('import Pages from \'vite-plugin-pages\'')
     expect(viteConfig).not.toContain('vite-plugin-qiankun')
+
+    const eslintConfig = await readGeneratedFile('eslint.config.ts')
+    expect(eslintConfig).toContain('from \'@moluoxixi/eslint-config\'')
+    expect(eslintConfig).not.toContain('react:')
+    expect(eslintConfig).not.toContain('typescript:')
+    expect(eslintConfig).not.toContain('vue:')
+
+    const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
+    expect(packageJson.devDependencies).toHaveProperty('@moluoxixi/eslint-config', '0.0.16')
+    expect(packageJson.devDependencies).not.toHaveProperty('@eslint-react/eslint-plugin')
+    expect(packageJson.devDependencies).not.toHaveProperty('eslint-plugin-react-refresh')
+    expect(packageJson.devDependencies).not.toHaveProperty('@antfu/eslint-config')
+    expect(packageJson.devDependencies).not.toHaveProperty('eslint-plugin-vue')
+    expect(packageJson.scripts).toHaveProperty('lint:eslint', 'eslint .')
   })
 
   it('应该生成独立治理的 React qiankun 生命周期入口', async () => {
