@@ -122,6 +122,7 @@ describe('普通 Vite 项目输出', () => {
     expect(packageJson.devDependencies).toHaveProperty('@vitejs/plugin-vue')
     expect(packageJson.devDependencies).toHaveProperty('@moluoxixi/eslint-config', '0.0.16')
     expect(packageJson.devDependencies).toHaveProperty('eslint')
+    expect(packageJson.devDependencies).not.toHaveProperty('eslint-plugin-vue')
     expect(packageJson.devDependencies).not.toHaveProperty('@antfu/eslint-config')
     expect(packageJson.devDependencies).not.toHaveProperty('@eslint-react/eslint-plugin')
     expect(packageJson.devDependencies).not.toHaveProperty('eslint-plugin-react-refresh')

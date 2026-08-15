@@ -190,7 +190,11 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
 
           // 根据配置决定不应该存在的依赖
           if (!testConfig.config.eslint) {
-            validationOptions.shouldNotHave!.push('@moluoxixi/eslint-config', 'eslint')
+            validationOptions.shouldNotHave!.push(
+              '@moluoxixi/eslint-config',
+              'eslint',
+              'eslint-plugin-format',
+            )
           }
 
           if (!testConfig.config.i18n) {
@@ -211,6 +215,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           ]
           validationOptions.shouldNotHave!.push(
             '@antfu/eslint-config',
+            'eslint-plugin-vue',
             '@moluoxixi/vite-config',
             '@moluoxixi/css-module-global-root-plugin',
           )
@@ -227,7 +232,11 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           }
 
           if (testConfig.config.eslint) {
-            validationOptions.devRequired!.push('@moluoxixi/eslint-config', 'eslint')
+            validationOptions.devRequired!.push(
+              '@moluoxixi/eslint-config',
+              'eslint',
+              'eslint-plugin-format',
+            )
             validationOptions.shouldNotHave!.push(
               '@eslint-react/eslint-plugin',
               'eslint-plugin-react-refresh',

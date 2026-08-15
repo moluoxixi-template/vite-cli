@@ -117,6 +117,7 @@ async function verifyGeneratedContract(config: ProjectConfigType): Promise<void>
   expect(packageJson.dependencies).not.toHaveProperty(unexpectedSentryDependency)
   expect(Boolean(packageJson.devDependencies?.['@moluoxixi/eslint-config']))
     .toBe(config.eslint)
+  expect(packageJson.devDependencies).not.toHaveProperty('eslint-plugin-vue')
   expect(packageJson.devDependencies).not.toHaveProperty('@antfu/eslint-config')
   expect(Boolean(packageJson.scripts?.['lint:eslint'])).toBe(config.eslint)
 
@@ -127,17 +128,10 @@ async function verifyGeneratedContract(config: ProjectConfigType): Promise<void>
     expect(eslintConfig).toContain('from \'@moluoxixi/eslint-config\'')
     expect(eslintConfig).not.toContain('typescript:')
     expect(eslintConfig).not.toContain('vue:')
-
-    if (config.framework === 'vue') {
-      expect(eslintConfig).not.toContain('react:')
-      expect(packageJson.devDependencies).not.toHaveProperty('@eslint-react/eslint-plugin')
-      expect(packageJson.devDependencies).not.toHaveProperty('eslint-plugin-react-refresh')
-    }
-    else {
-      expect(eslintConfig).not.toContain('react:')
-      expect(packageJson.devDependencies).not.toHaveProperty('@eslint-react/eslint-plugin')
-      expect(packageJson.devDependencies).not.toHaveProperty('eslint-plugin-react-refresh')
-    }
+    expect(eslintConfig).not.toContain('eslint-plugin-vue')
+    expect(eslintConfig).not.toContain('react:')
+    expect(packageJson.devDependencies).not.toHaveProperty('@eslint-react/eslint-plugin')
+    expect(packageJson.devDependencies).not.toHaveProperty('eslint-plugin-react-refresh')
   }
 
   expect(Boolean(packageJson.devDependencies?.husky))
