@@ -1,7 +1,7 @@
 {
   "name": "react-project",
   "scripts": {
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json"
   },
   "dependencies": {
     "react": "^18.3.1",

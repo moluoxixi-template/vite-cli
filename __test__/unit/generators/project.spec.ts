@@ -53,6 +53,10 @@ function createTestConfig(overrides: Partial<ProjectConfigType> = {}): ProjectCo
     framework: 'vue',
     uiLibrary: 'element-plus',
     routeMode: 'manualRoutes',
+    pinia: true,
+    zustand: false,
+    manualRoutes: true,
+    pageRoutes: false,
     i18n: false,
     sentry: false,
     eslint: true,
@@ -82,6 +86,9 @@ describe('generateProject', () => {
       for (const framework of FRAMEWORKS) {
         const config = createTestConfig({
           framework,
+          uiLibrary: framework === 'vue' ? 'element-plus' : 'ant-design',
+          pinia: framework === 'vue',
+          zustand: framework === 'react',
           targetDir: path.join(tempDir, `test-${framework}`),
         })
 
@@ -98,6 +105,23 @@ describe('generateProject', () => {
       await expect(generateProject(config))
         .rejects
         .toThrow('不支持的框架')
+    })
+
+    it('应该在修改目标目录前拒绝非法能力组合', async () => {
+      const config = createTestConfig({
+        microFrontend: true,
+      })
+      const { emptyDir } = await import('@/utils/file')
+      const { renderTemplate } = await import('@/core/template')
+      const { finalizeProjectOutput } = await import('@/core/projectOutput')
+
+      await expect(generateProject(config))
+        .rejects
+        .toThrow('必须提供 microFrontendEngine')
+
+      expect(emptyDir).not.toHaveBeenCalled()
+      expect(renderTemplate).not.toHaveBeenCalled()
+      expect(finalizeProjectOutput).not.toHaveBeenCalled()
     })
   })
 
@@ -153,6 +177,30 @@ describe('generateProject', () => {
       await generateProject(config)
 
       expect(renderFrameworkFeatures).toHaveBeenCalledWith(config, tempDir)
+    })
+
+    it('应该把规范化后的派生 feature 传给下游', async () => {
+      const config = createTestConfig({
+        pinia: undefined,
+        zustand: undefined,
+        manualRoutes: undefined,
+        pageRoutes: undefined,
+      })
+      const { renderFrameworkFeatures } = await import('@/core/feature')
+      const { finalizeProjectOutput } = await import('@/core/projectOutput')
+
+      await generateProject(config)
+
+      const normalizedConfig = expect.objectContaining({
+        pinia: true,
+        zustand: false,
+        manualRoutes: true,
+        pageRoutes: false,
+      })
+      expect(renderFrameworkFeatures).toHaveBeenCalledWith(normalizedConfig, tempDir)
+      expect(finalizeProjectOutput).toHaveBeenCalledWith(normalizedConfig)
+      expect(config.pinia).toBeUndefined()
+      expect(config.manualRoutes).toBeUndefined()
     })
   })
 
@@ -245,12 +293,12 @@ describe('generateProject', () => {
 
       await generateProject(config)
 
-      // 由于 emptyDir 被 mock 了，文件不会被真正删除
-      // 这里验证逻辑正确性
-      expect(config.packageManager).not.toBe('yarn')
+      expect(await fs.pathExists(yarnrcPath)).toBe(false)
     })
 
     it('应该在 yarn 时保留 .yarnrc.yml', async () => {
+      const yarnrcPath = path.join(tempDir, '.yarnrc.yml')
+      await fs.writeFile(yarnrcPath, 'nodeLinker: node-modules')
       const config = createTestConfig({
         targetDir: tempDir,
         packageManager: 'yarn',
@@ -258,7 +306,7 @@ describe('generateProject', () => {
 
       await generateProject(config)
 
-      expect(config.packageManager).toBe('yarn')
+      expect(await fs.pathExists(yarnrcPath)).toBe(true)
     })
   })
 
@@ -282,6 +330,8 @@ describe('generateProject', () => {
         framework: 'vue',
         uiLibrary: 'element-plus',
         routeMode: 'pageRoutes',
+        manualRoutes: false,
+        pageRoutes: true,
         i18n: true,
         sentry: true,
         eslint: true,

@@ -19,6 +19,8 @@ export default defineConfig({
     pool: 'threads',
     // E2E 测试文件内的测试并发执行
     fileParallelism: true,
+    maxWorkers: 2,
+    maxConcurrency: 2,
 
     // ========== 超时配置 ==========
     // 测试超时：10 分钟（E2E 测试需要安装依赖和类型检查，可能需要较长时间）

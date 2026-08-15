@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "ESNext",
+    "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ESNext"],
-    "skipLibCheck": true,
+    "resolveJsonModule": true,
     "strict": true,
+    "declaration": true,
+    "noEmit": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "composite": true,
-    "declaration": true
+    "skipLibCheck": true
   }
 }

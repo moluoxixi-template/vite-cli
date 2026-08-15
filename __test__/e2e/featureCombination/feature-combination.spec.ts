@@ -8,7 +8,7 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs-extra'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { execa } from 'execa'
 // TODO: 暂时禁用构建测试
 // import { resolveConfig } from 'vite'
@@ -18,17 +18,15 @@ import { FRAMEWORKS } from '@/constants'
 import {
   checkPackageInDependencies,
   extractImports,
-  resolveImportPathInTemplate,
+  getTemplateDependencyPaths,
+  resolveImportPath,
 } from './helpers/import-validator'
 import {
   checkBaseAndFeatures,
   checkConstantsFeatures,
   scanSourceFiles,
 } from './helpers/template-validator'
-import {
-  // cleanupTempDir,
-  createTempDir,
-} from '@test/test-utils'
+import { cleanupTempDir, createTempDir } from '@test/test-utils'
 import { generateTestConfigs } from './helpers/test-config-generator'
 import {
   findCatalogReferences,
@@ -44,7 +42,21 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const TEMPLATES_DIR = path.resolve(__dirname, '../../../templates')
 
 // 🔍 自动扫描生成测试配置（基于文件系统）
-const TEST_CONFIGS = generateTestConfigs()
+const TEST_CONFIGS = generateTestConfigs({
+  defaults: {
+    i18n: true,
+    sentry: true,
+    eslint: true,
+    husky: true,
+  },
+  combinations: {
+    packageManagers: ['pnpm'],
+    i18n: false,
+    sentry: false,
+    eslint: false,
+    husky: false,
+  },
+})
 
 // TODO: 暂时禁用清理临时目录
 // const tempDirsToCleanup: string[] = []
@@ -114,10 +126,11 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           await generateProject(config)
         })
 
-        // TODO: 暂时禁用清理临时目录
-        // afterAll(() => {
-        //   tempDirsToCleanup.push(projectDir)
-        // })
+        afterAll(async () => {
+          if (projectDir) {
+            await cleanupTempDir(projectDir)
+          }
+        })
 
         it('应该存在 package.json 文件', () => {
           const packageJsonPath = path.join(projectDir, 'package.json')
@@ -270,13 +283,15 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
             return
           }
 
-          const { exitCode, stderr } = await execa(packageManager, getRunArgs(packageManager, 'lint:eslint'), {
+          const { exitCode, stderr, stdout } = await execa(packageManager, getRunArgs(packageManager, 'lint:eslint'), {
             cwd: projectDir,
             reject: false,
           })
 
           if (exitCode !== 0) {
-            console.error('代码检查失败:', stderr)
+            console.error('代码检查失败:')
+            console.error('标准输出:', stdout)
+            console.error('错误输出:', stderr)
           }
 
           expect(exitCode).toBe(0)
@@ -309,54 +324,22 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           expect(exitCode).toBe(0)
         })
 
-        // TODO: 暂时禁用构建测试
-        // it('应该成功构建', async () => {
-        //   const { exitCode, stdout, stderr } = await execa(packageManager, getRunArgs(packageManager, 'build'), {
-        //     cwd: projectDir,
-        //     reject: false,
-        //   })
+        it('应该成功构建并产出入口和静态资源', async () => {
+          const { exitCode, stdout, stderr } = await execa(
+            packageManager,
+            getRunArgs(packageManager, 'build'),
+            {
+              cwd: projectDir,
+              reject: false,
+            },
+          )
+          const distDir = path.join(projectDir, 'dist')
 
-        //   const outDir = await getViteOutDir(projectDir, 'production')
-        //   const distDir = path.join(projectDir, outDir)
-        //   const distExists = fs.existsSync(distDir)
-
-        //   if (exitCode !== 0 || !distExists) {
-        //     console.error('构建失败:')
-        //     console.error('退出码:', exitCode)
-        //     console.error('标准输出:', stdout)
-        //     console.error('错误输出:', stderr)
-        //     if (!distExists) {
-        //       console.error(`${outDir} 目录不存在`)
-        //     }
-        //   }
-
-        //   expect(exitCode).toBe(0)
-
-        //   // 检查构建输出目录是否生成
-        //   expect(distExists).toBe(true)
-        // })
-
-        // it('应该有有效的构建输出', async () => {
-        //   const outDir = await getViteOutDir(projectDir, 'production')
-        //   const distDir = path.join(projectDir, outDir)
-
-        //   if (!fs.existsSync(distDir)) {
-        //     expect.fail(`未找到 ${outDir} 目录`)
-        //   }
-
-        //   const files = await fs.readdir(distDir)
-
-        //   // 检查是否有 index.html
-        //   expect(files).toContain('index.html')
-
-        //   // 检查是否有 assets 或 static 目录，或者有 .js/.css 文件
-        //   const hasAssets = files.some((f) => {
-        //     const fullPath = path.join(distDir, f)
-        //     const stat = fs.statSync(fullPath)
-        //     return f.startsWith('assets') || f.startsWith('static') || f.endsWith('.js') || f.endsWith('.css') || (stat.isDirectory() && (f === 'assets' || f === 'assets' || f === 'static'))
-        //   })
-        //   expect(hasAssets).toBe(true)
-        // })
+          expect(exitCode, `${stdout}\n${stderr}`).toBe(0)
+          expect(fs.existsSync(path.join(distDir, 'index.html'))).toBe(true)
+          expect(fs.existsSync(path.join(distDir, 'assets'))).toBe(true)
+          expect(fs.readdirSync(path.join(distDir, 'assets')).some(file => /\.(?:css|js)$/.test(file))).toBe(true)
+        })
       })
     }
   })
@@ -470,6 +453,8 @@ describe('模板验证与功能组合测试', () => {
         const crossTemplateImportErrors: string[] = []
         const packageImportErrors: string[] = []
         const missingPackages = new Set<string>()
+        const allowedTemplatePaths = getTemplateDependencyPaths(template, TEMPLATES_DIR)
+          .map(templatePath => path.resolve(templatePath))
 
         for (const file of sourceFiles) {
           const content = fs.readFileSync(file, 'utf-8')
@@ -478,25 +463,24 @@ describe('模板验证与功能组合测试', () => {
           for (const imp of imports) {
             // 检查文件导入（相对路径和路径别名）
             if (imp.type === 'relative' || imp.type === 'alias') {
-              // 解析路径到实际文件路径（resolveImportPathInTemplate 内部会处理补后缀和文件存在性检查）
-              const resolvedFile = resolveImportPathInTemplate(
+              // 按产物叠加顺序解析当前 feature 及其 base 依赖。
+              const resolvedFile = resolveImportPath(
                 file,
                 imp.path,
                 template,
                 TEMPLATES_DIR,
               )
 
-              // 1. 检查跨模板导入（解析后的文件路径是否在当前模板范围内）
-              if (resolvedFile && !resolvedFile.startsWith(template.path)) {
+              if (resolvedFile && !allowedTemplatePaths.some(allowedPath =>
+                resolvedFile === allowedPath || resolvedFile.startsWith(`${allowedPath}${path.sep}`))) {
                 const relativePath = path.relative(TEMPLATES_DIR, file)
                 const importedPath = path.relative(TEMPLATES_DIR, resolvedFile)
                 crossTemplateImportErrors.push(
-                  `${relativePath}:${imp.line} - 跨模板导入不允许: "${imp.path}" (解析到: ${importedPath})`,
+                  `${relativePath}:${imp.line} - 导入越过允许模板层: "${imp.path}" (解析到: ${importedPath})`,
                 )
-                continue // 跳过后续的文件存在性检查
               }
 
-              // 2. 检查文件是否存在（如果返回 null，说明文件不存在或无法解析）
+              // 检查文件是否存在（如果返回 null，说明文件不存在或无法解析）
               if (!resolvedFile) {
                 const relativePath = path.relative(TEMPLATES_DIR, file)
                 fileImportErrors.push(
@@ -535,7 +519,7 @@ describe('模板验证与功能组合测试', () => {
           }
         })
 
-        it(`应该只从当前模板导入（无跨模板导入）- ${template.name}${crossTemplateImportErrors.length > 0 ? ` (${crossTemplateImportErrors.length} 个错误)` : ' (通过)'}`, () => {
+        it(`应该只从允许的模板层导入 - ${template.name}${crossTemplateImportErrors.length > 0 ? ` (${crossTemplateImportErrors.length} 个错误)` : ' (通过)'}`, () => {
           if (crossTemplateImportErrors.length > 0) {
             const errorMessage = `发现 ${crossTemplateImportErrors.length} 个跨模板导入：\n${crossTemplateImportErrors.slice(0, 10).join('\n')}${crossTemplateImportErrors.length > 10 ? `\n... 还有 ${crossTemplateImportErrors.length - 10} 个` : ''}`
             expect.fail(errorMessage)

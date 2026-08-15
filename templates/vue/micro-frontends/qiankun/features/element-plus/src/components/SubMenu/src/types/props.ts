@@ -1,11 +1,11 @@
 export interface subMenuRouteMetaType {
-  title?: string
+  title?: unknown
   [key: string]: unknown
 }
 
 export interface subMenuRouteType {
   path?: string
-  name?: string
+  name?: string | symbol
   meta?: subMenuRouteMetaType
   children?: subMenuRouteType[]
 }

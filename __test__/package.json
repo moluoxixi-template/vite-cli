@@ -7,7 +7,10 @@
   "scripts": {
     "test": "vitest run",
     "test:unit": "vitest run unit",
-    "test:e2e": "vitest run e2e",
+    "test:e2e": "vitest run e2e --exclude e2e/full-matrix.spec.ts",
+    "test:matrix": "vitest run e2e/full-matrix.spec.ts",
+    "test:build-smoke": "vitest run e2e/build-smoke.spec.ts",
+    "type-check": "tsc --noEmit -p tsconfig.json",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
@@ -20,6 +23,9 @@
     "@vitest/ui": "^4.0.17",
     "execa": "^9.6.1",
     "fs-extra": "catalog:build",
+    "playwright": "^1.62.1",
+    "qiankun": "^2.10.16",
+    "single-spa": "^5.9.2",
     "typescript": "catalog:dev",
     "vite": "catalog:dev",
     "vitest": "^4.0.17"

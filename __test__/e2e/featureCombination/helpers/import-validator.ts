@@ -688,7 +688,7 @@ export async function scanAllImports(dir: string): Promise<string[]> {
           await scan(fullPath)
         }
       }
-      else if (entry.name.match(/\.(ts|tsx|js|jsx|vue)$/)) {
+      else if (/\.(?:ts|tsx|js|jsx|vue)$/.test(entry.name)) {
         const content = await fs.readFile(fullPath, 'utf-8')
 
         // 匹配 import 和 from 语句

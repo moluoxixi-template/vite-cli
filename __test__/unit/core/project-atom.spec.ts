@@ -91,4 +91,26 @@ describe('项目输出 atom', () => {
       'plugins.push(Pages({ dirs: \'src/pages\' }))',
     ])
   })
+
+  it('应该允许微前端 atom 覆盖 React 入口模式', () => {
+    const output = composeProjectOutput([
+      {
+        id: 'react:base',
+        main: { mode: 'react-standard' },
+        vite: {
+          pluginsByMainMode: {
+            'react-standard': ['plugins.push(react())'],
+            'react-qiankun': ['if (mode !== \'development\') plugins.push(react())'],
+          },
+        },
+      },
+      { id: 'react:qiankun', main: { mode: 'react-qiankun' } },
+    ])
+
+    expect(output.main.mode).toBe('react-qiankun')
+    expect(output.vite.pluginsByMainMode['react-standard']).toEqual(['plugins.push(react())'])
+    expect(output.vite.pluginsByMainMode['react-qiankun']).toEqual([
+      'if (mode !== \'development\') plugins.push(react())',
+    ])
+  })
 })

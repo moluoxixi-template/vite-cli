@@ -10,6 +10,23 @@ import type {
   RouteModeType,
   UILibraryType,
 } from '../types/index.ts'
+import type { CapabilityOption, StateManagementFeature } from '../core/capabilities.ts'
+
+import {
+  FRAMEWORK_CAPABILITIES,
+  FRAMEWORK_ORDER,
+  MICRO_FRONTEND_ENGINE_CAPABILITIES,
+  PACKAGE_MANAGER_CAPABILITIES,
+  ROUTE_MODE_CAPABILITIES,
+} from '../core/capabilities.ts'
+
+function getEnabledOptions<TValue extends string>(
+  options: readonly CapabilityOption<TValue>[],
+): Array<{ name: string, value: TValue }> {
+  return options
+    .filter(option => option.enabled)
+    .map(({ name, value }) => ({ name, value }))
+}
 
 /**
  * 文件系统相关常量
@@ -25,35 +42,23 @@ export const FILE_CONSTANTS = {
   PNPM_WORKSPACE_YAML: 'pnpm-workspace.yaml',
 } as const
 
-/**
- * UI 库选项配置（按框架分组，允许部分框架不存在）
- */
-export const UI_LIBRARY_OPTIONS: Partial<Record<FrameworkType, Array<{ name: string, value: UILibraryType }>>> = {
-  vue: [
-    { name: 'Element Plus', value: 'element-plus' as UILibraryType },
-    // TODO: 模板还没优化完毕，先不提供
-    // { name: 'Ant Design Vue', value: 'ant-design-vue' as UILibraryType },
-  ],
-  // TODO: 模板还没优化完毕，先不提供
-  // react: [
-  //   { name: 'Ant Design', value: 'ant-design' as UILibraryType },
-  // ],
-} as const
+export const UI_LIBRARY_OPTIONS: Record<FrameworkType, Array<{ name: string, value: UILibraryType }>> = {
+  vue: getEnabledOptions(FRAMEWORK_CAPABILITIES.vue.uiLibraries),
+  react: getEnabledOptions(FRAMEWORK_CAPABILITIES.react.uiLibraries),
+}
 
 /**
- * 框架列表（从 UI_LIBRARY_OPTIONS 的 keys 获取）
+ * 当前正式开放的框架列表。
  */
-export const FRAMEWORKS: readonly FrameworkType[] = Object.keys(UI_LIBRARY_OPTIONS) as FrameworkType[]
+export const FRAMEWORKS: readonly FrameworkType[] = FRAMEWORK_ORDER.filter(
+  framework => FRAMEWORK_CAPABILITIES[framework].enabled,
+)
 
 /**
  * 框架选项配置（基于 FRAMEWORKS 生成）
  */
 export const FRAMEWORK_OPTIONS = FRAMEWORKS.map((framework) => {
-  const names: Record<FrameworkType, string> = {
-    vue: 'Vue 3',
-    react: 'React',
-  }
-  return { name: names[framework], value: framework }
+  return { name: FRAMEWORK_CAPABILITIES[framework].name, value: framework }
 }) as Array<{ name: string, value: FrameworkType }>
 
 /**
@@ -61,45 +66,52 @@ export const FRAMEWORK_OPTIONS = FRAMEWORKS.map((framework) => {
  * 确保所有框架都有对应的数组（缺失的框架使用空数组）
  */
 export const UI_LIBRARIES: Record<FrameworkType, readonly UILibraryType[]> = {
-  vue: (UI_LIBRARY_OPTIONS.vue ?? []).map(opt => opt.value),
-  react: (UI_LIBRARY_OPTIONS.react ?? []).map(opt => opt.value),
+  vue: UI_LIBRARY_OPTIONS.vue.map(opt => opt.value),
+  react: UI_LIBRARY_OPTIONS.react.map(opt => opt.value),
 } as const
 
 /**
  * 路由模式选项配置
  */
-export const ROUTE_MODE_OPTIONS = [
-  { name: '文件系统路由 (vite-plugin-pages)', value: 'pageRoutes' as RouteModeType },
-  { name: '手动配置路由', value: 'manualRoutes' as RouteModeType },
-] as const
+export const ROUTE_MODE_OPTIONS: Array<{ name: string, value: RouteModeType }> = getEnabledOptions(
+  ROUTE_MODE_CAPABILITIES,
+)
 
 /**
  * 路由模式列表（仅值）
  */
 export const ROUTE_MODES: readonly RouteModeType[] = ROUTE_MODE_OPTIONS.map(opt => opt.value)
 
+export function getRouteModeOptions(framework: FrameworkType): Array<{ name: string, value: RouteModeType }> {
+  const supportedModes: readonly string[] = FRAMEWORK_CAPABILITIES[framework].routeModes
+  return ROUTE_MODE_OPTIONS.filter(option => supportedModes.includes(option.value))
+}
+
 /**
  * 微前端引擎选项配置
  */
-export const MICRO_FRONTEND_ENGINE_OPTIONS = [
-  { name: 'qiankun (阿里开源)', value: 'qiankun' as MicroFrontendEngine },
-  // TODO: 还没有,后续可考虑接入
-  // { name: 'micro-app (京东开源)', value: 'micro-app' as MicroFrontendEngine },
-] as const
+export const MICRO_FRONTEND_ENGINE_OPTIONS: Array<{ name: string, value: MicroFrontendEngine }> = getEnabledOptions(
+  MICRO_FRONTEND_ENGINE_CAPABILITIES,
+)
 
 /**
  * 微前端引擎列表（仅值）
  */
 export const MICRO_FRONTEND_ENGINES: readonly MicroFrontendEngine[] = MICRO_FRONTEND_ENGINE_OPTIONS.map(opt => opt.value)
 
+export function getMicroFrontendEngineOptions(
+  framework: FrameworkType,
+): Array<{ name: string, value: MicroFrontendEngine }> {
+  const supportedEngines: readonly string[] = FRAMEWORK_CAPABILITIES[framework].microFrontendEngines
+  return MICRO_FRONTEND_ENGINE_OPTIONS.filter(option => supportedEngines.includes(option.value))
+}
+
 /**
  * 包管理器选项配置
  */
-export const PACKAGE_MANAGER_OPTIONS = [
-  { name: 'pnpm (推荐)', value: 'pnpm' as PackageManagerType },
-  { name: 'npm', value: 'npm' as PackageManagerType },
-  { name: 'yarn', value: 'yarn' as PackageManagerType },
-] as const
+export const PACKAGE_MANAGER_OPTIONS: Array<{ name: string, value: PackageManagerType }> = getEnabledOptions(
+  PACKAGE_MANAGER_CAPABILITIES,
+)
 
 /**
  * 包管理器列表（仅值）
@@ -110,7 +122,7 @@ export const PACKAGE_MANAGERS: readonly PackageManagerType[] = PACKAGE_MANAGER_O
  * 状态管理库映射（按框架自动选择）
  * 框架 -> 对应的状态管理库 feature 名称
  */
-export const STATE_MANAGEMENT_MAP: Record<FrameworkType, string> = {
-  vue: 'pinia',
-  react: 'zustand',
+export const STATE_MANAGEMENT_MAP: Record<FrameworkType, StateManagementFeature> = {
+  vue: FRAMEWORK_CAPABILITIES.vue.stateManagement,
+  react: FRAMEWORK_CAPABILITIES.react.stateManagement,
 } as const

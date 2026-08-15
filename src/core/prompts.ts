@@ -19,9 +19,9 @@ import inquirer from 'inquirer'
 
 import {
   FRAMEWORK_OPTIONS,
-  MICRO_FRONTEND_ENGINE_OPTIONS,
+  getMicroFrontendEngineOptions,
+  getRouteModeOptions,
   PACKAGE_MANAGER_OPTIONS,
-  ROUTE_MODE_OPTIONS,
   UI_LIBRARY_OPTIONS,
 } from '../constants/index.ts'
 import { getAutoSelectedStateManagement } from '../utils/framework.ts'
@@ -133,7 +133,9 @@ export async function collectProjectConfig(
       type: 'list',
       name: 'routeMode',
       message: '选择路由模式:',
-      choices: ROUTE_MODE_OPTIONS,
+      choices: (answers: Record<string, unknown>) => {
+        return getRouteModeOptions(answers.framework as FrameworkType)
+      },
     },
     // 是否启用国际化
     {
@@ -154,7 +156,9 @@ export async function collectProjectConfig(
       type: 'list',
       name: 'microFrontendEngine',
       message: '选择微前端引擎:',
-      choices: MICRO_FRONTEND_ENGINE_OPTIONS,
+      choices: (answers: Record<string, unknown>) => {
+        return getMicroFrontendEngineOptions(answers.framework as FrameworkType)
+      },
       when: (answers: Record<string, unknown>) => answers.microFrontend === true,
     },
     // 是否启用错误监控

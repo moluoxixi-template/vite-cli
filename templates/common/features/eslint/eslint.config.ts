@@ -1,8 +1,12 @@
 import eslintConfig from '@moluoxixi/eslint-config'
+import vuePlugin from 'eslint-plugin-vue'
 
 export default eslintConfig({
   formatters: true,
   ignores: [],
+  plugins: {
+    vue: vuePlugin,
+  },
   rules: {
     //#region 不能在定义前使用变量
     'no-use-before-define': 'off',

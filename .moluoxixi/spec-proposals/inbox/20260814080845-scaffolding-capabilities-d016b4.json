@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "20260814080845-scaffolding-capabilities-d016b4",
+  "createdAt": "2026-08-14T08:08:45.507Z",
+  "createdBy": "wl",
+  "sourceTask": ".moluoxixi/tasks/08-14-unify-capability-and-vite-config",
+  "reason": "Preserve the executable capability registry, pre-write validation, transparent Vite output, and verification contracts established by this task.",
+  "target": "backend/scaffolding-capabilities.md",
+  "kind": "file",
+  "baseHash": null,
+  "contentFile": "content/20260814080845-scaffolding-capabilities-d016b4.md",
+  "contentHash": "a75bbc6cb8359cdfcddc5ff6c9a7a0323e3f2cad97aff44038b6ef0a8c524ad3"
+}

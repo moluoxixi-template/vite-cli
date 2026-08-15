@@ -2,16 +2,13 @@
  * 根组件
  */
 
-import { Route, Routes } from 'react-router-dom'
-import Home from '@/pages/home'
-import About from '@/pages/about'
+import { Outlet } from 'react-router-dom'
 
 function App(): JSX.Element {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/about" element={<About />} />
-    </Routes>
+    <main>
+      <Outlet />
+    </main>
   )
 }
 

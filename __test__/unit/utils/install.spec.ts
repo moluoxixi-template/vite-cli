@@ -16,7 +16,7 @@ vi.mock('node:child_process', () => ({
     on: vi.fn((event, callback) => {
       if (event === 'close') {
         // 模拟成功退出
-        setTimeout(() => callback(0), 10)
+        setTimeout(callback, 10, 0)
       }
     }),
   })),

@@ -9,7 +9,11 @@ import { pathToFileURL } from 'node:url'
 
 export const PROJECT_ATOM_FILE = 'atom.mjs'
 
-export type MainRenderMode = 'vue-standard' | 'vue-qiankun'
+export type MainRenderMode
+  = | 'vue-standard'
+    | 'vue-qiankun'
+    | 'react-standard'
+    | 'react-qiankun'
 
 export interface ProjectAtomMainContribution {
   mode?: MainRenderMode
@@ -24,6 +28,7 @@ export interface ProjectAtomMainContribution {
 export interface ProjectAtomViteContribution {
   imports?: string[]
   plugins?: string[]
+  pluginsByMainMode?: Partial<Record<MainRenderMode, string[]>>
   scssOptions?: string[]
 }
 
@@ -113,6 +118,7 @@ function createEmptyViteContribution(): Required<ProjectAtomViteContribution> {
   return {
     imports: [],
     plugins: [],
+    pluginsByMainMode: {},
     scssOptions: [],
   }
 }
@@ -171,6 +177,11 @@ function mergeViteContribution(
 
   pushUnique(target.imports, source.imports)
   pushUnique(target.plugins, source.plugins)
+  for (const [mode, plugins] of Object.entries(source.pluginsByMainMode || {})) {
+    const mainMode = mode as MainRenderMode
+    target.pluginsByMainMode[mainMode] ||= []
+    pushUnique(target.pluginsByMainMode[mainMode]!, plugins)
+  }
   pushUnique(target.scssOptions, source.scssOptions)
 }
 

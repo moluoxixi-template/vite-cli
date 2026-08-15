@@ -16,9 +16,9 @@ export default {
       'import { sentryVitePlugin } from \'@sentry/vite-plugin\'',
     ],
     plugins: [
-      `if (env.VITE_SENTRY === 'true' && mode === 'production') {
+      `if (env.VITE_SENTRY === 'true' && mode === 'production' && env.SENTRY_AUTH_TOKEN) {
   plugins.push(sentryVitePlugin({
-    authToken: process.env.SENTRY_AUTH_TOKEN,
+    authToken: env.SENTRY_AUTH_TOKEN,
     org: 'f1f562b9b82f',
     project: 'javascript-vue',
     sourcemaps: {
@@ -28,6 +28,7 @@ export default {
     release: {
       name: env.VITE_APP_VERSION || 'unknown',
     },
+    telemetry: false,
   }))
 }`,
     ],

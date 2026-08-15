@@ -104,6 +104,46 @@ function sortPackageJsonDependencies(packageJson: PackageJson): void {
   }
 }
 
+const PACKAGE_JSON_KEY_ORDER = [
+  'name',
+  'type',
+  'version',
+  'private',
+  'packageManager',
+  'description',
+  'author',
+  'license',
+  'repository',
+  'engines',
+  'bin',
+  'files',
+  'scripts',
+  'postcss',
+  'config',
+  'dependencies',
+  'devDependencies',
+  'lint-staged',
+] as const
+
+/**
+ * 按生成项目 ESLint 的 package.json 规则稳定顶层字段顺序。
+ * @param packageJson 待排序的 package.json
+ * @returns 新的有序 package.json
+ */
+function sortPackageJsonFields(packageJson: PackageJson): PackageJson {
+  const keyOrder = new Map<string, number>(
+    PACKAGE_JSON_KEY_ORDER.map((key, index) => [key, index]),
+  )
+
+  return Object.fromEntries(
+    Object.entries(packageJson).sort(([left], [right]) => {
+      const leftIndex = keyOrder.get(left) ?? Number.MAX_SAFE_INTEGER
+      const rightIndex = keyOrder.get(right) ?? Number.MAX_SAFE_INTEGER
+      return leftIndex - rightIndex || left.localeCompare(right)
+    }),
+  ) as PackageJson
+}
+
 /**
  * 渲染 package.json - 深度合并
  * @param src 源文件路径
@@ -120,11 +160,12 @@ function renderPackageJson(src: string, dest: string): void {
       const existingPackage = JSON.parse(destContent) as PackageJson
       const merged = deepMerge(existingPackage, newPackage)
       sortPackageJsonDependencies(merged)
-      fs.writeFileSync(dest, `${JSON.stringify(merged, null, 2)}\n`)
+      fs.writeFileSync(dest, `${JSON.stringify(sortPackageJsonFields(merged), null, 2)}\n`)
     }
     else {
       fs.mkdirSync(path.dirname(dest), { recursive: true })
-      fs.writeFileSync(dest, `${JSON.stringify(newPackage, null, 2)}\n`)
+      sortPackageJsonDependencies(newPackage)
+      fs.writeFileSync(dest, `${JSON.stringify(sortPackageJsonFields(newPackage), null, 2)}\n`)
     }
   }
   catch (error) {
@@ -195,7 +236,10 @@ export function updatePackageJsonMetadata(
     // 排序依赖
     sortPackageJsonDependencies(packageJson)
 
-    fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
+    fs.writeFileSync(
+      packageJsonPath,
+      `${JSON.stringify(sortPackageJsonFields(packageJson), null, 2)}\n`,
+    )
   }
   catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)

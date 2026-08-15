@@ -34,7 +34,7 @@ const program = new Command()
 
 program
   .name('create-mox')
-  .description('基于原子化分层叠加架构的 Vue/React 项目脚手架')
+  .description('基于原子化分层叠加架构的 Vite 项目脚手架')
   .version(getVersion())
 
 program

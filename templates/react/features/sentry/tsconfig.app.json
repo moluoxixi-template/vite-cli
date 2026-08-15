@@ -1,18 +1,18 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
     "lib": [
       "DOM",
       "ESNext"
     ],
-    "types": [
-      "vite/client"
-    ],
-    "composite": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": [
+      "vite/client"
+    ]
   },
   "include": ["src"],
   "exclude": [

@@ -10,7 +10,6 @@
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.12",
-    "@vue-macros/volar": "^3.0.0-beta.15",
     "vite-plugin-pages": "^0.33.2"
   }
 }

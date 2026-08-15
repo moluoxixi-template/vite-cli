@@ -4,6 +4,7 @@
  */
 
 import type { FrameworkType } from '../types/index.ts'
+import type { StateManagementFeature } from '../core/capabilities.ts'
 
 import { STATE_MANAGEMENT_MAP } from '../constants/index.ts'
 
@@ -12,6 +13,6 @@ import { STATE_MANAGEMENT_MAP } from '../constants/index.ts'
  * @param framework 框架类型
  * @returns 状态管理库 feature 名称
  */
-export function getAutoSelectedStateManagement(framework: FrameworkType): string {
+export function getAutoSelectedStateManagement(framework: FrameworkType): StateManagementFeature {
   return STATE_MANAGEMENT_MAP[framework]
 }

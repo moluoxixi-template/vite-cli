@@ -23,13 +23,18 @@ const Routes = [
  * @returns 路由实例
  */
 function getRouter() {
-  const base = import.meta.env.VITE_APP_CODE
+  const base = normalizeRouterBase(import.meta.env.VITE_APP_CODE)
   const routesClone = cloneDeep(Routes)
 
   return createRouter({
     history: createWebHistory(base),
     routes: routesClone,
   })
+}
+
+function normalizeRouterBase(value?: string): string {
+  const base = (value || '').trim()
+  return base ? `/${base.replace(/^\/+|\/+$/g, '')}` : '/'
 }
 
 export default getRouter

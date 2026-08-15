@@ -6,6 +6,7 @@
 import type { RouteObject } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { lazy, Suspense } from 'react'
+import App from '@/App'
 
 const Home = lazy(() => import('@/pages/home'))
 const About = lazy(() => import('@/pages/about'))
@@ -26,10 +27,16 @@ function LazyLoad({ children }: { children: ReactNode }) {
 export const routes: RouteObject[] = [
   {
     path: '/',
-    element: <LazyLoad><Home /></LazyLoad>,
-  },
-  {
-    path: '/about',
-    element: <LazyLoad><About /></LazyLoad>,
+    element: <App />,
+    children: [
+      {
+        index: true,
+        element: <LazyLoad><Home /></LazyLoad>,
+      },
+      {
+        path: 'about',
+        element: <LazyLoad><About /></LazyLoad>,
+      },
+    ],
   },
 ]

@@ -45,8 +45,8 @@ function getRouteKey(route: subMenuRouteType, index: number): string {
 }
 
 function getRouteTitle(route: subMenuRouteType): string {
-  const fallback = route.name ?? ''
-  const metaTitle = route.meta?.title ?? ''
+  const fallback = route.name ? String(route.name) : ''
+  const metaTitle = typeof route.meta?.title === 'string' ? route.meta.title : ''
   return metaTitle || fallback
 }
 

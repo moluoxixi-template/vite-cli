@@ -1,0 +1,25 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "baseUrl": "..",
+    "composite": false,
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@test/*": ["./__test__/helpers/*"]
+    },
+    "types": ["vitest/globals", "node"]
+  },
+  "include": [
+    "./**/*.ts",
+    "../src/**/*.ts"
+  ],
+  "exclude": [
+    "./__test__/**",
+    "./test-results/**",
+    "node_modules",
+    "../dist",
+    "coverage"
+  ]
+}

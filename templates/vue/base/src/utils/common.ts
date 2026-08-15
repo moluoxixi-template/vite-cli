@@ -76,7 +76,7 @@ export function deepClone<T>(obj: T, visited = new WeakMap<object, unknown>()): 
   const clonedObj = {} as T
   visited.set(obj as object, clonedObj)
   for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    if (Object.hasOwn(obj, key)) {
       clonedObj[key] = deepClone(obj[key], visited)
     }
   }

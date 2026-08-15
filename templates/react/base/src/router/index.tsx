@@ -5,6 +5,8 @@
 
 import { createBrowserRouter } from 'react-router-dom'
 import App from '@/App'
+import About from '@/pages/about'
+import Home from '@/pages/home'
 
 interface RouterConfig {
   historyMode?: 'hash' | 'history'
@@ -17,10 +19,20 @@ interface RouterConfig {
  * @returns 路由实例
  */
 export function createRouter(_config: RouterConfig = {}) {
+  const basename = normalizeBasename(_config.basename)
   return createBrowserRouter([
     {
       path: '/',
       element: <App />,
+      children: [
+        { index: true, element: <Home /> },
+        { path: 'about', element: <About /> },
+      ],
     },
-  ])
+  ], { basename })
+}
+
+function normalizeBasename(basename?: string): string {
+  const value = (basename || import.meta.env.VITE_APP_CODE || '').trim()
+  return value ? `/${value.replace(/^\/+|\/+$/g, '')}` : '/'
 }

@@ -17,13 +17,19 @@ interface RouterConfig {
  * @returns 路由实例
  */
 export function createRouter(config: RouterConfig = {}) {
-  const { historyMode = 'history', basename } = config
+  const { historyMode = 'history' } = config
+  const basename = normalizeBasename(config.basename)
 
   if (historyMode === 'hash') {
     return createHashRouter(routes, { basename })
   }
 
   return createBrowserRouter(routes, { basename })
+}
+
+function normalizeBasename(basename?: string): string {
+  const value = (basename || import.meta.env.VITE_APP_CODE || '').trim()
+  return value ? `/${value.replace(/^\/+|\/+$/g, '')}` : '/'
 }
 
 export { routes }

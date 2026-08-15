@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npx --no-install lint-staged
+if [ -x node_modules/.bin/eslint ]; then
+  npx --no-install lint-staged
+fi

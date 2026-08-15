@@ -4,22 +4,22 @@
     "ESNext"
   ],
   "compilerOptions": {
+    "composite": true,
     "target": "ESNext",
+    "jsx": "preserve",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "jsx": "preserve",
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": false,
     "allowJs": true,
     "strict": true,
     "strictNullChecks": true,
     "noUnusedLocals": true,
+    "declaration": true,
     "noEmit": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "skipLibCheck": true,
-    "allowImportingTsExtensions": false,
-    "composite": true,
-    "declaration": true
+    "skipLibCheck": true
   }
 }

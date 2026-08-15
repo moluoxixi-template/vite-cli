@@ -5,13 +5,20 @@
 
 import { createRouter, createWebHistory } from 'vue-router'
 
+interface RouterProps extends Record<string, unknown> {
+  activeRule?: unknown
+  data?: {
+    activeRule?: unknown
+  }
+}
+
 /**
  * 创建路由实例
  * @param props - 可选的渲染属性（用于 qiankun）
  * @returns 路由实例
  */
-function getRouter(props?: Record<string, unknown>) {
-  const { activeRule: base = import.meta.env.VITE_APP_CODE } = props || {}
+function getRouter(props: RouterProps = {}) {
+  const base = resolveRouterBase(props)
   return createRouter({
     history: createWebHistory(base),
     routes: [
@@ -22,6 +29,15 @@ function getRouter(props?: Record<string, unknown>) {
       },
     ],
   })
+}
+
+function resolveRouterBase(props: RouterProps): string {
+  const activeRule = props.activeRule ?? props.data?.activeRule
+  const value = typeof activeRule === 'string'
+    ? activeRule
+    : import.meta.env.VITE_APP_CODE
+  const base = (value || '').trim()
+  return base ? `/${base.replace(/^\/+|\/+$/g, '')}` : '/'
 }
 
 export default getRouter

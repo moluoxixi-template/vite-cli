@@ -1,8 +1,14 @@
 import { cloneDeep } from 'lodash-es'
 import { assign, isEmpty } from 'radash'
 import routes from '~pages'
-import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper'
 import { createRouter, createWebHistory } from 'vue-router'
+
+interface RouterProps extends Record<string, unknown> {
+  activeRule?: unknown
+  data?: {
+    activeRule?: unknown
+  }
+}
 
 // 自动生成的路由
 const routesChildrens = routes
@@ -14,10 +20,6 @@ const Routes = [
     redirect: routes[0]?.path,
     children: routesChildrens,
   },
-  {
-    path: '/:pathMatch(.*)*',
-    redirect: '/',
-  },
 ]
 
 /**
@@ -25,19 +27,9 @@ const Routes = [
  * @param props Qiankun 传递的属性
  * @returns 路由实例
  */
-function getRouter(props: any = {}) {
-  let base: string
+function getRouter(props: RouterProps = {}) {
   const routesClone = cloneDeep(Routes)
-
-  if (qiankunWindow.__POWERED_BY_QIANKUN__) {
-    // 微前端模式：使用主应用传递的 activeRule
-    const { activeRule } = props.data || {}
-    base = activeRule || import.meta.env.VITE_APP_CODE
-  }
-  else {
-    // 独立运行模式
-    base = import.meta.env.VITE_APP_CODE
-  }
+  const base = resolveRouterBase(props)
 
   const router = createRouter({
     history: createWebHistory(base),
@@ -56,6 +48,15 @@ function getRouter(props: any = {}) {
   })
 
   return router
+}
+
+function resolveRouterBase(props: RouterProps): string {
+  const activeRule = props.activeRule ?? props.data?.activeRule
+  const value = typeof activeRule === 'string'
+    ? activeRule
+    : import.meta.env.VITE_APP_CODE
+  const base = (value || '').trim()
+  return base ? `/${base.replace(/^\/+|\/+$/g, '')}` : '/'
 }
 
 export default getRouter

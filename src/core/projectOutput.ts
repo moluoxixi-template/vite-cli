@@ -171,12 +171,20 @@ function collectMicroFrontendFeatureAtomDirs(config: ProjectConfigType, template
  * @throws {Error} 如果框架或入口模式不受支持
  */
 function writeMainEntry(config: ProjectConfigType, output: ProjectOutputComposition): void {
-  if (config.framework !== 'vue') {
-    throw new Error(`不支持的框架: ${config.framework}`)
-  }
+  let mainEntryPath: string
+  let content: string
 
-  const mainEntryPath = path.join(config.targetDir, 'src', 'main.ts')
-  const content = createVueMainEntry(output)
+  if (config.framework === 'vue') {
+    mainEntryPath = path.join(config.targetDir, 'src', 'main.ts')
+    content = createVueMainEntry(output)
+  }
+  else if (config.framework === 'react') {
+    mainEntryPath = path.join(config.targetDir, 'src', 'main.tsx')
+    content = createReactMainEntry(output)
+  }
+  else {
+    throw new Error(`不支持的框架: ${config.framework as string}`)
+  }
 
   fs.ensureDirSync(path.dirname(mainEntryPath))
   fs.writeFileSync(mainEntryPath, content)
@@ -232,6 +240,7 @@ function createVueQiankunMainEntry(output: ProjectOutputComposition): string {
   return `${createMainImports(output, 'Vue 微前端应用入口文件')}
 
 let app: ReturnType<typeof createApp> | null = null
+let router: ReturnType<typeof getRouter> | null = null
 
 /**
  * 解析 Vue 应用挂载节点，避免 qiankun 容器缺失时静默失败。
@@ -258,7 +267,7 @@ function resolveMountTarget(container?: Element): Element | string {
 function render(props: Record<string, unknown> = {}): void {
   const { container } = props as { container?: Element }
   app = createApp(App)
-  const router = getRouter(props)
+  router = getRouter(props)
 
 ${createVueAppSetup(output)}
 
@@ -272,13 +281,147 @@ else {
   renderWithQiankun({
     mount(props: Record<string, unknown>) {
       render(props)
+      return Promise.resolve()
     },
-    bootstrap() {},
+    bootstrap() {
+      return Promise.resolve()
+    },
     unmount() {
+      router?.options.history.destroy()
       app?.unmount()
       app = null
+      router = null
+      return Promise.resolve()
     },
-    update() {},
+    update() {
+      return Promise.resolve()
+    },
+  })
+}
+`
+}
+
+/**
+ * 生成 React 项目的最终入口文件内容。
+ * @param output atom 合并后的输出模型
+ * @returns main.tsx 文件内容
+ * @throws {Error} 如果入口模式不受支持
+ */
+function createReactMainEntry(output: ProjectOutputComposition): string {
+  if (output.main.mode === 'react-standard') {
+    return createReactStandardMainEntry(output)
+  }
+  if (output.main.mode === 'react-qiankun') {
+    return createReactQiankunMainEntry(output)
+  }
+
+  throw new Error(`不支持的 React 入口模式: ${output.main.mode as string}`)
+}
+
+/**
+ * 生成普通 React 项目的入口文件内容。
+ * @param output atom 合并后的输出模型
+ * @returns main.tsx 文件内容
+ */
+function createReactStandardMainEntry(output: ProjectOutputComposition): string {
+  return `${createMainImports(output, 'React 应用入口文件')}
+
+${createReactSetup(output)}const router = createRouter()
+const rootElement = document.getElementById('root')
+
+if (!rootElement) {
+  throw new Error('React mount target #root is missing')
+}
+
+createRoot(rootElement).render(
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>,
+)
+`
+}
+
+/**
+ * 生成 React + Qiankun 项目的入口文件内容。
+ * @param output atom 合并后的输出模型
+ * @returns main.tsx 文件内容
+ */
+function createReactQiankunMainEntry(output: ProjectOutputComposition): string {
+  const imports = output.main.imports.map(importLine => importLine === 'import { StrictMode } from \'react\''
+    ? 'import { startTransition, StrictMode } from \'react\''
+    : importLine)
+
+  return `${createMainImports(output, 'React 微前端应用入口文件', imports)}
+
+let root: ReturnType<typeof createRoot> | null = null
+
+/**
+ * 解析 React 应用挂载节点。
+ * @param container qiankun 传入的容器节点
+ * @returns React 根节点
+ * @throws {Error} 当挂载节点不存在
+ */
+function resolveMountTarget(container?: Element): Element {
+  const target = container
+    ? container.querySelector('#root')
+    : document.getElementById('root')
+
+  if (!target) {
+    throw new Error('Qiankun container missing #root mount target')
+  }
+  return target
+}
+
+/**
+ * 从 qiankun 生命周期属性中解析路由 base。
+ * 顶层 activeRule 是正式契约，data.activeRule 仅用于兼容旧主应用。
+ * @param props qiankun 生命周期属性
+ * @returns 字符串 activeRule；函数规则交由主应用处理
+ */
+function resolveRouterBase(props: QiankunProps): string | undefined {
+  const activeRule = props.activeRule ?? props.data?.activeRule
+  return typeof activeRule === 'string' && activeRule.trim()
+    ? activeRule
+    : undefined
+}
+
+/**
+ * 渲染 React 应用，独立运行和 qiankun 挂载共用同一流程。
+ * @param props qiankun 生命周期属性
+ */
+function render(props: QiankunProps = {}): void {
+${createReactSetup(output, 2)}  const router = createRouter({ basename: resolveRouterBase(props) })
+  const reactRoot = createRoot(resolveMountTarget(props.container))
+  root = reactRoot
+  startTransition(() => {
+    reactRoot.render(
+      <StrictMode>
+        <RouterProvider router={router} />
+      </StrictMode>,
+    )
+  })
+}
+
+if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
+  render()
+}
+else {
+  renderWithQiankun({
+    mount(props: QiankunProps) {
+      render(props)
+      return Promise.resolve()
+    },
+    bootstrap() {
+      return Promise.resolve()
+    },
+    unmount() {
+      root?.unmount()
+      root = null
+      return Promise.resolve()
+    },
+    update() {
+      return Promise.resolve()
+    },
   })
 }
 `
@@ -290,14 +433,18 @@ else {
  * @param title 入口文件标题
  * @returns import 文本
  */
-function createMainImports(output: ProjectOutputComposition, title: string): string {
+function createMainImports(
+  output: ProjectOutputComposition,
+  title: string,
+  imports = output.main.imports,
+): string {
   return [
     '/**',
     ` * ${title}`,
     ' * 由 create-app 在生成阶段按已选能力合成。',
     ' */',
     '',
-    ...output.main.imports,
+    ...imports,
   ].join('\n')
 }
 
@@ -320,37 +467,59 @@ function createVueAppSetup(output: ProjectOutputComposition): string {
 }
 
 /**
+ * 创建 React 应用初始化代码。
+ * @param output atom 合并后的输出模型
+ * @param spaces 缩进空格数
+ * @returns 带结尾换行的初始化代码
+ */
+function createReactSetup(output: ProjectOutputComposition, spaces = 0): string {
+  const lines = [
+    ...output.main.setup,
+    ...output.main.afterSetup,
+  ].filter(Boolean)
+
+  if (lines.length === 0) {
+    return ''
+  }
+
+  return `${indentLines(lines, spaces)}\n\n`
+}
+
+/**
  * 写入最终 Vite 配置文件。
  * @param config 项目配置
  * @param output atom 合并后的输出模型
  * @throws {Error} 如果框架不受支持
  */
 function writeViteConfig(config: ProjectConfigType, output: ProjectOutputComposition): void {
-  if (config.framework !== 'vue') {
-    throw new Error(`不支持的框架: ${config.framework}`)
-  }
-
   const viteConfigPath = path.join(config.targetDir, 'vite.config.ts')
-  fs.writeFileSync(viteConfigPath, createVueViteConfig(output))
+  fs.writeFileSync(viteConfigPath, createViteConfig(config.framework, output))
 }
 
 /**
- * 生成 Vue 项目的透明 Vite 配置。
+ * 生成框架项目的透明 Vite 配置。
+ * @param framework 项目框架
  * @param output atom 合并后的输出模型
  * @returns vite.config.ts 文件内容
  */
-function createVueViteConfig(output: ProjectOutputComposition): string {
+function createViteConfig(
+  framework: ProjectConfigType['framework'],
+  output: ProjectOutputComposition,
+): string {
+  const frameworkName = framework === 'vue' ? 'Vue' : 'React'
+
   return `${createViteConfigImports(output)}
 
 /**
- * 创建 Vue 项目的 Vite 配置。
+ * 创建 ${frameworkName} 项目的 Vite 配置。
  */
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd())
+  const envDir = fileURLToPath(new URL('.', import.meta.url))
+  const env = loadEnv(mode, envDir, '')
   const appCode = env.VITE_APP_CODE || ''
 
   const plugins: PluginOption[] = []
-${indentLines(output.vite.plugins, 2)}
+${createVitePlugins(output)}
 
   return {
     base: appCode ? \`/\${appCode}\` : '/',
@@ -387,6 +556,19 @@ ${createScssOptions(output)}        },
 }
 
 /**
+ * 创建当前入口模式对应的 Vite plugin 代码。
+ * @param output atom 合并后的输出模型
+ * @returns 已缩进的 plugin 初始化代码
+ */
+function createVitePlugins(output: ProjectOutputComposition): string {
+  const plugins = [
+    ...output.vite.plugins,
+    ...(output.vite.pluginsByMainMode[output.main.mode] || []),
+  ]
+  return indentLines(plugins, 2)
+}
+
+/**
  * 创建 Vite 配置的 import 区块。
  * @param output atom 合并后的输出模型
  * @returns import 文本
@@ -398,7 +580,6 @@ function createViteConfigImports(output: ProjectOutputComposition): string {
     ' * 由 create-app 在生成阶段按已选能力合成。',
     ' */',
     '',
-    'import process from \'node:process\'',
     'import { fileURLToPath, URL } from \'node:url\'',
     'import type { PluginOption } from \'vite\'',
     'import { defineConfig, loadEnv } from \'vite\'',
@@ -451,8 +632,7 @@ function removeViteBlackBoxDependencies(targetDir: string): void {
   const packageJson = fs.readJsonSync(packageJsonPath) as PackageJson
   removeDependencies(packageJson.dependencies)
   removeDependencies(packageJson.devDependencies)
-  fs.writeJsonSync(packageJsonPath, packageJson, { spaces: 2 })
-  fs.appendFileSync(packageJsonPath, '\n')
+  fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
 }
 
 /**

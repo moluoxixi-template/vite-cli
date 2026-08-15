@@ -11,16 +11,13 @@
  * 这些依赖必须在所有项目中存在
  */
 export const MOLUOXIXI_DEPS = {
-  '@moluoxixi/eslint-config': 'latest',
-  '@moluoxixi/ajax-package': 'latest',
-  '@moluoxixi/class-names': 'latest',
+  '@moluoxixi/eslint-config': '0.0.16',
+  '@moluoxixi/ajax-package': '0.0.60',
 } as const
 
 /**
  * 微前端引擎类型定义
- * 注意：此处的常量仅用于类型推导，实际使用的常量请参考 src/constants/index.ts 中的 MICRO_FRONTEND_ENGINES
- * 如需修改微前端引擎列表，请同时更新 src/constants/index.ts 中的 MICRO_FRONTEND_ENGINE_OPTIONS
+ * 注意：这里只保留历史能力的类型集合，运行时支持状态由
+ * src/core/capabilities.ts 中的 MICRO_FRONTEND_ENGINE_CAPABILITIES 决定。
  */
-export const MICRO_FRONTEND_ENGINES = ['qiankun', 'micro-app'] as const
-
-export type MicroFrontendEngine = typeof MICRO_FRONTEND_ENGINES[number]
+export type MicroFrontendEngine = 'qiankun' | 'micro-app'

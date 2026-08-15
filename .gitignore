@@ -1,12 +1,14 @@
 # 其他用户配置
 typings
 .codegraph
+.runtime-templates
 
 # rules(可选)
 .cursor
 
 # 依赖（可选）
 *-lock.yaml
+!/pnpm-lock.yaml
 
 # 测试产物
 .playwright-mcp

@@ -103,12 +103,20 @@ describe('普通 Vite 项目输出', () => {
     expect(mainContent).not.toContain('@/main/index')
     expect(mainContent).not.toContain('setupFeatures')
 
+    const elementLayout = await readGeneratedFile('src/layouts/element.vue')
+    expect(elementLayout).toContain('<ElConfigProvider :empty-values="[undefined]">')
+    expect(elementLayout).not.toContain(':namespace=')
+
+    const elementStyles = await readGeneratedFile('src/assets/styles/element/index.scss')
+    expect(elementStyles).not.toContain('$namespace')
+
     const viteConfig = await readGeneratedFile('vite.config.ts')
     expect(viteConfig).toContain('import vue from \'@vitejs/plugin-vue\'')
     expect(viteConfig).toContain('import Pages from \'vite-plugin-pages\'')
     expect(viteConfig).toContain('defineConfig')
     expect(viteConfig).not.toContain('@moluoxixi/vite-config')
     expect(viteConfig).not.toContain('./vite/index')
+    expect(viteConfig).not.toContain('additionalData')
 
     const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
     expect(packageJson.devDependencies).toHaveProperty('@vitejs/plugin-vue')
@@ -131,6 +139,68 @@ describe('普通 Vite 项目输出', () => {
 
     expect(await fs.pathExists(path.join(tempDir, 'src/components/SubMenu/src/types'))).toBe(true)
     expect(await fs.pathExists(path.join(tempDir, 'src/components/SubMenu/src/_types'))).toBe(false)
+    const elementLayout = await readGeneratedFile('src/layouts/element.vue')
+    expect(elementLayout).toContain('<ElConfigProvider :empty-values="[undefined]">')
+    expect(elementLayout).not.toContain(':namespace=')
+    const elementStyles = await readGeneratedFile('src/assets/styles/element/index.scss')
+    expect(elementStyles).not.toContain('$namespace')
     expect(await collectUnderscorePrefixedDirectories(tempDir)).toEqual([])
+  })
+
+  it('应该生成纯净的 React standard main.tsx', async () => {
+    tempDir = path.join(process.cwd(), '__test__', 'temp-output-test', `react-${Date.now()}`)
+
+    await generateProject(createConfig({
+      projectName: 'react-standard-output',
+      framework: 'react',
+      uiLibrary: 'ant-design',
+      pinia: false,
+      zustand: true,
+      microFrontend: false,
+    }))
+
+    const mainContent = await readGeneratedFile('src/main.tsx')
+    expect(mainContent).toContain('createRoot(rootElement).render(')
+    expect(mainContent).toContain('<RouterProvider router={router} />')
+    expect(mainContent).toContain('import \'@/locales\'')
+    expect(mainContent).toContain('import \'antd/dist/reset.css\'')
+    expect(mainContent).not.toContain('renderWithQiankun')
+    expect(mainContent).not.toContain('__POWERED_BY_QIANKUN__')
+    expect(mainContent).not.toContain('startTransition')
+    expect(await fs.pathExists(path.join(tempDir, 'src/main.ts'))).toBe(false)
+
+    const viteConfig = await readGeneratedFile('vite.config.ts')
+    expect(viteConfig).toContain('import react from \'@vitejs/plugin-react\'')
+    expect(viteConfig).toContain('import Pages from \'vite-plugin-pages\'')
+    expect(viteConfig).not.toContain('vite-plugin-qiankun')
+  })
+
+  it('应该生成独立治理的 React qiankun 生命周期入口', async () => {
+    tempDir = path.join(process.cwd(), '__test__', 'temp-output-test', `react-qiankun-${Date.now()}`)
+
+    await generateProject(createConfig({
+      projectName: 'react-qiankun-output',
+      framework: 'react',
+      uiLibrary: 'ant-design',
+      routeMode: 'manualRoutes',
+      pinia: false,
+      zustand: true,
+      manualRoutes: true,
+      pageRoutes: false,
+      microFrontend: true,
+      microFrontendEngine: 'qiankun',
+    }))
+
+    const mainContent = await readGeneratedFile('src/main.tsx')
+    expect(mainContent).toContain('import { startTransition, StrictMode } from \'react\'')
+    expect(mainContent).toContain('renderWithQiankun')
+    expect(mainContent).toContain('props.activeRule ?? props.data?.activeRule')
+    expect(mainContent).toContain('startTransition(() => {')
+    expect(mainContent).toContain('root?.unmount()')
+    expect(mainContent).toContain('root = null')
+    expect(await fs.pathExists(path.join(tempDir, 'src/types/qiankun.ts'))).toBe(true)
+
+    const viteConfig = await readGeneratedFile('vite.config.ts')
+    expect(viteConfig).toContain('import qiankun from \'vite-plugin-qiankun\'')
   })
 })

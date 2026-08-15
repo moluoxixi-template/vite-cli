@@ -18,12 +18,12 @@ npm create @moluoxixi/app
 ## 特性
 
 - 🚀 **原子化分层架构** - L0/L1/L2 三层模板，灵活组合
-- 📦 **多框架支持** - Vue 3、React 18
-- 🎨 **多 UI 库** - Element Plus、Ant Design Vue、Ant Design
+- 📦 **框架支持** - Vue 3 与 React 18
+- 🎨 **UI 库** - Vue 使用 Element Plus，React 使用 Ant Design
 - 📝 **TypeScript** - 全面的类型支持
-- 🛣️ **路由系统** - Vue Router / React Router DOM，支持手动配置和文件系统路由
-- 🗄️ **状态管理** - Pinia (Vue) / Zustand (React)，根据框架自动启用
-- 🌍 **国际化** - 可选 vue-i18n / i18next 支持
+- 🛣️ **路由系统** - Vue Router / React Router，支持手动配置和文件系统路由
+- 🗄️ **状态管理** - Vue 自动使用 Pinia，React 自动使用 Zustand
+- 🌍 **国际化** - 可选 vue-i18n / react-i18next 支持
 - 📊 **错误监控** - 可选 Sentry 集成
 - 🔧 **规范配置** - 可选 ESLint + Commitlint + Husky
 - 🧩 **微前端支持** - 可选 Qiankun 集成
@@ -33,7 +33,9 @@ npm create @moluoxixi/app
 以下功能正在规划中，欢迎贡献：
 
 - [ ] 🔄 **Ant Design Vue 模板重构** - 优化 ant-design-vue 模板结构和配置
-- [ ] 🔄 **Ant Design 模板重构** - 优化 ant-design 模板结构和配置
+- [ ] 🔄 **micro-app 支持** - 在具备独立入口和生命周期验证后开放
+- [x] 🔄 **Ant Design 模板重构** - React Ant Design 模板已开放
+- [x] 🔄 **React 生成链路** - standard / qiankun 入口和功能组合已开放
 - [x] 🔧 **main.ts.ejs 解耦** - 将 Vue 入口文件模板解耦，提高可维护性
 - [x] 🔧 **main.tsx.ejs 解耦** - 将 React 入口文件模板解耦，提高可维护性
 - [x] 🔧 **vite.config.ts.ejs 解耦** - 将 Vite 配置模板解耦，提高可维护性
@@ -44,9 +46,9 @@ npm create @moluoxixi/app
 
 | 依赖包 | 用途 |
 |--------|------|
-| `@moluoxixi/eslint-config` | ESLint 统一配置 |
 | `@moluoxixi/ajax-package` | HTTP 请求封装 |
-| `@moluoxixi/class-names` | CSS 类名工具 |
+
+启用 ESLint 时，项目会额外包含 `@moluoxixi/eslint-config`。
 
 ## 源码目录结构
 
@@ -64,6 +66,10 @@ src/
 ├── core/                 # 核心业务逻辑模块
 │   ├── index.ts          # 核心模块导出
 │   ├── feature.ts        # Feature 管理（扫描、映射、渲染）
+│   ├── capabilities.ts   # 正式支持能力的单一注册表
+│   ├── projectConfig.ts  # 生成前的配置归一化与合法性校验
+│   ├── projectAtom.ts    # 按目录叠加顺序合并 atom 贡献
+│   ├── projectOutput.ts  # 生成最终 main 与透明 vite.config.ts
 │   ├── prompts.ts        # 交互式问答（收集用户配置）
 │   └── template.ts       # 模板渲染（文件复制、合并）
 │
@@ -124,14 +130,27 @@ my-project/
 │   ├── router/          # 路由配置
 │   ├── stores/          # 状态管理
 │   ├── utils/           # 工具函数
-│   ├── App.vue          # 根组件
-│   └── main.ts          # 入口文件
+│   ├── App.vue / App.tsx # 框架对应的根组件
+│   └── main.ts / main.tsx # 框架对应的唯一入口文件
 ├── .env                 # 环境变量
 ├── package.json         # 项目配置
 ├── vite.config.ts       # Vite 配置
 ├── eslint.config.ts     # ESLint 配置（可选）
 └── tsconfig.json        # TypeScript 配置
 ```
+
+模板仍按以下顺序叠加，目录本身就是能力边界：
+
+```text
+templates/common/base
+  -> templates/<framework>/base
+  -> templates/common/features/*
+  -> templates/<framework>/features/*
+  -> templates/<framework>/micro-frontends/qiankun/base
+  -> templates/<framework>/micro-frontends/qiankun/features/*
+```
+
+standard 项目不会包含 qiankun import、依赖或生命周期；qiankun 项目仍可独立运行，并在主应用中支持 mount、unmount 和 remount。两种模式最终都只保留普通的 `main.ts` / `main.tsx` 与 `vite.config.ts`，不会把 atom 或内部组合 loader 输出到业务项目。
 
 ## 命令
 
@@ -162,8 +181,8 @@ pnpm commit
 | 选项 | 类型 | 说明 |
 |------|------|------|
 | 项目名称 | string | 项目名称，用于 package.json |
-| 框架 | vue / react | 前端框架 |
-| UI 库 | element-plus / ant-design-vue / ant-design | UI 组件库 |
+| 框架 | vue / react | 当前正式支持的前端框架 |
+| UI 库 | element-plus / ant-design | 按所选框架提供对应 UI 库 |
 | 路由模式 | manualRoutes / pageRoutes | 手动配置或文件系统路由 |
 | 包管理器 | pnpm / npm / yarn | 包管理器 |
 
@@ -171,10 +190,11 @@ pnpm commit
 
 | 选项 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| 国际化 | boolean | true | 是否启用多语言支持 (vue-i18n / i18next) |
+| 国际化 | boolean | true | 是否启用 vue-i18n / react-i18next |
 | 错误监控 | boolean | false | 是否集成 Sentry |
 | ESLint | boolean | true | 是否启用 ESLint 代码规范检查 |
 | Git Hooks | boolean | true | 是否启用 Husky + Commitlint |
+| 微前端 | boolean | false | 是否启用 qiankun；关闭时保持 standard 入口纯净 |
 
 
 ## 开发

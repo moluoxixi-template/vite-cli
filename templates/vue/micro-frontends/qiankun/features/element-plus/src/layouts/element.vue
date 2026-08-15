@@ -1,5 +1,5 @@
 <template>
-  <ElConfigProvider :namespace="systemCode" :empty-values="[undefined]">
+  <ElConfigProvider :empty-values="[undefined]">
     <div
       class="h-full"
       :class="{ 'h-screen!': !qiankunWindow.__POWERED_BY_QIANKUN__ }"
@@ -14,21 +14,21 @@
         >
           <div class="w-full h-full bg-primary flex justify-center">
             <ElMenu :default-active="defaultTab" :ellipsis="false" mode="horizontal" router>
-              <SubMenu menu-height="60" :routes="routes" />
+              <SubMenu :menu-height="60" :routes="routes" />
             </ElMenu>
           </div>
         </ElHeader>
         <ElMain>
           <ElContainer class="h-full w-full">
             <ElMain style="background-color: #fff">
-              <transition name="fade">
-                <RouterView v-slot="{ Component, route }">
-                  <keep-alive>
-                    <component :is="Component" v-if="route.meta.keep" :key="route.path" />
+              <RouterView v-slot="{ Component, route }">
+                <transition name="fade" mode="out-in">
+                  <keep-alive v-if="route.meta.keep">
+                    <component :is="Component" :key="route.path" />
                   </keep-alive>
-                  <component :is="Component" v-if="!route.meta.keep" :key="route.path" />
-                </RouterView>
-              </transition>
+                  <component :is="Component" v-else :key="route.path" />
+                </transition>
+              </RouterView>
             </ElMain>
           </ElContainer>
         </ElMain>
@@ -49,9 +49,6 @@ const router = useRouter()
 const routes = reactive(router.options.routes[0].children!)
 const systemStore = useSystemStore()
 const themeColor = computed(() => systemStore.themeColor)
-const systemCode = computed(() => {
-  return systemStore.systemCode
-})
 const defaultTab = computed(() => router.currentRoute.value.path)
 </script>
 

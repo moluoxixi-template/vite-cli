@@ -7,6 +7,8 @@ import path from 'node:path'
 import fs from 'fs-extra'
 import os from 'node:os'
 import process from 'node:process'
+
+const managedTempDirs = new Set<string>()
 /**
  * 创建临时测试目录
  * @param prefix 目录前缀
@@ -15,6 +17,7 @@ import process from 'node:process'
 export async function createTempDir(prefix = 'vite-cli-test-'): Promise<string> {
   const tempDir = path.join(os.tmpdir(), `${prefix}${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
   await fs.ensureDir(tempDir)
+  managedTempDirs.add(path.resolve(tempDir))
   return tempDir
 }
 
@@ -23,9 +26,18 @@ export async function createTempDir(prefix = 'vite-cli-test-'): Promise<string> 
  * @param dir 目录路径
  */
 export async function cleanupTempDir(dir: string): Promise<void> {
-  if (fs.existsSync(dir)) {
-    await fs.remove(dir)
+  const tempRoot = path.resolve(os.tmpdir())
+  const targetDir = path.resolve(dir)
+  const isManagedTempDir = targetDir.startsWith(`${tempRoot}${path.sep}`)
+    && managedTempDirs.has(targetDir)
+
+  if (!isManagedTempDir) {
+    throw new Error(`拒绝清理非 vite-cli 临时目录: ${targetDir}`)
   }
+  if (fs.existsSync(targetDir)) {
+    await fs.remove(targetDir)
+  }
+  managedTempDirs.delete(targetDir)
 }
 
 /**

@@ -251,7 +251,7 @@ export function scanSourceFiles(dir: string): string[] {
           scan(fullPath)
         }
       }
-      else if (entry.name.match(/\.(ts|tsx|js|jsx|vue)$/) && !entry.name.endsWith('.d.ts')) {
+      else if (/\.(?:ts|tsx|js|jsx|vue)$/.test(entry.name) && !entry.name.endsWith('.d.ts')) {
         files.push(fullPath)
       }
     }

@@ -9,12 +9,13 @@ import type { ProjectConfigType } from '../types/index.ts'
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { FILE_CONSTANTS, FRAMEWORKS } from '../constants/index.ts'
+import { FILE_CONSTANTS } from '../constants/index.ts'
 import {
   renderCommonFeatures,
   renderFrameworkFeatures,
   renderMicroFrontendFeatures,
 } from '../core/feature.ts'
+import { normalizeProjectConfig } from '../core/projectConfig.ts'
 import { finalizeProjectOutput } from '../core/projectOutput.ts'
 import { renderTemplate, updatePackageJsonMetadata } from '../core/template.ts'
 import { emptyDir, getTemplatesDir } from '../utils/file.ts'
@@ -93,12 +94,8 @@ function renderAllFeatures(
  * @throws {Error} 如果框架不支持或项目生成失败
  */
 export async function generateProject(config: ProjectConfigType): Promise<void> {
-  // 验证框架是否支持
-  if (!FRAMEWORKS.includes(config.framework)) {
-    throw new Error(`不支持的框架: ${config.framework}`)
-  }
-
-  const { targetDir, framework, microFrontend, microFrontendEngine } = config
+  const normalizedConfig = normalizeProjectConfig(config)
+  const { targetDir, framework, microFrontend, microFrontendEngine } = normalizedConfig
   const templatesDir = getTemplatesDir()
 
   // 清空并创建项目根目录（确保干净的构建环境）
@@ -108,23 +105,23 @@ export async function generateProject(config: ProjectConfigType): Promise<void> 
   renderBaseTemplates(templatesDir, framework, microFrontend, microFrontendEngine, targetDir)
 
   // 2. 渲染所有 feature 模板
-  renderAllFeatures(config, targetDir)
+  renderAllFeatures(normalizedConfig, targetDir)
 
   // 3. 更新 package.json 元数据字段
   const packageJsonPath = path.join(targetDir, FILE_CONSTANTS.PACKAGE_JSON)
   updatePackageJsonMetadata(
     packageJsonPath,
-    config.projectName,
-    config.description,
-    config.author,
-    config.packageManager,
+    normalizedConfig.projectName,
+    normalizedConfig.description,
+    normalizedConfig.author,
+    normalizedConfig.packageManager,
   )
 
   // 4. 生成最终入口和 Vite 配置，移除脚手架内部 loader
-  await finalizeProjectOutput(config)
+  await finalizeProjectOutput(normalizedConfig)
 
   // 5. 清理包管理器特定文件（只有 yarn 需要 .yarnrc.yml）
-  if (config.packageManager !== 'yarn') {
+  if (normalizedConfig.packageManager !== 'yarn') {
     const yarnrcPath = path.join(targetDir, '.yarnrc.yml')
     if (fs.existsSync(yarnrcPath)) {
       fs.unlinkSync(yarnrcPath)

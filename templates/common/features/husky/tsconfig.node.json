@@ -1,11 +1,11 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": false,
-    "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
+    "composite": true,
     "types": ["node"],
-    "composite": true
+    "allowImportingTsExtensions": true,
+    "noEmit": false
   },
   "include": [
     "commitlint.config.*"
