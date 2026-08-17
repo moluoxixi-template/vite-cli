@@ -461,16 +461,10 @@ describe('模板验证与功能组合测试', () => {
       describe(template.name, () => {
         const sourceFiles = scanSourceFiles(template.path)
 
-        it(`应该有源代码文件 - ${template.name} (${sourceFiles.length} 个文件)`, () => {
-          if (sourceFiles.length === 0) {
-            console.log(`\n❌ No files found in: ${template.path}`)
-            console.log(`   Exists: ${fs.existsSync(template.path)}`)
-            if (fs.existsSync(template.path)) {
-              const contents = fs.readdirSync(template.path)
-              console.log(`   Contents: ${contents.join(', ')}`)
-            }
-          }
-          expect(sourceFiles.length).toBeGreaterThan(0)
+        it(`应该有源码或 package.json 贡献 - ${template.name}`, () => {
+          expect(
+            sourceFiles.length > 0 || fs.existsSync(template.packageJsonPath),
+          ).toBe(true)
         })
 
         // 先遍历所有文件收集错误

@@ -29,8 +29,8 @@ catalogs:
       specifier: ^19.8.0
       version: 19.8.1
     '@moluoxixi/eslint-config':
-      specifier: 0.0.18
-      version: 0.0.18
+      specifier: 0.0.19
+      version: 0.0.19
     commitizen:
       specifier: ^4.3.1
       version: 4.3.1
@@ -94,7 +94,7 @@ importers:
         version: 19.8.1
       '@moluoxixi/eslint-config':
         specifier: catalog:dev
-        version: 0.0.18(@eslint-react/eslint-plugin@3.0.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/rule-tester@8.59.2(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/typescript-estree@8.67.0(typescript@5.8.3))(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.34)(eslint-plugin-react-refresh@0.5.4(eslint@10.8.1(jiti@2.7.0)))(eslint@10.8.1(jiti@2.7.0))(ts-declaration-location@1.0.7(typescript@5.8.3))(typescript@5.8.3)(vitest@4.1.5)
+        version: 0.0.19(@eslint-react/eslint-plugin@3.0.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/rule-tester@8.59.2(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/typescript-estree@8.67.0(typescript@5.8.3))(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.34)(eslint-plugin-react-refresh@0.5.4(eslint@10.8.1(jiti@2.7.0)))(eslint@10.8.1(jiti@2.7.0))(ts-declaration-location@1.0.7(typescript@5.8.3))(typescript@5.8.3)(vitest@4.1.5)
       '@types/fs-extra':
         specifier: catalog:type
         version: 11.0.4
@@ -241,8 +241,8 @@ importers:
   templates/common/features/eslint:
     devDependencies:
       '@moluoxixi/eslint-config':
-        specifier: 0.0.18
-        version: 0.0.18(@eslint-react/eslint-plugin@3.0.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/rule-tester@8.59.2(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/typescript-estree@8.67.0(typescript@5.8.3))(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.34)(eslint-plugin-react-refresh@0.5.4(eslint@10.8.1(jiti@2.7.0)))(eslint@10.8.1(jiti@2.7.0))(ts-declaration-location@1.0.7(typescript@5.8.3))(typescript@5.8.3)(vitest@4.1.5)
+        specifier: 0.0.19
+        version: 0.0.19(@eslint-react/eslint-plugin@3.0.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/rule-tester@8.59.2(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/typescript-estree@8.67.0(typescript@5.8.3))(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.34)(eslint-plugin-react-refresh@0.5.4(eslint@10.8.1(jiti@2.7.0)))(eslint@10.8.1(jiti@2.7.0))(ts-declaration-location@1.0.7(typescript@5.8.3))(typescript@5.8.3)(vitest@4.1.5)
       eslint:
         specifier: ^10.0.0
         version: 10.8.1(jiti@2.7.0)
@@ -1601,8 +1601,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@moluoxixi/eslint-config@0.0.18':
-    resolution: {integrity: sha512-GZzDMH44M7DPkp8W/h64Kt3oCvnnezjHDpo+ybYkSmDUiMyQRu6Hmac8t+KXpGKluO7oXjctzDQ2PhXmDYlg1A==}
+  '@moluoxixi/eslint-config@0.0.19':
+    resolution: {integrity: sha512-EhwoFoELzI/YnroDGmtzTVSEHt9dpsLTFP14vlpHxMQpEgssn+W/2ADzc2zxbVe/pvPfGbB/TeUQ8ascjHxYQA==}
     peerDependencies:
       eslint: ^9.5.0 || ^10.0.0
 
@@ -7049,7 +7049,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@moluoxixi/eslint-config@0.0.18(@eslint-react/eslint-plugin@3.0.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/rule-tester@8.59.2(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/typescript-estree@8.67.0(typescript@5.8.3))(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.34)(eslint-plugin-react-refresh@0.5.4(eslint@10.8.1(jiti@2.7.0)))(eslint@10.8.1(jiti@2.7.0))(ts-declaration-location@1.0.7(typescript@5.8.3))(typescript@5.8.3)(vitest@4.1.5)':
+  '@moluoxixi/eslint-config@0.0.19(@eslint-react/eslint-plugin@3.0.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/rule-tester@8.59.2(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/typescript-estree@8.67.0(typescript@5.8.3))(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.34)(eslint-plugin-react-refresh@0.5.4(eslint@10.8.1(jiti@2.7.0)))(eslint@10.8.1(jiti@2.7.0))(ts-declaration-location@1.0.7(typescript@5.8.3))(typescript@5.8.3)(vitest@4.1.5)':
     dependencies:
       '@antfu/eslint-config': 8.3.0(@eslint-react/eslint-plugin@3.0.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/rule-tester@8.59.2(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/typescript-estree@8.67.0(typescript@5.8.3))(@typescript-eslint/utils@8.67.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.34)(eslint-plugin-format@2.0.1(eslint@10.8.1(jiti@2.7.0)))(eslint-plugin-react-refresh@0.5.4(eslint@10.8.1(jiti@2.7.0)))(eslint@10.8.1(jiti@2.7.0))(ts-declaration-location@1.0.7(typescript@5.8.3))(typescript@5.8.3)(vitest@4.1.5)
       eslint: 10.8.1(jiti@2.7.0)

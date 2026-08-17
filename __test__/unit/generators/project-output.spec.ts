@@ -187,7 +187,7 @@ describe('普通 Vite 项目输出', () => {
     const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
     await expectTransparentAjaxOutput(packageJson)
     expect(packageJson.devDependencies).toHaveProperty('@vitejs/plugin-vue')
-    expect(packageJson.devDependencies).toHaveProperty('@moluoxixi/eslint-config', '0.0.18')
+    expect(packageJson.devDependencies).toHaveProperty('@moluoxixi/eslint-config', '0.0.19')
     expect(packageJson.devDependencies).toHaveProperty('eslint', '^10.0.0')
     expect(packageJson.devDependencies).toHaveProperty('eslint')
     expect(packageJson.devDependencies).not.toHaveProperty('eslint-plugin-vue')
@@ -283,7 +283,7 @@ describe('普通 Vite 项目输出', () => {
 
     const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
     await expectTransparentAjaxOutput(packageJson)
-    expect(packageJson.devDependencies).toHaveProperty('@moluoxixi/eslint-config', '0.0.18')
+    expect(packageJson.devDependencies).toHaveProperty('@moluoxixi/eslint-config', '0.0.19')
     expect(packageJson.devDependencies).toHaveProperty('eslint', '^10.0.0')
     expect(packageJson.devDependencies).toHaveProperty('@eslint-react/eslint-plugin', '^3.0.0')
     expect(packageJson.devDependencies).toHaveProperty('eslint-plugin-react-refresh', '^0.5.0')

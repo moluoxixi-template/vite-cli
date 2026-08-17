@@ -3,7 +3,7 @@
     "lint:eslint": "eslint ."
   },
   "devDependencies": {
-    "@moluoxixi/eslint-config": "0.0.18",
+    "@moluoxixi/eslint-config": "0.0.19",
     "eslint": "^10.0.0",
     "eslint-plugin-format": "^1.0.1"
   }
