@@ -116,7 +116,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
         let packageManager: string
 
         beforeAll(async () => {
-          projectDir = await createTempDir(`test-${testConfig.name}-`)
+          projectDir = await createTempDir('vite-cli-fc-')
           const config: ProjectConfigType = {
             ...testConfig.config as ProjectConfigType,
             targetDir: projectDir,

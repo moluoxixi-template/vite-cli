@@ -145,6 +145,7 @@ async function verifyGeneratedContract(config: ProjectConfigType): Promise<void>
   if (config.eslint) {
     const eslintConfig = await fs.readFile(eslintConfigPath, 'utf-8')
     expect(eslintConfig).toContain('from \'@moluoxixi/eslint-config\'')
+    expect(eslintConfig).toContain(".removeRules('vue/block-order')")
     expect(eslintConfig).not.toContain('typescript:')
     expect(eslintConfig).not.toContain('vue:')
     expect(eslintConfig).not.toContain('eslint-plugin-vue')

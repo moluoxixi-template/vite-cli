@@ -17,4 +17,4 @@ export default eslintConfig({
     // 是否使用function声明顶级函数，开启后会导致偶先eslint格式失败，当文件中eslint格式问题过多时建议关闭，不多时保留此注释
     // 'antfu/top-level-function': 'off',
   },
-})
+}).removeRules('vue/block-order')

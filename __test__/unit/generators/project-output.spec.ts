@@ -199,6 +199,7 @@ describe('普通 Vite 项目输出', () => {
 
     const eslintConfig = await readGeneratedFile('eslint.config.ts')
     expect(eslintConfig).toContain('from \'@moluoxixi/eslint-config\'')
+    expect(eslintConfig).toContain(".removeRules('vue/block-order')")
     expect(eslintConfig).not.toContain('react:')
     expect(eslintConfig).not.toContain('typescript:')
     expect(eslintConfig).not.toContain('vue:')
@@ -272,6 +273,7 @@ describe('普通 Vite 项目输出', () => {
 
     const eslintConfig = await readGeneratedFile('eslint.config.ts')
     expect(eslintConfig).toContain('from \'@moluoxixi/eslint-config\'')
+    expect(eslintConfig).toContain(".removeRules('vue/block-order')")
     expect(eslintConfig).not.toContain('react:')
     expect(eslintConfig).not.toContain('typescript:')
     expect(eslintConfig).not.toContain('vue:')
