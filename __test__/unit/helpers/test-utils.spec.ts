@@ -9,6 +9,7 @@ describe('临时目录清理边界', () => {
   it('清理 createTempDir 创建的受管目录', async () => {
     const tempDir = await createTempDir('vite-cli-cleanup-')
 
+    expect(tempDir).toBe(await fs.realpath(tempDir))
     await cleanupTempDir(tempDir)
 
     expect(await fs.pathExists(tempDir)).toBe(false)

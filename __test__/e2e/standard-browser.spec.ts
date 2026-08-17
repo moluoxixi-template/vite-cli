@@ -41,7 +41,7 @@ describe.sequential('standard 项目浏览器路由', () => {
         })
         expect(install.exitCode, install.stderr).toBe(0)
 
-        server = await createGeneratedViteServer(projectDir)
+        server = await createGeneratedViteServer(projectDir, testCase.framework)
         expect(server.config.base).toBe('/app/')
         const serverUrl = server.resolvedUrls?.local[0]
         if (!serverUrl) {
@@ -63,7 +63,18 @@ describe.sequential('standard 项目浏览器路由', () => {
         })
 
         await page.goto(new URL(testCase.homePath, serverUrl).href)
-        await page.locator('h1').getByText(testCase.homeHeading).waitFor({ timeout: 30_000 })
+        try {
+          await page.locator('h1').getByText(testCase.homeHeading).waitFor({ timeout: 30_000 })
+        }
+        catch (error) {
+          throw new Error([
+            error instanceof Error ? error.message : String(error),
+            `url=${page.url()}`,
+            ...pageErrors,
+            ...networkErrors,
+            await page.content(),
+          ].join('\n'))
+        }
         if (testCase.framework === 'vue') {
           expect(await page.locator('.el-menu').count()).toBeGreaterThan(0)
           expect(await page.locator('.app-menu').count()).toBe(0)
@@ -141,7 +152,10 @@ function createConfig(
   }
 }
 
-async function createGeneratedViteServer(projectDir: string): Promise<ViteDevServer> {
+async function createGeneratedViteServer(
+  projectDir: string,
+  framework: FrameworkType,
+): Promise<ViteDevServer> {
   const viteEntry = path.join(projectDir, 'node_modules', 'vite', 'dist', 'node', 'index.js')
   const generatedVite = await import(pathToFileURL(viteEntry).href) as {
     createServer: typeof createServer
@@ -155,5 +169,6 @@ async function createGeneratedViteServer(projectDir: string): Promise<ViteDevSer
     },
   })
   await server.listen()
+  await server.warmupRequest(framework === 'vue' ? '/src/main.ts' : '/src/main.tsx')
   return server
 }

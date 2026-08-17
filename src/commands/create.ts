@@ -10,6 +10,7 @@ import ora from 'ora'
 
 import { collectProjectConfig, confirmOverwrite } from '../core/prompts.ts'
 import { generateProject } from '../generators/project.ts'
+import { MOLUOXIXI_DEPS } from '../types/features.ts'
 import { pathExists } from '../utils/file.ts'
 import { initGit, installDependencies } from '../utils/install.ts'
 
@@ -99,7 +100,7 @@ export async function createProject(projectName?: string): Promise<void> {
     console.log(chalk.gray('  src/apis/ajax（Axios 请求封装）'))
     if (config.eslint) {
       console.log(chalk.blue('已启用的 @moluoxixi 依赖:'))
-      console.log(chalk.gray('  @moluoxixi/eslint-config@0.0.16'))
+      console.log(chalk.gray(`  @moluoxixi/eslint-config@${MOLUOXIXI_DEPS['@moluoxixi/eslint-config']}`))
     }
     console.log('')
   }

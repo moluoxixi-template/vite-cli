@@ -192,8 +192,10 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           if (!testConfig.config.eslint) {
             validationOptions.shouldNotHave!.push(
               '@moluoxixi/eslint-config',
+              '@eslint-react/eslint-plugin',
               'eslint',
               'eslint-plugin-format',
+              'eslint-plugin-react-refresh',
             )
           }
 
@@ -238,10 +240,18 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
               'eslint',
               'eslint-plugin-format',
             )
-            validationOptions.shouldNotHave!.push(
-              '@eslint-react/eslint-plugin',
-              'eslint-plugin-react-refresh',
-            )
+            if (testConfig.config.framework === 'react') {
+              validationOptions.devRequired!.push(
+                '@eslint-react/eslint-plugin',
+                'eslint-plugin-react-refresh',
+              )
+            }
+            else {
+              validationOptions.shouldNotHave!.push(
+                '@eslint-react/eslint-plugin',
+                'eslint-plugin-react-refresh',
+              )
+            }
           }
 
           const result = await validateDependencies(projectDir, validationOptions)

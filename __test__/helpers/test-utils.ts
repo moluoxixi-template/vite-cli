@@ -26,10 +26,12 @@ export const TRANSPARENT_AJAX_SOURCE_FILES = [
  * @returns 临时目录路径
  */
 export async function createTempDir(prefix = 'vite-cli-test-'): Promise<string> {
-  const tempDir = path.join(os.tmpdir(), `${prefix}${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
+  const tempRoot = await fs.realpath(os.tmpdir())
+  const tempDir = path.join(tempRoot, `${prefix}${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
   await fs.ensureDir(tempDir)
-  managedTempDirs.add(path.resolve(tempDir))
-  return tempDir
+  const resolvedTempDir = await fs.realpath(tempDir)
+  managedTempDirs.add(resolvedTempDir)
+  return resolvedTempDir
 }
 
 /**
@@ -37,7 +39,7 @@ export async function createTempDir(prefix = 'vite-cli-test-'): Promise<string> 
  * @param dir 目录路径
  */
 export async function cleanupTempDir(dir: string): Promise<void> {
-  const tempRoot = path.resolve(os.tmpdir())
+  const tempRoot = await fs.realpath(os.tmpdir())
   const targetDir = path.resolve(dir)
   const isManagedTempDir = targetDir.startsWith(`${tempRoot}${path.sep}`)
     && managedTempDirs.has(targetDir)

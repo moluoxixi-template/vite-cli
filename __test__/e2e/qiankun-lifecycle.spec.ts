@@ -16,6 +16,8 @@ import { cleanupTempDir, createTempDir } from '@test/test-utils'
 
 const require = createRequire(import.meta.url)
 const ACTIVE_RULE = '/tenant/child'
+const QIANKUN_ESM_ENTRY = require.resolve('qiankun/es/index.js')
+const SINGLE_SPA_ESM_ENTRY = require.resolve('single-spa/lib/esm/single-spa.min.js')
 const CASES: Array<{ framework: FrameworkType, routeMode: RouteModeType }> = [
   { framework: 'vue', routeMode: 'manualRoutes' },
   { framework: 'vue', routeMode: 'pageRoutes' },
@@ -54,7 +56,7 @@ async function verifyQiankunLifecycle(
     })
     expect(install.exitCode, install.stderr).toBe(0)
 
-    childServer = await createGeneratedViteServer(childDir)
+    childServer = await createGeneratedViteServer(childDir, framework)
     const childEntry = childServer.resolvedUrls?.local[0]
     if (!childEntry) {
       throw new Error('生成项目 Vite server 未提供访问地址')
@@ -65,12 +67,13 @@ async function verifyQiankunLifecycle(
       root: hostDir,
       logLevel: 'silent',
       optimizeDeps: {
+        force: true,
         include: ['qiankun', 'single-spa'],
       },
       resolve: {
         alias: {
-          'qiankun': require.resolve('qiankun'),
-          'single-spa': require.resolve('single-spa'),
+          'qiankun': QIANKUN_ESM_ENTRY,
+          'single-spa': SINGLE_SPA_ESM_ENTRY,
         },
       },
       server: {
@@ -79,6 +82,7 @@ async function verifyQiankunLifecycle(
       },
     })
     await hostServer.listen()
+    await hostServer.warmupRequest('/src/main.ts')
 
     const hostUrl = hostServer.resolvedUrls?.local[0]
     if (!hostUrl) {
@@ -211,7 +215,10 @@ function createQiankunConfig(
   }
 }
 
-async function createGeneratedViteServer(projectDir: string): Promise<ViteDevServer> {
+async function createGeneratedViteServer(
+  projectDir: string,
+  framework: FrameworkType,
+): Promise<ViteDevServer> {
   const viteEntry = path.join(projectDir, 'node_modules', 'vite', 'dist', 'node', 'index.js')
   const generatedVite = await import(pathToFileURL(viteEntry).href) as {
     createServer: typeof createServer
@@ -225,6 +232,7 @@ async function createGeneratedViteServer(projectDir: string): Promise<ViteDevSer
     },
   })
   await server.listen()
+  await server.warmupRequest(framework === 'vue' ? '/src/main.ts' : '/src/main.tsx')
   return server
 }
 
