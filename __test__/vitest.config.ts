@@ -16,7 +16,7 @@ export default defineConfig({
     // bail: 1,
 
     // 并行执行配置
-    pool: 'threads',
+    pool: process.platform === 'win32' ? 'forks' : 'threads',
     // E2E 测试文件内的测试并发执行
     fileParallelism: true,
     maxWorkers: 2,

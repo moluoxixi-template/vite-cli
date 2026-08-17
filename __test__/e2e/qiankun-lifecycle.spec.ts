@@ -64,6 +64,9 @@ async function verifyQiankunLifecycle(
     hostServer = await createServer({
       root: hostDir,
       logLevel: 'silent',
+      optimizeDeps: {
+        include: ['qiankun', 'single-spa'],
+      },
       resolve: {
         alias: {
           'qiankun': require.resolve('qiankun'),
@@ -124,7 +127,7 @@ async function verifyQiankunLifecycle(
     try {
       await page.locator('#micro-container h1')
         .getByText(framework === 'vue' ? '欢迎使用 Vue Template' : '欢迎使用 React Template')
-        .waitFor()
+        .waitFor({ timeout: 30_000 })
     }
     catch (error) {
       await Promise.all(responseDiagnostics)

@@ -47,6 +47,7 @@ __test__/
 - ESLint 开启和关闭时的 2 个真实 Husky 提交场景。
 
 浏览器测试同时收集 page error、console error、失败请求和 HTTP 错误响应；standard 产物还验证 `/app/` base 下的页面和静态资源。
+快速 E2E 先执行 core 用例，再用单 worker 顺序执行两个浏览器文件，避免依赖安装、Vite 冷启动和浏览器渲染互相争抢资源。
 
 ### 完整合法组合矩阵
 
@@ -131,7 +132,8 @@ Vitest 默认配置：
 - 每个测试最多 10 分钟。
 - hook 最多 3 分钟。
 - 网络型 E2E 允许重试 1 次。
-- `maxWorkers` 和 `maxConcurrency` 均为 2。
+- core 用例的 `maxWorkers` 和 `maxConcurrency` 均为 2；浏览器阶段使用单 worker。
+- Windows 使用 `forks` 隔离文件监视器，其他平台使用 `threads`。
 - JUnit 输出到 `__test__/test-results/junit.xml`。
 
 完整矩阵会进行大量真实安装，必须预留网络和磁盘空间。临时项目位于系统临时目录，测试在 `finally` 中清理，并校验待删除目录必须位于系统临时目录且名称属于当前测试前缀。

@@ -7,7 +7,9 @@
   "scripts": {
     "test": "vitest run",
     "test:unit": "vitest run unit",
-    "test:e2e": "vitest run e2e --exclude e2e/full-matrix.spec.ts",
+    "test:e2e": "pnpm test:e2e:core && pnpm test:e2e:browser",
+    "test:e2e:core": "vitest run e2e --exclude e2e/full-matrix.spec.ts --exclude e2e/standard-browser.spec.ts --exclude e2e/qiankun-lifecycle.spec.ts",
+    "test:e2e:browser": "vitest run e2e/standard-browser.spec.ts e2e/qiankun-lifecycle.spec.ts --no-file-parallelism --maxWorkers=1",
     "test:matrix": "vitest run e2e/full-matrix.spec.ts",
     "test:build-smoke": "vitest run e2e/build-smoke.spec.ts",
     "type-check": "tsc --noEmit -p tsconfig.json",

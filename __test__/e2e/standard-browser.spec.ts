@@ -63,7 +63,7 @@ describe.sequential('standard 项目浏览器路由', () => {
         })
 
         await page.goto(new URL(testCase.homePath, serverUrl).href)
-        await page.locator('h1').getByText(testCase.homeHeading).waitFor()
+        await page.locator('h1').getByText(testCase.homeHeading).waitFor({ timeout: 30_000 })
         if (testCase.framework === 'vue') {
           expect(await page.locator('.el-menu').count()).toBeGreaterThan(0)
           expect(await page.locator('.app-menu').count()).toBe(0)
