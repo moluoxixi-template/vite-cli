@@ -73,6 +73,8 @@ jobs:
         run: pnpm --filter @moluoxixi/vite-cli-test exec playwright install chromium
       - name: Run E2E tests
         run: pnpm test:e2e
+        env:
+          CHOKIDAR_USEPOLLING: ${{ runner.os == 'Windows' && 'true' || 'false' }}
 
   # 全部合法组合（384 个）按 12 个 shard 并行执行
   full-matrix:

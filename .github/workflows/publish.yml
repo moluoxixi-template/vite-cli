@@ -62,7 +62,10 @@ jobs:
         if: runner.os != 'Linux'
         run: pnpm --filter @moluoxixi/vite-cli-test exec playwright install chromium
       # 运行所有测试（单元测试、集成测试、E2E 测试）
-      - run: pnpm test
+      - name: Run tests
+        run: pnpm test
+        env:
+          CHOKIDAR_USEPOLLING: ${{ runner.os == 'Windows' && 'true' || 'false' }}
 
   # 全部合法模板组合质量门禁（384 个）按 12 个 shard 并行执行。
   # 该门禁无 job 超时限制，发布必须等待每个生成模板完成 lint、类型检查和构建。
