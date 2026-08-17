@@ -94,10 +94,11 @@ export async function createProject(projectName?: string): Promise<void> {
     console.log(chalk.gray(`  cd ${config.projectName}`))
     console.log(chalk.gray(`  ${config.packageManager} dev\n`))
 
-    // 显示特性信息
-    console.log(chalk.blue('已启用的 @moluoxixi 依赖:'))
-    console.log(chalk.gray('  @moluoxixi/ajax-package@0.0.60'))
+    // 显示透明内置能力与可选外部依赖
+    console.log(chalk.blue('内置透明源码:'))
+    console.log(chalk.gray('  src/apis/ajax（Axios 请求封装）'))
     if (config.eslint) {
+      console.log(chalk.blue('已启用的 @moluoxixi 依赖:'))
       console.log(chalk.gray('  @moluoxixi/eslint-config@0.0.16'))
     }
     console.log('')

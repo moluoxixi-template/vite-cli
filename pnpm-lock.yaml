@@ -170,9 +170,9 @@ importers:
 
   templates/common/base:
     dependencies:
-      '@moluoxixi/ajax-package':
-        specifier: 0.0.60
-        version: 0.0.60
+      axios:
+        specifier: ^1.16.1
+        version: 1.19.0
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
@@ -1602,16 +1602,10 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@moluoxixi/ajax-package@0.0.60':
-    resolution: {integrity: sha512-KfamqHhJAhftD2xVPWuV6CFtD2A/TAyHk9R1++oMKWnLwwImJJAk5JrROK+TBrpiyTQ8QsmYh0TEkjkC1X8CCA==}
-
   '@moluoxixi/eslint-config@0.0.16':
     resolution: {integrity: sha512-17aRiaNYUMwWPqWjHAY/w5MEIhcl0zTgVxiS2Ujfxzmm9ktLgyg3AyzUzLLY7ehSPRN9qzQT5sQfWZMuBKcSrg==}
     peerDependencies:
       eslint: ^9.5.0
-
-  '@moluoxixi/utils@0.1.2':
-    resolution: {integrity: sha512-oIM7uCm7J2OpOaymup3fs7+7NX6Ah4bIfJ84B5bO0lh85Iccp7kBjU50mTcqgIyYQ+tyhh99Oq/oQuNr0YzC2Q==}
 
   '@ota-meshi/ast-token-store@0.3.0':
     resolution: {integrity: sha512-XRO0zi2NIUKq2lUk3T1ecFSld1fMWRKE6naRFGkgkdeosx7IslyUKNv5Dcb5PJTja9tHJoFu0v/7yEpAkrkrTg==}
@@ -7094,14 +7088,6 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@moluoxixi/ajax-package@0.0.60':
-    dependencies:
-      '@moluoxixi/utils': 0.1.2
-      axios: 1.19.0
-    transitivePeerDependencies:
-      - debug
-      - supports-color
-
   '@moluoxixi/eslint-config@0.0.16(@eslint-react/eslint-plugin@3.0.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/rule-tester@8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/typescript-estree@8.67.0(typescript@5.8.3))(@typescript-eslint/utils@8.67.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.34)(eslint-plugin-react-refresh@0.5.4(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0))(ts-declaration-location@1.0.7(typescript@5.8.3))(typescript@5.8.3)(vitest@4.1.5)':
     dependencies:
       '@antfu/eslint-config': 8.3.0(@eslint-react/eslint-plugin@3.0.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/rule-tester@8.59.2(eslint@9.39.4(jiti@2.7.0))(typescript@5.8.3))(@typescript-eslint/typescript-estree@8.67.0(typescript@5.8.3))(@typescript-eslint/utils@8.67.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.8.3))(@vue/compiler-sfc@3.5.34)(eslint-plugin-format@2.0.1(eslint@9.39.4(jiti@2.7.0)))(eslint-plugin-react-refresh@0.5.4(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0))(ts-declaration-location@1.0.7(typescript@5.8.3))(typescript@5.8.3)(vitest@4.1.5)
@@ -7135,8 +7121,6 @@ snapshots:
       - ts-declaration-location
       - typescript
       - vitest
-
-  '@moluoxixi/utils@0.1.2': {}
 
   '@ota-meshi/ast-token-store@0.3.0': {}
 

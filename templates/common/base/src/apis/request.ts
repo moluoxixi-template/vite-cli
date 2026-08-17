@@ -1,9 +1,9 @@
 /**
  * 请求封装
- * 基于 @moluoxixi/ajax-package 的请求工具
+ * 基于项目内置 Ajax 源码的请求工具
  */
 
-import { BaseApi } from '@moluoxixi/ajax-package'
+import { BaseApi } from './ajax'
 
 /**
  * 自定义 API 类

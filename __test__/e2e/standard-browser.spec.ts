@@ -3,7 +3,7 @@ import { pathToFileURL } from 'node:url'
 
 import { execa } from 'execa'
 import { chromium } from 'playwright'
-import type { Browser } from 'playwright'
+import type { Browser, Page } from 'playwright'
 import type { createServer, ViteDevServer } from 'vite'
 import { describe, expect, it } from 'vitest'
 
@@ -74,13 +74,13 @@ describe.sequential('standard 项目浏览器路由', () => {
           expect(await page.locator('.ant-layout-header').evaluate(element => getComputedStyle(element).padding)).toBe('0px')
         }
 
-        await page.goto(new URL('/app/about', serverUrl).href)
-        await page.locator('h1').getByText('关于').waitFor()
-        expect(new URL(page.url()).pathname).toBe('/app/about')
-        await page.goto(new URL(testCase.deepPath, serverUrl).href)
+        await navigateThroughNestedMenu(page, testCase.framework)
         await page.locator('h3').getByText('三级标题').waitFor()
         expect(await page.getByText('三级标题', { exact: true }).count()).toBeGreaterThan(0)
         expect(new URL(page.url()).pathname).toBe(testCase.deepPath)
+        await page.goto(new URL('/app/about', serverUrl).href)
+        await page.locator('h1').getByText('关于').waitFor()
+        expect(new URL(page.url()).pathname).toBe('/app/about')
         expect(pageErrors).toEqual([])
         expect(networkErrors).toEqual([])
       }
@@ -94,6 +94,30 @@ describe.sequential('standard 项目浏览器路由', () => {
     })
   }
 })
+
+async function navigateThroughNestedMenu(page: Page, framework: FrameworkType): Promise<void> {
+  const guideMenu = framework === 'react'
+    ? page.locator('[role="menuitem"][aria-haspopup="true"]').filter({ hasText: '指南' }).first()
+    : page.locator('ul[role="menubar"] > li[role="menuitem"]').filter({ hasText: '指南' }).first()
+  await guideMenu.waitFor({ state: 'visible' })
+  if (framework === 'vue') {
+    expect(await guideMenu.locator('[role="menuitem"]').count()).toBeGreaterThan(0)
+  }
+  await guideMenu.hover()
+  const advancedMenu = framework === 'react'
+    ? page.locator('[role="menuitem"][aria-haspopup="true"]').filter({ hasText: '进阶' }).first()
+    : guideMenu.locator('[role="menuitem"]').filter({ hasText: '进阶' }).first()
+  await advancedMenu.waitFor({ state: 'visible' })
+  if (framework === 'vue') {
+    expect(await advancedMenu.locator('[role="menuitem"]').count()).toBeGreaterThan(0)
+  }
+  await advancedMenu.hover()
+  const topicMenu = framework === 'react'
+    ? page.locator('[role="menuitem"]:not([aria-haspopup])').filter({ hasText: '三级标题' }).first()
+    : advancedMenu.locator('[role="menuitem"]').filter({ hasText: '三级标题' }).first()
+  await topicMenu.waitFor({ state: 'visible' })
+  await topicMenu.click()
+}
 
 function createConfig(
   framework: FrameworkType,

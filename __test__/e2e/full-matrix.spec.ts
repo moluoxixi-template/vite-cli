@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { execa } from 'execa'
 import fs from 'fs-extra'
@@ -6,14 +7,20 @@ import { describe, expect, it } from 'vitest'
 
 import { generateProject } from '@/generators/project'
 import type { PackageManagerType, ProjectConfigType } from '@/types'
-import { cleanupTempDir, createTempDir } from '@test/test-utils'
+import {
+  cleanupTempDir,
+  createTempDir,
+  TRANSPARENT_AJAX_SOURCE_FILES,
+} from '@test/test-utils'
 import { generateTestConfigs } from './featureCombination/helpers/test-config-generator'
 
 const ALL_CONFIGS = generateTestConfigs()
 const MATRIX_CONFIGS = selectShard(ALL_CONFIGS)
+const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 describe.concurrent('全部合法组合可执行矩阵', () => {
   for (const testConfig of MATRIX_CONFIGS) {
+    // 完整模板安装与质量检查不设时限，必须等待每个组合给出确定结果。
     it(testConfig.name, async () => {
       const projectDir = await createTempDir(`vite-cli-matrix-${testConfig.config.framework}-`)
       const config: ProjectConfigType = {
@@ -30,6 +37,9 @@ describe.concurrent('全部合法组合可执行矩阵', () => {
         if (config.eslint) {
           await runScript(config.packageManager, 'lint:eslint', projectDir)
         }
+        else {
+          await runGeneratedSourceLint(projectDir)
+        }
 
         await runScript(config.packageManager, 'build', projectDir)
         await verifyBuildOutput(projectDir)
@@ -37,7 +47,7 @@ describe.concurrent('全部合法组合可执行矩阵', () => {
       finally {
         await cleanupTempDir(projectDir)
       }
-    })
+    }, 0)
   }
 })
 
@@ -71,14 +81,23 @@ async function verifyGeneratedContract(config: ProjectConfigType): Promise<void>
   const otherMainEntry = config.framework === 'vue' ? 'src/main.tsx' : 'src/main.ts'
   const mainContent = await fs.readFile(path.join(config.targetDir, mainEntry), 'utf-8')
   const viteContent = await fs.readFile(path.join(config.targetDir, 'vite.config.ts'), 'utf-8')
+  const requestContent = await fs.readFile(path.join(config.targetDir, 'src/apis/request.ts'), 'utf-8')
   const packageJson = await fs.readJson(path.join(config.targetDir, 'package.json'))
 
   expect(await fs.pathExists(path.join(config.targetDir, otherMainEntry))).toBe(false)
   expect(await fs.pathExists(path.join(config.targetDir, 'src', 'main'))).toBe(false)
   expect(await fs.pathExists(path.join(config.targetDir, 'vite'))).toBe(false)
+  expect(viteContent).toContain('import { fileURLToPath, URL } from \'node:url\'')
+  expect(viteContent).not.toContain('import F{')
   expect(viteContent).not.toContain('@moluoxixi/vite-config')
-  expect(packageJson.dependencies).toHaveProperty('@moluoxixi/ajax-package', '0.0.60')
+  expect(packageJson.dependencies).toHaveProperty('axios', '^1.16.1')
+  expect(packageJson.dependencies).not.toHaveProperty('@moluoxixi/ajax-package')
   expect(packageJson.dependencies).not.toHaveProperty('@moluoxixi/class-names')
+  expect(requestContent).toContain('from \'./ajax\'')
+  expect(requestContent).not.toContain('@moluoxixi/ajax-package')
+  for (const fileName of TRANSPARENT_AJAX_SOURCE_FILES) {
+    expect(await fs.pathExists(path.join(config.targetDir, 'src/apis/ajax', fileName))).toBe(true)
+  }
 
   const expectedUiDependency = config.framework === 'vue' ? 'element-plus' : 'antd'
   const unexpectedUiDependency = config.framework === 'vue' ? 'antd' : 'element-plus'
@@ -152,6 +171,54 @@ async function verifyBuildOutput(projectDir: string): Promise<void> {
 
   const assetFiles = await fs.readdir(path.join(distDir, 'assets'))
   expect(assetFiles.some(file => /\.(?:css|js)$/.test(file))).toBe(true)
+}
+
+/**
+ * Lint projects that intentionally omit the optional ESLint feature with the
+ * repository's shared config. Their generated package stays minimal, while
+ * every legal matrix combination still receives a source-quality gate.
+ */
+async function runGeneratedSourceLint(projectDir: string): Promise<void> {
+  const candidates = [
+    path.join(projectDir, 'src'),
+    path.join(projectDir, 'scripts'),
+    path.join(projectDir, 'vite.config.ts'),
+    path.join(projectDir, 'env.d.ts'),
+  ]
+  const lintPaths: string[] = []
+
+  for (const candidate of candidates) {
+    if (await fs.pathExists(candidate)) {
+      lintPaths.push(...await collectLintFiles(candidate))
+    }
+  }
+
+  expect(lintPaths.length).toBeGreaterThan(0)
+  await runChecked(
+    'eslint',
+    ['--no-ignore', '--no-warn-ignored', ...lintPaths],
+    repositoryRoot,
+    'shared generated-source lint',
+  )
+}
+
+async function collectLintFiles(inputPath: string): Promise<string[]> {
+  const stat = await fs.stat(inputPath)
+  if (stat.isFile()) {
+    return [inputPath]
+  }
+
+  const files: string[] = []
+  for (const entry of await fs.readdir(inputPath, { withFileTypes: true })) {
+    const entryPath = path.join(inputPath, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...await collectLintFiles(entryPath))
+    }
+    else if (entry.isFile() && /\.(?:[cm]?[jt]sx?|vue)$/.test(entry.name)) {
+      files.push(entryPath)
+    }
+  }
+  return files
 }
 
 function getInstallArgs(packageManager: PackageManagerType): string[] {

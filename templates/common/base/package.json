@@ -20,7 +20,7 @@
     }
   },
   "dependencies": {
-    "@moluoxixi/ajax-package": "0.0.60",
+    "axios": "^1.16.1",
     "crypto-js": "^4.2.0",
     "dayjs": "^1.11.13",
     "lodash-es": "^4.17.21",

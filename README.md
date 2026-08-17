@@ -40,13 +40,15 @@ npm create @moluoxixi/app
 - [x] 🔧 **main.tsx.ejs 解耦** - 将 React 入口文件模板解耦，提高可维护性
 - [x] 🔧 **vite.config.ts.ejs 解耦** - 将 Vite 配置模板解耦，提高可维护性
 
-## 内置依赖
+## 内置源码
 
-所有生成的项目都包含以下核心依赖：
+所有生成的项目都直接包含以下透明源码：
 
-| 依赖包 | 用途 |
-|--------|------|
-| `@moluoxixi/ajax-package` | HTTP 请求封装 |
+| 源码目录 | 用途 |
+|----------|------|
+| `src/apis/ajax` | 基于 Axios 的 HTTP 请求封装，可直接阅读和修改 |
+
+生成项目只保留公开的 `axios` 运行时依赖，不再依赖 `@moluoxixi/ajax-package` 黑盒包。
 
 启用 ESLint 时，项目会额外包含 `@moluoxixi/eslint-config`。
 

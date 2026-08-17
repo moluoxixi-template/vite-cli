@@ -10,6 +10,9 @@ import App from '@/App'
 
 const Home = lazy(() => import('@/pages/home'))
 const About = lazy(() => import('@/pages/about'))
+const Guide = lazy(() => import('@/pages/guide'))
+const Advanced = lazy(() => import('@/pages/guide/advanced'))
+const Topic = lazy(() => import('@/pages/guide/advanced/topic'))
 
 /**
  * 懒加载包装组件
@@ -36,6 +39,22 @@ export const routes: RouteObject[] = [
       {
         path: 'about',
         element: <LazyLoad><About /></LazyLoad>,
+      },
+      {
+        path: 'guide',
+        element: <LazyLoad><Guide /></LazyLoad>,
+        children: [
+          {
+            path: 'advanced',
+            element: <LazyLoad><Advanced /></LazyLoad>,
+            children: [
+              {
+                path: 'topic',
+                element: <LazyLoad><Topic /></LazyLoad>,
+              },
+            ],
+          },
+        ],
       },
     ],
   },

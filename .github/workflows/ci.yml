@@ -77,7 +77,6 @@ jobs:
   # 全部合法组合（384 个）按 12 个 shard 并行执行
   full-matrix:
     needs: [lint, unit-test]
-    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:

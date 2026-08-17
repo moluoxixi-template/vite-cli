@@ -23,4 +23,32 @@ export const routes = [
       title: '关于',
     },
   },
+  {
+    path: '/guide',
+    name: 'Guide',
+    component: () => import('@/pages/guide/index.vue'),
+    meta: {
+      title: '指南',
+    },
+    children: [
+      {
+        path: 'advanced',
+        name: 'GuideAdvanced',
+        component: () => import('@/pages/guide/advanced/index.vue'),
+        meta: {
+          title: '进阶',
+        },
+        children: [
+          {
+            path: 'topic',
+            name: 'GuideTopic',
+            component: () => import('@/pages/guide/advanced/topic/index.vue'),
+            meta: {
+              title: '三级标题',
+            },
+          },
+        ],
+      },
+    ],
+  },
 ]

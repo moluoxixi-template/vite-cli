@@ -9,6 +9,17 @@ import os from 'node:os'
 import process from 'node:process'
 
 const managedTempDirs = new Set<string>()
+
+export const TRANSPARENT_AJAX_SOURCE_FILES = [
+  'BaseApi.ts',
+  'BaseHttpClient.ts',
+  'errors.ts',
+  'factory.ts',
+  'index.ts',
+  'path.ts',
+  'readValueByPath.ts',
+  'types.ts',
+] as const
 /**
  * 创建临时测试目录
  * @param prefix 目录前缀

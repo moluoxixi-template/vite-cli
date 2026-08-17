@@ -35,7 +35,7 @@ The default Vue + Element Plus behavior is preserved. React is enabled only afte
 
 Router base is a lifecycle contract rather than an app-code convention. Standard projects derive their base from `VITE_APP_CODE`; qiankun projects prefer a string `activeRule` supplied at lifecycle props (top-level or legacy `data.activeRule`) and only fall back to the standard base. Non-string qiankun active rules remain host matching rules and are not passed to framework routers.
 
-The exhaustive matrix is derived per framework from the registry. Route flags and state management are projections, not independent axes. UI libraries are conditional framework domains. User-selectable i18n, Sentry, ESLint and Husky values are boolean axes. Package-manager combinations are retained and the executable suite accepts deterministic shard index/count environment variables for CI.
+The exhaustive matrix is derived per framework from the registry. Route flags and state management are projections, not independent axes. UI libraries are conditional framework domains. User-selectable i18n, Sentry, ESLint and Husky values are boolean axes. Package-manager combinations are retained and the executable suite accepts deterministic shard index/count environment variables for CI. Every matrix output runs a lint gate: ESLint-enabled projects use their generated script, while ESLint-disabled projects use the repository's shared config against generated source files without changing their output dependencies.
 
 ## Verification
 

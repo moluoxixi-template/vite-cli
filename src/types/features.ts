@@ -7,12 +7,11 @@
  */
 
 /**
- * @moluoxixi 核心依赖配置
- * 这些依赖必须在所有项目中存在
+ * 生成项目可使用的 @moluoxixi 外部依赖版本。
+ * 请求能力以源码形式内置，不在这里声明黑盒依赖。
  */
 export const MOLUOXIXI_DEPS = {
   '@moluoxixi/eslint-config': '0.0.16',
-  '@moluoxixi/ajax-package': '0.0.60',
 } as const
 
 /**

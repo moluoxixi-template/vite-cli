@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       # 安全审计：检查 high 及以上级别的漏洞
       # 使用 || true 避免因漏洞导致 CI 失败（仅作为警告）
       # 如需严格模式，移除 || true
@@ -54,16 +54,42 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       # 安装项目依赖
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       # 运行所有测试（单元测试、集成测试、E2E 测试）
       - run: pnpm test
+
+  # 全部合法模板组合质量门禁（384 个）按 12 个 shard 并行执行。
+  # 该门禁无 job 超时限制，发布必须等待每个生成模板完成 lint、类型检查和构建。
+  full-matrix:
+    needs: [test, security]
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    runs-on: ubuntu-latest
+    env:
+      MATRIX_SHARD_COUNT: 12
+      MATRIX_SHARD_INDEX: ${{ matrix.shard }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22.14.0'
+      - run: pnpm install --frozen-lockfile
+      - name: Install npm 10 for generated-project coverage
+        run: npm install --global npm@10.9.0
+      - name: Install Yarn 1 for generated-project coverage
+        run: npm install --global yarn@1.22.22
+      - name: Run legal-combination shard
+        run: pnpm test:matrix
 
   # 版本号自增任务
   # 仅在分支推送时运行（tag 推送时会被跳过）
   # 自动将 package.json 中的版本号 patch 版本 +1，并提交回仓库
   bump-version:
     # 依赖测试任务和安全扫描，确保测试通过后才执行
-    needs: [test, security]
+    needs: [test, security, full-matrix]
     # 只在分支推送时运行，tag 推送时跳过此任务
     if: github.ref_type == 'branch'
     # 使用 Publish 环境进行部署保护，需要审批才能执行
@@ -92,7 +118,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       # 安装项目依赖
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
 
       # 版本号自增并提交
       # 1. 使用 pnpm version:patch 自动将版本号 patch 版本 +1（如 2.0.432 -> 2.0.433）
@@ -113,7 +139,11 @@ jobs:
   # 构建项目并发布到 npm 公共仓库
   release:
     # 依赖版本号自增任务，确保测试通过且版本号递增后才执行
-    needs: [bump-version]
+    needs: [bump-version, full-matrix]
+    if: >-
+      always() &&
+      needs.full-matrix.result == 'success' &&
+      (needs.bump-version.result == 'success' || needs.bump-version.result == 'skipped')
     # 使用 Publish 环境进行部署保护，需要审批才能执行
     environment: Publish
     runs-on: ubuntu-latest
@@ -141,7 +171,7 @@ jobs:
       - name: Update npm
         run: npm install -g npm@latest
       # 安装项目依赖（包括构建依赖）
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       # 构建项目并发布到 npm
       # prepublishOnly 脚本会自动执行构建（在 package.json 中配置）
       # --no-git-checks: 跳过 git 检查，允许在工作流中发布（因为可能是在 CI 环境中）

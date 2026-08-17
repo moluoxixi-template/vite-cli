@@ -207,7 +207,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           }
 
           // 3. 验证必需的基础依赖
-          validationOptions.required = ['@moluoxixi/ajax-package']
+          validationOptions.required = ['axios']
           validationOptions.devRequired = [
             testConfig.config.framework === 'vue'
               ? '@vitejs/plugin-vue'
@@ -216,6 +216,7 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
           validationOptions.shouldNotHave!.push(
             '@antfu/eslint-config',
             'eslint-plugin-vue',
+            '@moluoxixi/ajax-package',
             '@moluoxixi/vite-config',
             '@moluoxixi/css-module-global-root-plugin',
           )

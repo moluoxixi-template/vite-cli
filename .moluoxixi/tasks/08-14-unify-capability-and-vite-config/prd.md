@@ -36,7 +36,7 @@
 
 ### R6. Exhaustive legal-combination coverage
 
-组合测试必须从 capability registry 按 framework 推导 UI、route 和 micro-frontend 域，枚举所有用户可选布尔 feature 状态。每个合法组合至少完成生成、产物契约、依赖契约和入口静态验证；完整可执行矩阵完成 install、lint（启用时）、type-check 与 build。standard 与 qiankun 另有浏览器 smoke，qiankun 另有真实 host 的 mount/unmount/remount 和 arbitrary activeRule 验证。
+组合测试必须从 capability registry 按 framework 推导 UI、route 和 micro-frontend 域，枚举所有用户可选布尔 feature 状态。每个合法组合至少完成生成、产物契约、依赖契约和入口静态验证；完整可执行矩阵完成 install、源码 lint、type-check 与 build。启用 ESLint feature 的项目执行自身 `lint:eslint`，未启用的项目使用仓库共享配置对生成源码执行等价 lint，不改变其最小依赖输出。standard 与 qiankun 另有浏览器 smoke，qiankun 另有真实 host 的 mount/unmount/remount 和 arbitrary activeRule 验证。
 
 ### R7. Repair quality gates
 
@@ -55,7 +55,7 @@
 - [x] 根 `pnpm type-check`、`pnpm lint`、`pnpm test:unit`、`pnpm test:e2e` 均有对应 script；CI 使用 `--frozen-lockfile`。
 - [x] Vue/React 的 standard 与 qiankun、manualRoutes 与 pageRoutes 均通过生成、type-check、build 和浏览器 smoke。
 - [x] React standard 产物不含 qiankun 代码；React/Vue qiankun 均通过真实 host mount、unmount、remount 和非 appCode activeRule 验证。
-- [x] 完整合法组合矩阵覆盖所有可选 feature 状态和三种 package manager，且支持 CI 分片执行。
+- [x] 完整合法组合矩阵覆盖所有可选 feature 状态和三种 package manager，且支持 CI 分片执行；每个组合都通过源码 lint、type-check 和 build。
 - [x] 生成项目完整 ESLint、`pnpm type-check`、`pnpm lint`、目标单测、smoke 和全矩阵测试通过。
 
 ## Out of Scope

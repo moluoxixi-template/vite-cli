@@ -35,7 +35,7 @@
 - Standard browser smoke: passed, 4/4.
 - Real qiankun host lifecycle: passed, 4/4 including nested `/tenant/child` activeRule and remount.
 - Husky real commit coverage: passed, 2/2 with ESLint disabled/enabled.
-- Full legal matrix: passed, 384/384 across 12 shards of 32 combinations.
+- Full legal matrix: passed, 384/384 across 12 shards of 32 combinations; every combination runs generated-source lint, type-check, and build. ESLint-enabled projects use their generated `lint:eslint` script; ESLint-disabled projects use the repository shared lint harness without adding ESLint to their output.
 - Package-manager coverage: local pnpm 10.8.0, npm 11.17.0, and Yarn 1.22.22 across every legal capability state; CI pins npm 10.9.0 for the same matrix.
 
 ## Knowledge Proposals

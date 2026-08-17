@@ -12,5 +12,5 @@ export interface subMenuRouteType {
 
 export interface propsType {
   routes: subMenuRouteType[]
-  menuHeight?: number
+  parentPath?: string
 }

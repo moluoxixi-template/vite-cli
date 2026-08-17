@@ -8,8 +8,13 @@ import { afterEach, describe, expect, it } from 'vitest'
 import fs from 'fs-extra'
 import { generateProject } from '@/generators/project'
 import type { ProjectConfigType } from '@/types'
+import { TRANSPARENT_AJAX_SOURCE_FILES } from '@test/test-utils'
 
 let tempDir: string
+
+interface GeneratedPackageJson {
+  dependencies?: Record<string, string>
+}
 
 /**
  * 创建用于真实生成项目的测试配置。
@@ -48,6 +53,31 @@ async function readGeneratedFile(filePath: string): Promise<string> {
   return fs.readFile(path.join(tempDir, filePath), 'utf-8')
 }
 
+function expectTransparentViteConfig(viteConfig: string): void {
+  expect(viteConfig).toContain('import { fileURLToPath, URL } from \'node:url\'')
+  expect(viteConfig).not.toContain('import F{')
+  expect(viteConfig).not.toContain('@moluoxixi/vite-config')
+}
+
+async function expectTransparentAjaxOutput(packageJson: GeneratedPackageJson): Promise<void> {
+  expect(packageJson.dependencies).toHaveProperty('axios', '^1.16.1')
+  expect(packageJson.dependencies).not.toHaveProperty('@moluoxixi/ajax-package')
+  for (const fileName of TRANSPARENT_AJAX_SOURCE_FILES) {
+    expect(await fs.pathExists(path.join(tempDir, 'src/apis/ajax', fileName))).toBe(true)
+  }
+
+  const requestContent = await readGeneratedFile('src/apis/request.ts')
+  expect(requestContent).toContain('from \'./ajax\'')
+  expect(requestContent).not.toContain('@moluoxixi/ajax-package')
+
+  const clientContent = await readGeneratedFile('src/apis/ajax/BaseHttpClient.ts')
+  expect(clientContent).toContain('this.instance = axios.create(axiosConfig)')
+
+  const pathContent = await readGeneratedFile('src/apis/ajax/path.ts')
+  expect(pathContent).toContain('from \'./readValueByPath\'')
+  expect(pathContent).not.toContain('@moluoxixi/utils')
+}
+
 function expectNativeElementLayout(elementLayout: string): void {
   expect(elementLayout).toContain('<ElConfigProvider :empty-values="[undefined]">')
   expect(elementLayout).toContain('style="--el-header-padding: 0"')
@@ -58,6 +88,13 @@ function expectNativeElementLayout(elementLayout: string): void {
   expect(elementLayout).not.toContain('--el-main-padding')
 }
 
+function expectRecursiveElementSubMenu(subMenuContent: string): void {
+  expect(subMenuContent).toContain('<ElSubMenu')
+  expect(subMenuContent).toContain('<SubMenu')
+  expect(subMenuContent).toContain('createMenuTree(props.routes)')
+  expect(subMenuContent).not.toContain('<div :style=')
+}
+
 function expectNativeElementStyles(elementStyles: string): void {
   expect(elementStyles.trim()).toBe('@use \'element-plus/theme-chalk/src/index.scss\' as *;')
 }
@@ -66,6 +103,14 @@ function expectNativeAntLayout(appContent: string): void {
   expect(appContent).toContain('ConfigProvider theme={layoutTheme}')
   expect(appContent).toContain('headerPadding: 0')
   expect(appContent).toContain('label: \'三级标题\'')
+  expect(appContent).toContain('routes={menuItems}')
+  expect(appContent).not.toContain('items={menuItems}')
+}
+
+function expectRecursiveAntSubMenu(subMenuContent: string): void {
+  expect(subMenuContent).toContain('items={createMenuItems(routes)}')
+  expect(subMenuContent).toContain('children: createMenuItems(route.children)')
+  expect(subMenuContent).toContain('NonNullable<MenuProps[\'items\']>')
 }
 
 /**
@@ -125,19 +170,22 @@ describe('普通 Vite 项目输出', () => {
 
     const elementLayout = await readGeneratedFile('src/layouts/element.vue')
     expectNativeElementLayout(elementLayout)
+    const subMenuContent = await readGeneratedFile('src/components/SubMenu/src/index.vue')
+    expectRecursiveElementSubMenu(subMenuContent)
 
     const elementStyles = await readGeneratedFile('src/assets/styles/element/index.scss')
     expectNativeElementStyles(elementStyles)
 
     const viteConfig = await readGeneratedFile('vite.config.ts')
+    expectTransparentViteConfig(viteConfig)
     expect(viteConfig).toContain('import vue from \'@vitejs/plugin-vue\'')
     expect(viteConfig).toContain('import Pages from \'vite-plugin-pages\'')
     expect(viteConfig).toContain('defineConfig')
-    expect(viteConfig).not.toContain('@moluoxixi/vite-config')
     expect(viteConfig).not.toContain('./vite/index')
     expect(viteConfig).not.toContain('additionalData')
 
     const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
+    await expectTransparentAjaxOutput(packageJson)
     expect(packageJson.devDependencies).toHaveProperty('@vitejs/plugin-vue')
     expect(packageJson.devDependencies).toHaveProperty('@moluoxixi/eslint-config', '0.0.16')
     expect(packageJson.devDependencies).toHaveProperty('eslint')
@@ -174,10 +222,15 @@ describe('普通 Vite 项目输出', () => {
     expect(await fs.pathExists(path.join(tempDir, 'src/components/SubMenu/src/_types'))).toBe(false)
     const elementLayout = await readGeneratedFile('src/layouts/element.vue')
     expectNativeElementLayout(elementLayout)
+    const subMenuContent = await readGeneratedFile('src/components/SubMenu/src/index.vue')
+    expectRecursiveElementSubMenu(subMenuContent)
     const elementStyles = await readGeneratedFile('src/assets/styles/element/index.scss')
     expectNativeElementStyles(elementStyles)
     expect(await fs.pathExists(path.join(tempDir, 'src/assets/styles/element/fixQiankun.scss'))).toBe(false)
+    const viteConfig = await readGeneratedFile('vite.config.ts')
+    expectTransparentViteConfig(viteConfig)
     const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
+    await expectTransparentAjaxOutput(packageJson)
     expect(packageJson.scripts).not.toHaveProperty('lint:eslint')
     expect(await fs.pathExists(path.join(tempDir, 'eslint.config.ts'))).toBe(false)
     expect(await collectUnderscorePrefixedDirectories(tempDir)).toEqual([])
@@ -208,8 +261,11 @@ describe('普通 Vite 项目输出', () => {
 
     const appContent = await readGeneratedFile('src/App.tsx')
     expectNativeAntLayout(appContent)
+    const subMenuContent = await readGeneratedFile('src/components/SubMenu/index.tsx')
+    expectRecursiveAntSubMenu(subMenuContent)
 
     const viteConfig = await readGeneratedFile('vite.config.ts')
+    expectTransparentViteConfig(viteConfig)
     expect(viteConfig).toContain('import react from \'@vitejs/plugin-react\'')
     expect(viteConfig).toContain('import Pages from \'vite-plugin-pages\'')
     expect(viteConfig).not.toContain('vite-plugin-qiankun')
@@ -221,6 +277,7 @@ describe('普通 Vite 项目输出', () => {
     expect(eslintConfig).not.toContain('vue:')
 
     const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
+    await expectTransparentAjaxOutput(packageJson)
     expect(packageJson.devDependencies).toHaveProperty('@moluoxixi/eslint-config', '0.0.16')
     expect(packageJson.devDependencies).not.toHaveProperty('@eslint-react/eslint-plugin')
     expect(packageJson.devDependencies).not.toHaveProperty('eslint-plugin-react-refresh')
@@ -256,8 +313,14 @@ describe('普通 Vite 项目输出', () => {
 
     const appContent = await readGeneratedFile('src/App.tsx')
     expectNativeAntLayout(appContent)
+    const subMenuContent = await readGeneratedFile('src/components/SubMenu/index.tsx')
+    expectRecursiveAntSubMenu(subMenuContent)
 
     const viteConfig = await readGeneratedFile('vite.config.ts')
+    expectTransparentViteConfig(viteConfig)
     expect(viteConfig).toContain('import qiankun from \'vite-plugin-qiankun\'')
+
+    const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
+    await expectTransparentAjaxOutput(packageJson)
   })
 })

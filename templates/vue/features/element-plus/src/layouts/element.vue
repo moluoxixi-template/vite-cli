@@ -2,23 +2,19 @@
   <ElConfigProvider :empty-values="[undefined]">
     <div
       class="h-full h-screen!"
-      :style="`--el-color-primary: ${themeColor || '#3A77FF'};`"
+      :style="{
+        '--el-color-primary': themeColor || '#3A77FF',
+      }"
     >
       <ElContainer class="w-full h-full">
-        <ElHeader
-          class="headerbox"
-          style="padding: 0"
-          height="60"
-        >
-          <div class="w-full h-full bg-primary flex justify-center">
-            <ElMenu :default-active="defaultTab" :ellipsis="false" mode="horizontal" router>
-              <SubMenu :menu-height="60" :routes="routes" />
-            </ElMenu>
-          </div>
+        <ElHeader style="--el-header-padding: 0">
+          <ElMenu :default-active="defaultTab" :ellipsis="false" mode="horizontal" router>
+            <SubMenu :routes="routes" />
+          </ElMenu>
         </ElHeader>
         <ElMain>
           <ElContainer class="h-full w-full">
-            <ElMain style="background-color: #fff">
+            <ElMain>
               <RouterView v-slot="{ Component, route }">
                 <transition name="fade" mode="out-in">
                   <keep-alive v-if="route.meta.keep">
@@ -48,67 +44,3 @@ const systemStore = useSystemStore()
 const themeColor = computed(() => systemStore.themeColor)
 const defaultTab = computed(() => router.currentRoute.value.path)
 </script>
-
-<style lang="scss" scoped>
-:deep(.el-main) {
-  --el-main-padding: 12px !important;
-}
-.bg-primary {
-  background-color: var(--el-color-primary);
-}
-.headerbox {
-  :deep(.el-menu) {
-    background-color: var(--el-color-primary);
-
-    .el-menu-item,
-    .el-sub-menu {
-      background-color: var(--el-color-primary);
-      color: #fff !important;
-
-      .el-sub-menu__title {
-        background-color: var(--el-color-primary);
-        color: #fff !important;
-      }
-
-      &.is-active,
-      &:hover {
-        background-color: #fff;
-        color: var(--el-color-primary) !important;
-
-        .el-sub-menu__title,
-        .el-sub-menu__title:hover {
-          background-color: #fff;
-          color: var(--el-color-primary) !important;
-        }
-      }
-    }
-
-    &.el-menu--popup {
-      background-color: #fff;
-
-      .el-sub-menu,
-      .el-menu-item {
-        background-color: #fff !important;
-        color: var(--el-color-primary) !important;
-
-        .el-sub-menu__title {
-          background-color: #fff;
-          color: var(--el-color-primary) !important;
-        }
-
-        &.is-active,
-        &:hover {
-          background-color: var(--el-color-primary) !important;
-          color: #fff !important;
-
-          .el-sub-menu__title,
-          .el-sub-menu__title:hover {
-            background-color: var(--el-color-primary) !important;
-            color: #fff !important;
-          }
-        }
-      }
-    }
-  }
-}
-</style>

@@ -1,6 +1,6 @@
 <template>
   <template
-    v-for="(route, index) in props.routes"
+    v-for="(route, index) in menuRoutes"
     :key="getRouteKey(route, index)"
   >
     <ElSubMenu
@@ -11,9 +11,10 @@
       <template #title>
         {{ getRouteTitle(route) }}
       </template>
-      <div :style="`max-height: calc(100vh - ${props.menuHeight || 0}px - 30px);overflow: auto`">
-        <SubMenu :routes="route.children ?? []" />
-      </div>
+      <SubMenu
+        :parent-path="getRouteIndex(route, index)"
+        :routes="route.children ?? []"
+      />
     </ElSubMenu>
 
     <ElMenuItem
@@ -29,6 +30,7 @@
 import type { propsType, subMenuRouteType } from './types'
 
 import { ElMenuItem, ElSubMenu } from 'element-plus'
+import { computed } from 'vue'
 
 defineOptions({
   name: 'SubMenu',
@@ -37,8 +39,62 @@ defineOptions({
 
 const props = withDefaults(defineProps<propsType>(), {
   routes: () => [],
-  menuHeight: 60,
 })
+
+const menuRoutes = computed(() => createMenuTree(props.routes))
+
+function createMenuTree(routes: subMenuRouteType[]): subMenuRouteType[] {
+  const routeNodes = routes.map(route => ({
+    ...route,
+    children: route.children ? createMenuTree(route.children) : undefined,
+  }))
+  const absoluteRoutes = new Map<string, subMenuRouteType>()
+  const nestedPaths = new Set<string>()
+
+  for (const route of routeNodes) {
+    const path = normalizeAbsolutePath(route.path)
+    if (path) {
+      absoluteRoutes.set(path, route)
+    }
+  }
+
+  for (const [path, route] of absoluteRoutes) {
+    let parentPath = ''
+    for (const candidatePath of absoluteRoutes.keys()) {
+      if (
+        candidatePath !== '/'
+        && path.startsWith(`${candidatePath}/`)
+        && candidatePath.length > parentPath.length
+      ) {
+        parentPath = candidatePath
+      }
+    }
+
+    if (!parentPath) {
+      continue
+    }
+
+    const parentRoute = absoluteRoutes.get(parentPath)
+    if (parentRoute) {
+      parentRoute.children ??= []
+      parentRoute.children.push(route)
+      nestedPaths.add(path)
+    }
+  }
+
+  return routeNodes.filter((route) => {
+    const path = normalizeAbsolutePath(route.path)
+    return !path || !nestedPaths.has(path)
+  })
+}
+
+function normalizeAbsolutePath(path?: string): string {
+  if (!path?.startsWith('/')) {
+    return ''
+  }
+
+  return path.replace(/\/+/g, '/').replace(/\/$/, '') || '/'
+}
 
 function getRouteKey(route: subMenuRouteType, index: number): string {
   return route.path ?? `${index}`
@@ -51,7 +107,13 @@ function getRouteTitle(route: subMenuRouteType): string {
 }
 
 function getRouteIndex(route: subMenuRouteType, index: number): string {
-  return route.path ?? `${index}`
+  const routePath = route.path ?? `${index}`
+  if (routePath.startsWith('/')) {
+    return routePath
+  }
+
+  const parentPath = props.parentPath || '/'
+  return `${parentPath}/${routePath}`.replace(/\/+/g, '/').replace(/\/$/, '') || '/'
 }
 
 function hasChildren(route: subMenuRouteType): boolean {
