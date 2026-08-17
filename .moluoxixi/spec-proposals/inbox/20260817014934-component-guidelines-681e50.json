@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "20260817014934-component-guidelines-681e50",
+  "createdAt": "2026-08-17T01:49:34.932Z",
+  "createdBy": "wl",
+  "sourceTask": ".moluoxixi/tasks/08-14-unify-capability-and-vite-config",
+  "reason": "Preserve the verified Element Plus convention: prefer native theme contracts and avoid internal .el-* selector overrides in generated layouts.",
+  "target": "frontend/component-guidelines.md",
+  "kind": "file",
+  "baseHash": "7ca6ea4f9305a8267b7570505f9ebf6030bb5911cbe3f2a135cfb7ebd402805b",
+  "contentFile": "content/20260817014934-component-guidelines-681e50.md",
+  "contentHash": "5be7219f1286b93857c4239709668bb8fdda0c61d6da7cdd8ad1c60785ac4c8c"
+}

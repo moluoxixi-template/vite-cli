@@ -16,11 +16,12 @@ const CASES: Array<{
   routeMode: RouteModeType
   homePath: string
   homeHeading: string
+  deepPath: string
 }> = [
-  { framework: 'vue', routeMode: 'manualRoutes', homePath: '/app/home', homeHeading: '欢迎使用 Vue Template' },
-  { framework: 'vue', routeMode: 'pageRoutes', homePath: '/app/home', homeHeading: '欢迎使用 Vue Template' },
-  { framework: 'react', routeMode: 'manualRoutes', homePath: '/app', homeHeading: '欢迎使用 React Template' },
-  { framework: 'react', routeMode: 'pageRoutes', homePath: '/app/home', homeHeading: '欢迎使用 React Template' },
+  { framework: 'vue', routeMode: 'manualRoutes', homePath: '/app/home', homeHeading: '欢迎使用 Vue Template', deepPath: '/app/guide/advanced/topic' },
+  { framework: 'vue', routeMode: 'pageRoutes', homePath: '/app/home', homeHeading: '欢迎使用 Vue Template', deepPath: '/app/guide/advanced/topic' },
+  { framework: 'react', routeMode: 'manualRoutes', homePath: '/app', homeHeading: '欢迎使用 React Template', deepPath: '/app/guide/advanced/topic' },
+  { framework: 'react', routeMode: 'pageRoutes', homePath: '/app/home', homeHeading: '欢迎使用 React Template', deepPath: '/app/guide/advanced/topic' },
 ]
 
 describe.sequential('standard 项目浏览器路由', () => {
@@ -66,11 +67,20 @@ describe.sequential('standard 项目浏览器路由', () => {
         if (testCase.framework === 'vue') {
           expect(await page.locator('.el-menu').count()).toBeGreaterThan(0)
           expect(await page.locator('.app-menu').count()).toBe(0)
+          expect(await page.locator('.el-header').evaluate(element => getComputedStyle(element).padding)).toBe('0px')
+        }
+        else {
+          expect(await page.locator('.ant-menu').count()).toBeGreaterThan(0)
+          expect(await page.locator('.ant-layout-header').evaluate(element => getComputedStyle(element).padding)).toBe('0px')
         }
 
         await page.goto(new URL('/app/about', serverUrl).href)
         await page.locator('h1').getByText('关于').waitFor()
         expect(new URL(page.url()).pathname).toBe('/app/about')
+        await page.goto(new URL(testCase.deepPath, serverUrl).href)
+        await page.locator('h3').getByText('三级标题').waitFor()
+        expect(await page.getByText('三级标题', { exact: true }).count()).toBeGreaterThan(0)
+        expect(new URL(page.url()).pathname).toBe(testCase.deepPath)
         expect(pageErrors).toEqual([])
         expect(networkErrors).toEqual([])
       }

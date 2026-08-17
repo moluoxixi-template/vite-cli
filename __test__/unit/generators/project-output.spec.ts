@@ -48,6 +48,26 @@ async function readGeneratedFile(filePath: string): Promise<string> {
   return fs.readFile(path.join(tempDir, filePath), 'utf-8')
 }
 
+function expectNativeElementLayout(elementLayout: string): void {
+  expect(elementLayout).toContain('<ElConfigProvider :empty-values="[undefined]">')
+  expect(elementLayout).toContain('style="--el-header-padding: 0"')
+  expect(elementLayout).not.toContain(':namespace=')
+  expect(elementLayout).not.toContain(':deep(.el-')
+  expect(elementLayout).not.toContain('class="headerbox"')
+  expect(elementLayout).not.toContain('bg-primary')
+  expect(elementLayout).not.toContain('--el-main-padding')
+}
+
+function expectNativeElementStyles(elementStyles: string): void {
+  expect(elementStyles.trim()).toBe('@use \'element-plus/theme-chalk/src/index.scss\' as *;')
+}
+
+function expectNativeAntLayout(appContent: string): void {
+  expect(appContent).toContain('ConfigProvider theme={layoutTheme}')
+  expect(appContent).toContain('headerPadding: 0')
+  expect(appContent).toContain('label: \'三级标题\'')
+}
+
 /**
  * 收集目标项目中所有以下划线开头的目录。
  * @param rootDir 目标项目根目录
@@ -104,11 +124,10 @@ describe('普通 Vite 项目输出', () => {
     expect(mainContent).not.toContain('setupFeatures')
 
     const elementLayout = await readGeneratedFile('src/layouts/element.vue')
-    expect(elementLayout).toContain('<ElConfigProvider :empty-values="[undefined]">')
-    expect(elementLayout).not.toContain(':namespace=')
+    expectNativeElementLayout(elementLayout)
 
     const elementStyles = await readGeneratedFile('src/assets/styles/element/index.scss')
-    expect(elementStyles).not.toContain('$namespace')
+    expectNativeElementStyles(elementStyles)
 
     const viteConfig = await readGeneratedFile('vite.config.ts')
     expect(viteConfig).toContain('import vue from \'@vitejs/plugin-vue\'')
@@ -154,10 +173,10 @@ describe('普通 Vite 项目输出', () => {
     expect(await fs.pathExists(path.join(tempDir, 'src/components/SubMenu/src/types'))).toBe(true)
     expect(await fs.pathExists(path.join(tempDir, 'src/components/SubMenu/src/_types'))).toBe(false)
     const elementLayout = await readGeneratedFile('src/layouts/element.vue')
-    expect(elementLayout).toContain('<ElConfigProvider :empty-values="[undefined]">')
-    expect(elementLayout).not.toContain(':namespace=')
+    expectNativeElementLayout(elementLayout)
     const elementStyles = await readGeneratedFile('src/assets/styles/element/index.scss')
-    expect(elementStyles).not.toContain('$namespace')
+    expectNativeElementStyles(elementStyles)
+    expect(await fs.pathExists(path.join(tempDir, 'src/assets/styles/element/fixQiankun.scss'))).toBe(false)
     const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
     expect(packageJson.scripts).not.toHaveProperty('lint:eslint')
     expect(await fs.pathExists(path.join(tempDir, 'eslint.config.ts'))).toBe(false)
@@ -186,6 +205,9 @@ describe('普通 Vite 项目输出', () => {
     expect(mainContent).not.toContain('__POWERED_BY_QIANKUN__')
     expect(mainContent).not.toContain('startTransition')
     expect(await fs.pathExists(path.join(tempDir, 'src/main.ts'))).toBe(false)
+
+    const appContent = await readGeneratedFile('src/App.tsx')
+    expectNativeAntLayout(appContent)
 
     const viteConfig = await readGeneratedFile('vite.config.ts')
     expect(viteConfig).toContain('import react from \'@vitejs/plugin-react\'')
@@ -231,6 +253,9 @@ describe('普通 Vite 项目输出', () => {
     expect(mainContent).toContain('root?.unmount()')
     expect(mainContent).toContain('root = null')
     expect(await fs.pathExists(path.join(tempDir, 'src/types/qiankun.ts'))).toBe(true)
+
+    const appContent = await readGeneratedFile('src/App.tsx')
+    expectNativeAntLayout(appContent)
 
     const viteConfig = await readGeneratedFile('vite.config.ts')
     expect(viteConfig).toContain('import qiankun from \'vite-plugin-qiankun\'')
