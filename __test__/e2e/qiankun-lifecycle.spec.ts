@@ -79,6 +79,12 @@ async function verifyQiankunLifecycle(
       server: {
         host: '127.0.0.1',
         port: 0,
+        fs: {
+          strict: false,
+        },
+      },
+      watch: {
+        usePolling: process.platform === 'win32',
       },
     })
     await hostServer.listen()
@@ -219,16 +225,23 @@ async function createGeneratedViteServer(
   projectDir: string,
   framework: FrameworkType,
 ): Promise<ViteDevServer> {
-  const viteEntry = path.join(projectDir, 'node_modules', 'vite', 'dist', 'node', 'index.js')
+  const resolvedProjectDir = await fs.realpath(projectDir)
+  const viteEntry = path.join(resolvedProjectDir, 'node_modules', 'vite', 'dist', 'node', 'index.js')
   const generatedVite = await import(pathToFileURL(viteEntry).href) as {
     createServer: typeof createServer
   }
   const server = await generatedVite.createServer({
-    root: projectDir,
+    root: resolvedProjectDir,
     logLevel: 'error',
     server: {
       host: '127.0.0.1',
       port: 0,
+      fs: {
+        strict: false,
+      },
+    },
+    watch: {
+      usePolling: process.platform === 'win32',
     },
   })
   await server.listen()
