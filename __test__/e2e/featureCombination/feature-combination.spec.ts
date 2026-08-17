@@ -127,7 +127,9 @@ function createFrameworkTests(frameworkName: string, configs: typeof TEST_CONFIG
         })
 
         afterAll(async () => {
-          if (projectDir) {
+          // Windows CI 删除完整 pnpm node_modules 可能长期占用文件句柄；一次性 Runner 会回收临时目录。
+          const shouldCleanup = process.platform !== 'win32' || !process.env.CI
+          if (projectDir && shouldCleanup) {
             await cleanupTempDir(projectDir)
           }
         })
