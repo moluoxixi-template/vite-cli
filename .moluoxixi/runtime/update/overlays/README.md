@@ -1,11 +1,16 @@
 # Moluoxixi Package Overlays
 
-This directory contains role-local changes layered over synchronized upstream package sources.
+This directory contains runtime template replacements and additions consumed by
+the role-local initializer.
 
 ```text
-upstream source                         role-local overlay
 ../packages/cli/src/templates/<path> -> packages/cli/src/templates/overrides/<path>
 new template target <path>           -> packages/cli/src/templates/additions/<path>
 ```
 
-`manifest.json` records every payload file, its target path, capability ownership, and SHA-256 integrity data. Overrides and additions stay outside `../packages/cli` because that package is synchronized as an upstream merge boundary; the synchronization script rebases this overlay tree separately.
+`manifest.json` records every payload file, target path, capability owner, source
+hash, and overlay hash. The initializer validates the manifest before building a
+plan and installs this directory with the role for offline project updates.
+
+Repository maintenance metadata does not belong here. Upstream package baselines,
+AI review rules, and generated diff reports live under `/.sync/moluoxixi`.

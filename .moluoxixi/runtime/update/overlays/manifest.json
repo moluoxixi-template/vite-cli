@@ -1,6 +1,5 @@
 {
   "schemaVersion": 1,
-  "upstreamRevision": "d8fff53ce4964ed1a3e52fea6b418b27eba093e4",
   "overrides": [
     {
       "source": "common/bundled-skills/trellis-meta/references/customize-local/add-project-local-conventions.md",
