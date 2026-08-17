@@ -3,3 +3,5 @@
 {"schemaVersion":1,"at":"2026-08-14T22:46:12.648Z","type":"proposed","proposalId":"20260814224612-scaffolding-capabilities-10c6fb","target":"backend/scaffolding-capabilities.md"}
 {"schemaVersion":1,"at":"2026-08-17T01:49:34.937Z","type":"proposed","proposalId":"20260817014934-component-guidelines-681e50","target":"frontend/component-guidelines.md"}
 {"schemaVersion":1,"at":"2026-08-17T02:43:42.749Z","type":"proposed","proposalId":"20260817024342-component-guidelines-808698","target":"element-plus/frontend/component-guidelines.md"}
+{"schemaVersion":1,"at":"2026-08-17T08:20:44.434Z","type":"proposed","proposalId":"20260817082044-generated-project-ci-thinking-gu-37e3f3","target":"guides/generated-project-ci-thinking-guide.md"}
+{"schemaVersion":1,"at":"2026-08-17T08:20:44.856Z","type":"proposed","proposalId":"20260817082044-index-4baca7","target":"guides/index.md"}
