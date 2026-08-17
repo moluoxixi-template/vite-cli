@@ -149,8 +149,9 @@ async function verifyGeneratedContract(config: ProjectConfigType): Promise<void>
   if (config.eslint) {
     const eslintConfig = await fs.readFile(eslintConfigPath, 'utf-8')
     expect(eslintConfig).toContain('from \'@moluoxixi/eslint-config\'')
-    expect(eslintConfig).toContain(`vue: ${config.framework === 'vue'}`)
-    expect(eslintConfig).toContain(`react: ${config.framework === 'react'}`)
+    expect(eslintConfig).not.toContain('vue:')
+    expect(eslintConfig).not.toContain('react:')
+    expect(eslintConfig).not.toContain('formatters:')
     expect(eslintConfig).not.toContain(".removeRules('vue/block-order')")
     expect(eslintConfig).not.toContain('typescript:')
     expect(eslintConfig).not.toContain('eslint-plugin-vue')
@@ -207,7 +208,13 @@ async function runGeneratedSourceLint(projectDir: string): Promise<void> {
   expect(lintPaths.length).toBeGreaterThan(0)
   await runChecked(
     'eslint',
-    ['--no-ignore', '--no-warn-ignored', ...lintPaths],
+    [
+      '--config',
+      path.join(repositoryRoot, 'eslint.config.ts'),
+      '--no-ignore',
+      '--no-warn-ignored',
+      ...lintPaths,
+    ],
     repositoryRoot,
     'shared generated-source lint',
   )
