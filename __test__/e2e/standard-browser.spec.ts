@@ -2,6 +2,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { execa } from 'execa'
+import fs from 'fs-extra'
 import { chromium } from 'playwright'
 import type { Browser, Page } from 'playwright'
 import type { createServer, ViteDevServer } from 'vite'
@@ -156,16 +157,23 @@ async function createGeneratedViteServer(
   projectDir: string,
   framework: FrameworkType,
 ): Promise<ViteDevServer> {
-  const viteEntry = path.join(projectDir, 'node_modules', 'vite', 'dist', 'node', 'index.js')
+  const resolvedProjectDir = await fs.realpath(projectDir)
+  const viteEntry = path.join(resolvedProjectDir, 'node_modules', 'vite', 'dist', 'node', 'index.js')
   const generatedVite = await import(pathToFileURL(viteEntry).href) as {
     createServer: typeof createServer
   }
   const server = await generatedVite.createServer({
-    root: projectDir,
+    root: resolvedProjectDir,
     logLevel: 'silent',
     server: {
       host: '127.0.0.1',
       port: 0,
+      fs: {
+        strict: false,
+      },
+    },
+    watch: {
+      usePolling: process.platform === 'win32',
     },
   })
   await server.listen()
