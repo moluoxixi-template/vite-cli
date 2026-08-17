@@ -1,9 +1,6 @@
 import eslintConfig from '@moluoxixi/eslint-config'
 
 export default eslintConfig({
-  vue: false,
-  react: true,
-  formatters: true,
   ignores: [],
   rules: {
     //#region 不能在定义前使用变量
