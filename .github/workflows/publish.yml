@@ -183,5 +183,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # 构建项目并发布到 npm
       # prepublishOnly 脚本会自动执行构建（在 package.json 中配置）
-      # --no-git-checks: 跳过 git 检查，允许在工作流中发布（因为可能是在 CI 环境中）
-      - run: pnpm publish:public --no-git-checks
+      - run: pnpm publish:public
