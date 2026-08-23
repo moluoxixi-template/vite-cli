@@ -157,38 +157,58 @@ channel:
 # prompt_injection:
 #   skip_keyword: "no-trellis"   # "" disables the escape hatch entirely
 
-# Migrated reviewed package map from the previous project configuration.
+# Auto-detected monorepo packages
 packages:
   vite-cli-test:
     path: __test__
-  ant-design:
-    path: templates/react/features/ant-design
-  ant-design-vue:
-    path: templates/vue/features/ant-design-vue
-  base:
-    path: templates/react/micro-frontends/qiankun/base
-  element-plus:
-    path: templates/vue/micro-frontends/qiankun/features/element-plus
+  project:
+    path: templates/common/base
   eslint:
     path: templates/common/features/eslint
   husky:
     path: templates/common/features/husky
+  vue-project:
+    path: templates/vue/base
+  ant-design-vue:
+    path: templates/vue/features/ant-design-vue
+  vue-element-plus-feature:
+    path: templates/vue/features/element-plus
+  vue-eslint:
+    path: templates/vue/features/eslint
+  vue-i18n:
+    path: templates/vue/features/i18n
+  vue-manual-routes:
+    path: templates/vue/features/manualRoutes
+  vue-page-routes:
+    path: templates/vue/features/pageRoutes
+  pinia:
+    path: templates/vue/features/pinia
+  vue-sentry:
+    path: templates/vue/features/sentry
+  vue-qiankun-base:
+    path: templates/vue/micro-frontends/qiankun/base
+  element-plus:
+    path: templates/vue/micro-frontends/qiankun/features/element-plus
+  vue-qiankun-manual-routes:
+    path: templates/vue/micro-frontends/qiankun/features/manualRoutes
+  vue-qiankun-page-routes:
+    path: templates/vue/micro-frontends/qiankun/features/pageRoutes
+  react-project:
+    path: templates/react/base
+  ant-design:
+    path: templates/react/features/ant-design
+  react-eslint:
+    path: templates/react/features/eslint
   i18n:
     path: templates/react/features/i18n
   manualRoutes:
     path: templates/react/features/manualRoutes
   pageRoutes:
     path: templates/react/features/pageRoutes
-  pinia:
-    path: templates/vue/features/pinia
-  project:
-    path: templates/common/base
-  react-project:
-    path: templates/react/base
   sentry:
     path: templates/react/features/sentry
-  vue-project:
-    path: templates/vue/base
   zustand:
     path: templates/react/features/zustand
-default_package: "@moluoxixi/vite-cli-test"
+  base:
+    path: templates/react/micro-frontends/qiankun/base
+default_package: vite-cli-test
