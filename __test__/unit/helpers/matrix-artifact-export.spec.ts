@@ -60,6 +60,9 @@ describe('matrix artifact export', () => {
     expect(stackblitz.files).not.toHaveProperty('pnpm-lock.yaml')
     expect(stackblitz.files).not.toHaveProperty('dist/index.html')
     expect(stackblitz.files).not.toHaveProperty('tsconfig.app.tsbuildinfo')
+    expect(stackblitz.files['.env']?.match(/^VITE_APP_CODE=.*$/gm)).toEqual(['VITE_APP_CODE='])
+    expect(JSON.parse(stackblitz.files['.stackblitzrc'])).toEqual({ startCommand: 'npm run dev' })
+    expect(JSON.parse(stackblitz.files['package.json']).scripts.dev).toBe('vite')
     expect(metadata.config).not.toHaveProperty('targetDir')
     expect(metadata.urls.demo).toBe(`demos/${metadata.slug}/`)
     expect(metadata.urls.download).toBe(`downloads/vite-template-${metadata.slug}.zip`)
@@ -74,6 +77,18 @@ describe('matrix artifact export', () => {
     await expect(
       createStackBlitzProject(projectDir, createConfig(projectDir), entries),
     ).rejects.toThrow('src/binary.dat')
+  })
+
+  it('把重复的 app code 归一化为唯一根路径配置', async () => {
+    await fs.outputFile(path.join(projectDir, '.env'), [
+      'VITE_APP_CODE=legacy',
+      'VITE_APP_TITLE=Fixture',
+      'VITE_APP_CODE=app',
+    ].join('\n'))
+
+    const stackblitz = await createStackBlitzProject(projectDir, createConfig(projectDir))
+
+    expect(stackblitz.files['.env']?.match(/^VITE_APP_CODE=.*$/gm)).toEqual(['VITE_APP_CODE='])
   })
 
   it('稳定排序源码路径并排除安装与构建目录', async () => {

@@ -132,7 +132,37 @@ export function parseStackBlitzProjectPayload(value: unknown): StackBlitzProject
     || !Object.values(value.files).every(file => typeof file === 'string')) {
     throw new TypeError('StackBlitz 项目数据格式无效')
   }
+  assertStackBlitzRuntimeContract(value.files as Record<string, string>)
   return value as unknown as StackBlitzProjectPayload
+}
+
+function assertStackBlitzRuntimeContract(files: Record<string, string>): void {
+  const packageJsonContent = files['package.json']
+  const envFile = files['.env']
+  const stackblitzConfig = files['.stackblitzrc']
+  if (packageJsonContent === undefined || envFile === undefined || stackblitzConfig === undefined) {
+    throw new TypeError('StackBlitz 项目缺少运行配置')
+  }
+
+  try {
+    const packageJson = JSON.parse(packageJsonContent) as { scripts?: Record<string, unknown> }
+    const config = JSON.parse(stackblitzConfig) as { startCommand?: unknown }
+    const appCodeEntries = envFile
+      .split(/\r?\n/)
+      .filter(line => line.startsWith('VITE_APP_CODE='))
+    if (typeof packageJson.scripts?.dev !== 'string'
+      || config.startCommand !== 'npm run dev'
+      || appCodeEntries.length !== 1
+      || appCodeEntries[0] !== 'VITE_APP_CODE=') {
+      throw new TypeError('StackBlitz 项目运行配置无效')
+    }
+  }
+  catch (error) {
+    if (error instanceof TypeError && error.message === 'StackBlitz 项目运行配置无效') {
+      throw error
+    }
+    throw new TypeError('StackBlitz 项目运行配置无法解析', { cause: error })
+  }
 }
 
 function isTemplateGalleryEntry(value: unknown): boolean {

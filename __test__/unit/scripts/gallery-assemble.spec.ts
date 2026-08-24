@@ -37,7 +37,11 @@ describe('gallery assembler', () => {
       title: slug,
       description: 'fixture',
       template: 'node',
-      files: { 'package.json': '{}' },
+      files: {
+        '.env': 'VITE_APP_CODE=\n',
+        '.stackblitzrc': '{"startCommand":"npm run dev"}',
+        'package.json': '{"scripts":{"dev":"vite"}}',
+      },
     })
     await fs.outputJson(path.join(entryDir, 'metadata.json'), metadata)
 

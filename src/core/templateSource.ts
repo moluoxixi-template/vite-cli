@@ -81,12 +81,42 @@ export async function createStackBlitzProject(
     }
   }
 
+  prepareStackBlitzFiles(files)
+
   return {
     title: config.projectName,
     description: config.description,
     template: 'node',
     files,
   }
+}
+
+function prepareStackBlitzFiles(files: Record<string, string>): void {
+  const envFile = files['.env']
+  if (envFile === undefined) {
+    throw new TypeError('StackBlitz 项目缺少 .env')
+  }
+
+  const packageJsonContent = files['package.json']
+  if (packageJsonContent === undefined) {
+    throw new TypeError('StackBlitz 项目缺少 package.json')
+  }
+  const packageJson = JSON.parse(packageJsonContent) as {
+    scripts?: Record<string, unknown>
+  }
+  if (typeof packageJson.scripts?.dev !== 'string') {
+    throw new TypeError('StackBlitz 项目缺少 dev script')
+  }
+
+  files['.env'] = setEnvironmentVariable(envFile, 'VITE_APP_CODE', '')
+  files['.stackblitzrc'] = `${JSON.stringify({ startCommand: 'npm run dev' }, null, 2)}\n`
+}
+
+function setEnvironmentVariable(content: string, name: string, value: string): string {
+  const lines = content.split(/\r?\n/).filter(line => !line.startsWith(`${name}=`))
+  const entry = `${name}=${value}`
+  lines.push(entry)
+  return lines.join('\n')
 }
 
 async function collectDirectoryEntries(
