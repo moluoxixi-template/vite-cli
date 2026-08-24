@@ -78,7 +78,7 @@ GitHub Pages 发布站点存在 1 GB 上限。部署前必须输出总大小、D
 - [ ] 主界面条目数量与当前完整合法矩阵一致，当前为 384，且每个 slug 唯一。
 - [ ] 384 个条目都具有独立且可访问的 `/demos/<slug>/`，资源路径不会落到共享 `/app/` 或其他组合目录。
 - [ ] 384 个条目都能下载对应源码 ZIP；抽检 ZIP 不含 `node_modules`、`dist`、`.git`，并含项目源码、`package.json` 和对应 lockfile。
-- [ ] 384 个条目都能在新标签页打开 StackBlitz；项目文件、依赖和 dev script 可加载，且无需站点 Token。
+- [ ] 384 个条目都能在新标签页打开 StackBlitz；项目文件、依赖和 dev script 可加载，Preview 根路径能渲染应用，且无需站点 Token。
 - [ ] 搜索、全部筛选项、分页、清空筛选和 URL query 状态在桌面及移动端可用。
 - [ ] 每条结果直接提供 Demo、ZIP、StackBlitz 三个操作，没有额外详情页。
 - [ ] full-matrix 的生成、lint、type-check、build 和制品导出共享同一次组合执行，未复制第二份矩阵定义。

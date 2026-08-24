@@ -84,6 +84,7 @@ TEMPLATE_GALLERY_BASE_PATH=/<repository-name>/
 - A matrix entry is exported only after generate, install, type-check, lint, build, and build-output verification succeed.
 - Each concurrent combination writes only to `entries/<slug>/` and produces `demo/`, `source.zip`, `stackblitz.json`, and `metadata.json`.
 - Source ZIP and StackBlitz files use the same sorted source-entry collection. ZIP keeps lockfiles and `.env`; StackBlitz omits package-manager lockfiles because its WebContainer installs from `package.json`. Both exclude `node_modules`, `dist`, `.git`, caches, logs, and generated Husky internals.
+- StackBlitz payloads are runtime-specific derivatives, not byte-for-byte ZIP mirrors. Set `VITE_APP_CODE` to an empty value so Vite and the application router serve from `/`, and include `.stackblitzrc` with `{"startCommand":"npm run dev"}`. Preserve the original `.env` in ZIP downloads.
 - Public URLs use the slug, never shard indexes or random temporary directories.
 - The Pages assembler validates the expected slug set, shard count, commit, artifact presence, artifact sizes, and total site-size threshold before upload.
 
@@ -97,6 +98,9 @@ TEMPLATE_GALLERY_BASE_PATH=/<repository-name>/
 | Entry commit differs from the workflow head SHA | Fail assembly |
 | Demo, ZIP, or StackBlitz payload is missing or empty | Fail assembly |
 | Source file cannot be decoded as UTF-8 for StackBlitz | Fail export and include the relative path |
+| StackBlitz payload lacks `.env`, `package.json`, a string `scripts.dev`, or `.stackblitzrc` | Fail export / assembly |
+| StackBlitz payload keeps a non-empty `VITE_APP_CODE` | Fail validation; the default Preview opens `/`, not the generated subpath |
+| StackBlitz `startCommand` differs from `npm run dev` | Fail validation |
 | Site exceeds the configured Pages size threshold | Fail before `upload-pages-artifact` |
 | `MATRIX_EXPORT_DIR` is absent | Preserve the ordinary matrix test behavior and emit no artifacts |
 
@@ -111,9 +115,11 @@ TEMPLATE_GALLERY_BASE_PATH=/<repository-name>/
 
 - Unit: current combination count, legal normalization, and slug uniqueness.
 - Unit: ZIP exclusions, lockfile preservation, UTF-8 rejection, and metadata without `targetDir`.
+- Unit: StackBlitz `.env` uses an empty app code, `.stackblitzrc` selects `npm run dev`, and `package.json.scripts.dev` remains present.
 - Unit: assembler shard count, expected slug set, commit equality, artifact completeness, recomputed sizes, and capacity failure.
 - Unit: parse workflow YAML and assert shard list, unique artifact names, cross-run download inputs, and minimum Pages permissions.
 - Smoke: run one real matrix combination with export enabled and assert Demo, ZIP, StackBlitz, and metadata are produced after a successful build.
+- Browser E2E: materialize a fresh project only from the StackBlitz `files` map, install dependencies, start the payload's dev server, request `/`, and assert a real framework menu/title renders without page or network errors. Opening the StackBlitz editor alone is not sufficient.
 - Remote: the complete matrix remains the authoritative all-combination validation.
 
 ### 7. Wrong vs Correct

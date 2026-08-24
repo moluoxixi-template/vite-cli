@@ -80,6 +80,8 @@ StackBlitzSDK.openProject(project, {
 
 StackBlitz project 使用 `template: 'node'`，`files` 包含生成后的 `package.json`，依赖不重复写入 SDK 的 EngineBlock `dependencies` 字段。
 
+StackBlitz Preview 默认打开服务根路径，因此载荷对生成源码执行专用变换：`.env` 中 `VITE_APP_CODE` 置空，使 Vite base 和 Vue/React router base 都为 `/`；新增 `.stackblitzrc` 并显式设置 `startCommand: npm run dev`。该变换不写回 ZIP 或 Pages Demo。
+
 ## Workflow Boundaries
 
 `.github/workflows/publish.yml` 的 full-matrix job 继续负责验证并上传 12 份唯一命名的 shard artifact。新增 Pages workflow 监听已完成且未取消的 Publish workflow，通过 `run-id` 下载同一提交的 shard artifacts，checkout 对应 `head_sha` 构建 gallery，汇总并部署。即使 npm release 独立失败，只要 12 个 shard 全部存在且通过汇总校验，展厅仍可发布；矩阵失败时缺失 shard 会阻止 Pages 部署。

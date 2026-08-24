@@ -3,6 +3,7 @@
 1. 提取可复用的合法矩阵枚举与 `v1` slug 生成逻辑，让现有测试生成器和 Pages 导出共享同一数据源；补充组合数量、字段映射和 slug 唯一性单测。
 2. 为 full-matrix 增加由 `MATRIX_EXPORT_DIR` 控制的可选导出能力：独立 Demo base、源码 ZIP、StackBlitz 文本清单和 metadata；保持未设置环境变量时的现有测试行为。
 3. 增加导出单测，覆盖 ZIP 排除项、lockfile 保留、StackBlitz 文本文件校验、metadata 完整性和并发目录隔离。
+   - StackBlitz 载荷必须额外覆盖根路径 base、显式 startCommand，并通过“载荷重新物化 → install → dev server → browser render”的运行 E2E。
 4. 新增 `gallery/` Vue 3 应用，使用 Element Plus 原生组件和 `@lucide/vue` 图标完成搜索、分面筛选、分页、URL query 同步以及 Demo/ZIP/StackBlitz 三个操作。
 5. 增加 gallery 的类型检查、lint、单元测试和构建脚本；为最长组合名称、窄屏筛选、空结果、加载失败和 StackBlitz 弹窗受阻状态提供完整 UI。
 6. 修改 Publish full-matrix job：为 12 个 shard 设置独立导出目录，并在成功后上传唯一命名的中间 artifacts。
