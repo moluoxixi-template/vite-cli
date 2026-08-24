@@ -82,9 +82,9 @@ async function verifyQiankunLifecycle(
         fs: {
           strict: false,
         },
-      },
-      watch: {
-        usePolling: process.platform === 'win32',
+        watch: {
+          usePolling: process.platform === 'win32',
+        },
       },
     })
     await hostServer.listen()
@@ -239,9 +239,9 @@ async function createGeneratedViteServer(
       fs: {
         strict: false,
       },
-    },
-    watch: {
-      usePolling: process.platform === 'win32',
+      watch: {
+        usePolling: process.platform === 'win32',
+      },
     },
   })
   await server.listen()

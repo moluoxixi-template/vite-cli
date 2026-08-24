@@ -203,7 +203,7 @@ describe('普通 Vite 项目输出', () => {
     expect(eslintConfig).not.toContain('vue:')
     expect(eslintConfig).not.toContain('react:')
     expect(eslintConfig).not.toContain('formatters:')
-    expect(eslintConfig).not.toContain(".removeRules('vue/block-order')")
+    expect(eslintConfig).not.toContain('.removeRules(\'vue/block-order\')')
     expect(eslintConfig).not.toContain('typescript:')
     expect(eslintConfig).not.toContain('eslint-plugin-vue')
 
@@ -278,7 +278,7 @@ describe('普通 Vite 项目输出', () => {
     expect(eslintConfig).not.toContain('vue:')
     expect(eslintConfig).not.toContain('react:')
     expect(eslintConfig).not.toContain('formatters:')
-    expect(eslintConfig).not.toContain(".removeRules('vue/block-order')")
+    expect(eslintConfig).not.toContain('.removeRules(\'vue/block-order\')')
     expect(eslintConfig).not.toContain('typescript:')
 
     const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
