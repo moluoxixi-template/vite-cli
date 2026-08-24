@@ -15,7 +15,7 @@ import type { ProjectConfigType } from '@/types'
 import { cleanupTempDir, createTempDir } from '@test/test-utils'
 
 describe.sequential('stackBlitz 载荷运行契约', () => {
-  it('从文本载荷重新创建的项目可在根路径运行', async () => {
+  it.skipIf(process.platform === 'win32')('从文本载荷重新创建的项目可在根路径运行', async () => {
     const generatedDir = await createTempDir('vite-cli-stackblitz-source-')
     const payloadDir = await createTempDir('vite-cli-stackblitz-payload-')
     let browser: Browser | undefined

@@ -119,7 +119,7 @@ TEMPLATE_GALLERY_BASE_PATH=/<repository-name>/
 - Unit: assembler shard count, expected slug set, commit equality, artifact completeness, recomputed sizes, and capacity failure.
 - Unit: parse workflow YAML and assert shard list, unique artifact names, cross-run download inputs, and minimum Pages permissions.
 - Smoke: run one real matrix combination with export enabled and assert Demo, ZIP, StackBlitz, and metadata are produced after a successful build.
-- Browser E2E: materialize a fresh project only from the StackBlitz `files` map, install dependencies, start the payload's dev server, request `/`, and assert a real framework menu/title renders without page or network errors. Opening the StackBlitz editor alone is not sufficient.
+- Browser E2E: on Linux/macOS (the WebContainer-compatible validation runners), materialize a fresh project only from the StackBlitz `files` map, install dependencies, start the payload's dev server, request `/`, and assert a real framework menu/title renders without page or network errors. Opening the StackBlitz editor alone is not sufficient. The payload source and all repository quality gates still run on Windows; only this WebContainer runtime smoke is skipped there because its browser/Vite child-process behavior is platform-specific.
 - Remote: the complete matrix remains the authoritative all-combination validation.
 
 ### 7. Wrong vs Correct
