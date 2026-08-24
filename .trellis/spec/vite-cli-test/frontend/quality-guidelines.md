@@ -49,3 +49,90 @@ Questions to answer:
 <!-- What reviewers should check -->
 
 (To be filled by the team)
+
+---
+
+## Scenario: Exporting The Capability Matrix To Static Artifacts
+
+### 1. Scope / Trigger
+
+Apply this contract when a test, release workflow, documentation site, or other consumer needs generated projects for every supported capability combination. It prevents a hand-maintained gallery or download list from drifting away from the CLI's executable matrix.
+
+### 2. Signatures
+
+The shared production boundary is:
+
+```typescript
+generateConfigMatrix(options?: ConfigMatrixOptions): ConfigMatrixEntry[]
+createConfigMatrixSlug(config: ConfigMatrixEntry['config']): string
+```
+
+The quality matrix may enable artifact export with these environment keys:
+
+```text
+MATRIX_SHARD_COUNT=<positive integer>
+MATRIX_SHARD_INDEX=<integer in 0..count-1>
+MATRIX_EXPORT_DIR=<absolute or workspace-relative output directory>
+TEMPLATE_GALLERY_BASE_PATH=/<repository-name>/
+```
+
+### 3. Contracts
+
+- `src/core/capabilities.ts` remains the only capability registry.
+- `src/core/configMatrix.ts` owns legal combination enumeration and stable public slugs.
+- Test helpers may re-export the production matrix API; they must not copy its Cartesian-product implementation.
+- A matrix entry is exported only after generate, install, type-check, lint, build, and build-output verification succeed.
+- Each concurrent combination writes only to `entries/<slug>/` and produces `demo/`, `source.zip`, `stackblitz.json`, and `metadata.json`.
+- Source ZIP and StackBlitz files use the same sorted source-entry collection. ZIP keeps lockfiles and `.env`; StackBlitz omits package-manager lockfiles because its WebContainer installs from `package.json`. Both exclude `node_modules`, `dist`, `.git`, caches, logs, and generated Husky internals.
+- Public URLs use the slug, never shard indexes or random temporary directories.
+- The Pages assembler validates the expected slug set, shard count, commit, artifact presence, artifact sizes, and total site-size threshold before upload.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required behavior |
+|---|---|
+| Shard index is outside the shard count | Throw before generating projects |
+| Two entries resolve to the same slug | Fail assembly; never overwrite |
+| A shard or expected slug is missing | Fail assembly; never deploy a partial site |
+| Entry commit differs from the workflow head SHA | Fail assembly |
+| Demo, ZIP, or StackBlitz payload is missing or empty | Fail assembly |
+| Source file cannot be decoded as UTF-8 for StackBlitz | Fail export and include the relative path |
+| Site exceeds the configured Pages size threshold | Fail before `upload-pages-artifact` |
+| `MATRIX_EXPORT_DIR` is absent | Preserve the ordinary matrix test behavior and emit no artifacts |
+
+### 5. Good / Base / Bad Cases
+
+- Good: a 12-shard Publish run exports unique artifacts, then one Pages workflow assembles the complete manifest from the same workflow run and commit.
+- Base: local matrix tests omit `MATRIX_EXPORT_DIR`; they continue to build with the template's normal `/app/` base.
+- Bad: a gallery script hard-codes 384 records or regenerates combinations independently from `generateConfigMatrix()`.
+- Bad: a workflow deploys whichever shards happen to exist after a matrix failure.
+
+### 6. Tests Required
+
+- Unit: current combination count, legal normalization, and slug uniqueness.
+- Unit: ZIP exclusions, lockfile preservation, UTF-8 rejection, and metadata without `targetDir`.
+- Unit: assembler shard count, expected slug set, commit equality, artifact completeness, recomputed sizes, and capacity failure.
+- Unit: parse workflow YAML and assert shard list, unique artifact names, cross-run download inputs, and minimum Pages permissions.
+- Smoke: run one real matrix combination with export enabled and assert Demo, ZIP, StackBlitz, and metadata are produced after a successful build.
+- Remote: the complete matrix remains the authoritative all-combination validation.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```typescript
+const galleryTemplates = [
+  { framework: 'vue', routeMode: 'pageRoutes' },
+  // A second capability list that will drift.
+]
+```
+
+#### Correct
+
+```typescript
+const entries = generateConfigMatrix()
+for (const entry of entries) {
+  const slug = createConfigMatrixSlug(entry.config)
+  // Export only after this entry's quality gates pass.
+}
+```

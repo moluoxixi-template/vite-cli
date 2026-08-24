@@ -1,0 +1,31 @@
+{
+  "id": "github-pages-template-gallery",
+  "name": "github-pages-template-gallery",
+  "title": "GitHub Pages 全量模板展厅",
+  "description": "基于完整能力矩阵生成并部署 GitHub Pages 模板展厅，为每个组合提供独立 Demo、源码 ZIP 和 StackBlitz 入口。",
+  "status": "in_progress",
+  "dev_type": "feature",
+  "scope": "github-pages-template-gallery",
+  "package": "vite-cli-test",
+  "priority": "P2",
+  "creator": "wl",
+  "assignee": "wl",
+  "createdAt": "2026-08-24",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "src/core/capabilities.ts",
+    "__test__/e2e/featureCombination/helpers/test-config-generator.ts",
+    "__test__/e2e/full-matrix.spec.ts",
+    ".github/workflows/publish.yml"
+  ],
+  "notes": "",
+  "meta": {}
+}
