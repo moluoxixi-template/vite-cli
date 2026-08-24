@@ -23,6 +23,7 @@
     "@types/node": "catalog:type",
     "@vitest/coverage-v8": "^4.0.17",
     "@vitest/ui": "^4.0.17",
+    "compressing": "catalog:",
     "execa": "^9.6.1",
     "fs-extra": "catalog:build",
     "playwright": "^1.62.1",
@@ -30,6 +31,7 @@
     "single-spa": "^5.9.2",
     "typescript": "catalog:dev",
     "vite": "catalog:dev",
-    "vitest": "^4.0.17"
+    "vitest": "^4.0.17",
+    "yaml": "catalog:dev"
   }
 }

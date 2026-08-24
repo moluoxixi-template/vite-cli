@@ -5,6 +5,11 @@ import { execa } from 'execa'
 import fs from 'fs-extra'
 import { describe, expect, it } from 'vitest'
 
+import { createConfigMatrixSlug } from '@/core/configMatrix'
+import {
+  createTemplateDemoAppCode,
+  DEFAULT_TEMPLATE_GALLERY_BASE_PATH,
+} from '@/core/templateGallery'
 import { generateProject } from '@/generators/project'
 import type { PackageManagerType, ProjectConfigType } from '@/types'
 import {
@@ -12,11 +17,14 @@ import {
   createTempDir,
   TRANSPARENT_AJAX_SOURCE_FILES,
 } from '@test/test-utils'
+import { exportMatrixArtifacts } from '@test/matrix-artifact-export'
 import { generateTestConfigs } from './featureCombination/helpers/test-config-generator'
 
 const ALL_CONFIGS = generateTestConfigs()
 const MATRIX_CONFIGS = selectShard(ALL_CONFIGS)
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
+const matrixExportRoot = process.env.MATRIX_EXPORT_DIR
+const galleryBasePath = process.env.TEMPLATE_GALLERY_BASE_PATH || DEFAULT_TEMPLATE_GALLERY_BASE_PATH
 
 describe.concurrent('全部合法组合可执行矩阵', () => {
   for (const testConfig of MATRIX_CONFIGS) {
@@ -27,6 +35,10 @@ describe.concurrent('全部合法组合可执行矩阵', () => {
         ...testConfig.config,
         targetDir: projectDir,
       }
+      const slug = createConfigMatrixSlug(testConfig.config)
+      const demoAppCode = matrixExportRoot
+        ? createTemplateDemoAppCode(slug, galleryBasePath)
+        : undefined
 
       try {
         await generateProject(config)
@@ -41,8 +53,23 @@ describe.concurrent('全部合法组合可执行矩阵', () => {
           await runGeneratedSourceLint(projectDir)
         }
 
-        await runScript(config.packageManager, 'build', projectDir)
-        await verifyBuildOutput(projectDir)
+        await runScript(
+          config.packageManager,
+          'build',
+          projectDir,
+          demoAppCode ? { VITE_APP_CODE: demoAppCode } : undefined,
+        )
+        await verifyBuildOutput(projectDir, demoAppCode ? `/${demoAppCode}/` : '/app/')
+
+        if (matrixExportRoot) {
+          await exportMatrixArtifacts({
+            projectDir,
+            exportRoot: matrixExportRoot,
+            slug,
+            config,
+            commit: process.env.GITHUB_SHA || 'local',
+          })
+        }
       }
       finally {
         await cleanupTempDir(projectDir)
@@ -152,7 +179,7 @@ async function verifyGeneratedContract(config: ProjectConfigType): Promise<void>
     expect(eslintConfig).not.toContain('vue:')
     expect(eslintConfig).not.toContain('react:')
     expect(eslintConfig).not.toContain('formatters:')
-    expect(eslintConfig).not.toContain(".removeRules('vue/block-order')")
+    expect(eslintConfig).not.toContain('.removeRules(\'vue/block-order\')')
     expect(eslintConfig).not.toContain('typescript:')
     expect(eslintConfig).not.toContain('eslint-plugin-vue')
     if (config.framework === 'react') {
@@ -175,11 +202,11 @@ async function verifyGeneratedContract(config: ProjectConfigType): Promise<void>
   }
 }
 
-async function verifyBuildOutput(projectDir: string): Promise<void> {
+async function verifyBuildOutput(projectDir: string, basePath: string): Promise<void> {
   const distDir = path.join(projectDir, 'dist')
   const indexPath = path.join(distDir, 'index.html')
   expect(await fs.pathExists(indexPath)).toBe(true)
-  expect(await fs.readFile(indexPath, 'utf-8')).toMatch(/\/app\/assets\/[^"']+\.js/)
+  expect(await fs.readFile(indexPath, 'utf-8')).toContain(`${basePath}assets/`)
 
   const assetFiles = await fs.readdir(path.join(distDir, 'assets'))
   expect(assetFiles.some(file => /\.(?:css|js)$/.test(file))).toBe(true)
@@ -256,9 +283,10 @@ async function runScript(
   packageManager: PackageManagerType,
   script: string,
   cwd: string,
+  env?: NodeJS.ProcessEnv,
 ): Promise<void> {
   const args = packageManager === 'npm' ? ['run', script] : [script]
-  await runChecked(packageManager, args, cwd, script)
+  await runChecked(packageManager, args, cwd, script, env)
 }
 
 async function runChecked(
@@ -266,12 +294,14 @@ async function runChecked(
   args: string[],
   cwd: string,
   label: string,
+  env?: NodeJS.ProcessEnv,
 ): Promise<void> {
   const result = await execa(command, args, {
     cwd,
     reject: false,
     env: {
       ...process.env,
+      ...env,
       CI: 'true',
     },
   })

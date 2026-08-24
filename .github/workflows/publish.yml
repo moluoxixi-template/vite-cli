@@ -79,6 +79,8 @@ jobs:
     env:
       MATRIX_SHARD_COUNT: 12
       MATRIX_SHARD_INDEX: ${{ matrix.shard }}
+      MATRIX_EXPORT_DIR: ${{ github.workspace }}/.gallery-export/shard-${{ matrix.shard }}
+      TEMPLATE_GALLERY_BASE_PATH: /${{ github.event.repository.name }}/
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
@@ -92,6 +94,13 @@ jobs:
         run: npm install --global yarn@1.22.22
       - name: Run legal-combination shard
         run: pnpm test:matrix
+      - name: Upload template gallery shard
+        uses: actions/upload-artifact@v6
+        with:
+          name: template-gallery-shard-${{ matrix.shard }}
+          path: ${{ env.MATRIX_EXPORT_DIR }}
+          if-no-files-found: error
+          retention-days: 14
 
   # 版本号自增任务
   # 仅在分支推送时运行（tag 推送时会被跳过）

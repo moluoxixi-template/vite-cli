@@ -6,6 +6,7 @@ registry: https://registry.npmjs.org/
 
 packages:
   - __test__
+  - gallery
   - templates/common/base
   - templates/common/features/*
   - templates/vue/base
@@ -24,18 +25,22 @@ catalogs:
     inquirer: ^12.0.0
     ora: ^8.1.1
   dev:
+    '@vue/test-utils': ^2.4.11
     '@commitlint/cli': ^19.8.0
     '@commitlint/config-conventional': ^19.8.0
     '@moluoxixi/eslint-config': 0.0.19
     commitizen: ^4.3.1
     cz-customizable: ^7.4.0
     eslint: ^10.0.0
+    happy-dom: ^20.11.6
     husky: ^9.1.7
     jiti: ^2.4.2
     lint-staged: ^15.5.1
     tsx: ^4.20.5
     typescript: ~5.8.0
     vite: ^6.2.4
+    vitest: ^4.0.17
+    yaml: ^2.8.4
   type:
     '@types/fs-extra': ^11.0.4
     '@types/inquirer': ^9.0.7
@@ -45,6 +50,8 @@ catalogs:
   conflicts_dev_h9_22_0:
     eslint: ^9.22.0
 catalog:
+  '@lucide/vue': ^1.34.0
+  '@stackblitz/sdk': ^1.11.1
   '@ant-design/icons': ^5.5.1
   '@ant-design/icons-vue': ^7.0.1
   '@commitlint/types': ^19.8.0

@@ -1,0 +1,33 @@
+{
+  "name": "@moluoxixi/vite-cli-gallery",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
+    "lint": "eslint . --no-warn-ignored",
+    "lint:fix": "eslint . --fix --no-warn-ignored",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@lucide/vue": "catalog:",
+    "@stackblitz/sdk": "catalog:",
+    "element-plus": "catalog:",
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "@moluoxixi/eslint-config": "catalog:dev",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vue/test-utils": "catalog:dev",
+    "eslint": "catalog:dev",
+    "happy-dom": "catalog:dev",
+    "typescript": "catalog:dev",
+    "unplugin-vue-components": "catalog:",
+    "vite": "catalog:dev",
+    "vitest": "catalog:dev",
+    "vue-tsc": "catalog:"
+  }
+}

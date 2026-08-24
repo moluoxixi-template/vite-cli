@@ -1,0 +1,76 @@
+name: Deploy Template Gallery
+
+on:
+  workflow_run:
+    workflows: ['Publish']
+    types: [completed]
+
+concurrency:
+  group: template-gallery-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: >-
+      github.event.workflow_run.conclusion != 'cancelled' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pages: write
+    env:
+      GALLERY_BASE_PATH: /${{ github.event.repository.name }}/
+      GALLERY_COMMIT: ${{ github.event.workflow_run.head_sha }}
+      GALLERY_DIST_DIR: gallery/dist
+      GALLERY_OUTPUT_DIR: .gallery-site
+      MATRIX_ARTIFACTS_DIR: .gallery-shards
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/download-artifact@v6
+        with:
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          pattern: template-gallery-shard-*
+          path: ${{ env.MATRIX_ARTIFACTS_DIR }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22.14.0'
+      - run: pnpm install --frozen-lockfile
+      - name: Verify gallery
+        run: |
+          pnpm --filter @moluoxixi/vite-cli-gallery lint
+          pnpm --filter @moluoxixi/vite-cli-gallery type-check
+          pnpm --filter @moluoxixi/vite-cli-gallery test
+      - name: Build gallery shell
+        run: pnpm gallery:build
+      - name: Assemble Pages artifact
+        run: pnpm gallery:assemble
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ env.GALLERY_OUTPUT_DIR }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      pages: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

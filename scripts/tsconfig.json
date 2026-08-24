@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "composite": false,
+    "declaration": false,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["gallery/**/*.ts"]
+}
