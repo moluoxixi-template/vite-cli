@@ -1,6 +1,10 @@
 # @moluoxixi/create-app
 
+**简体中文** | [English](README.en.md)
+
 > 基于原子化分层叠加架构的项目脚手架 CLI
+
+在线浏览和体验全部已验证模板组合：[Vite 模板展厅](https://moluoxixi-template.github.io/vite-cli/)
 
 ## 快速开始
 
