@@ -42,6 +42,8 @@ async function openProject(): Promise<void> {
 function setStatus(message: string, isError = false): void {
   if (statusElement) {
     statusElement.textContent = message
-    statusElement.dataset.error = String(isError)
+    statusElement.className = isError
+      ? 'mt-2.5 text-sm text-red-600'
+      : 'mt-2.5 text-sm text-slate-500'
   }
 }

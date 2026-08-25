@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-stack">
+  <div class="w-full">
     <ElForm label-position="top">
       <ElFormItem label="框架">
         <ElSelect v-model="model.framework" clearable placeholder="全部框架">
@@ -56,7 +56,7 @@
         </ElSelect>
       </ElFormItem>
 
-      <div class="feature-filter-grid">
+      <div class="grid grid-cols-2 gap-x-2.5">
         <ElFormItem label="i18n">
           <ElSelect v-model="model.i18n">
             <ElOption v-for="option in toggleOptions" :key="option.value" v-bind="option" />

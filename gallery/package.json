@@ -20,10 +20,12 @@
   },
   "devDependencies": {
     "@moluoxixi/eslint-config": "catalog:dev",
+    "@tailwindcss/postcss": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
     "@vue/test-utils": "catalog:dev",
     "eslint": "catalog:dev",
     "happy-dom": "catalog:dev",
+    "tailwindcss": "catalog:",
     "typescript": "catalog:dev",
     "unplugin-vue-components": "catalog:",
     "vite": "catalog:dev",

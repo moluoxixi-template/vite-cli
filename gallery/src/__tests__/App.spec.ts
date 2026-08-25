@@ -26,7 +26,8 @@ describe('template gallery app', () => {
     }
 
     expect(wrapper.text()).toContain('1 个已验证组合')
-    expect(wrapper.text()).toContain(firstEntry.slug)
+    expect(wrapper.text()).toContain('Vue 3 · Element Plus')
+    expect(wrapper.text()).not.toContain(firstEntry.slug)
     expect(wrapper.find('[aria-label="打开在线 Demo"]').exists()).toBe(true)
     expect(wrapper.find('[aria-label="下载源码 ZIP"]').exists()).toBe(true)
     expect(wrapper.find('[aria-label="在 StackBlitz 中打开"]').exists()).toBe(true)

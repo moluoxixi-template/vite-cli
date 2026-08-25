@@ -3,7 +3,7 @@ import type { GalleryFilters, ToggleFilter } from '@/types'
 import { reactive, ref, watch } from 'vue'
 
 const TOGGLE_VALUES = new Set<ToggleFilter>(['all', 'on', 'off'])
-export const GALLERY_PAGE_SIZES = [24, 48, 96] as const
+export const GALLERY_PAGE_SIZES = [10, 20, 50] as const
 
 export const DEFAULT_FILTERS: GalleryFilters = {
   search: '',
@@ -53,7 +53,7 @@ export function useGalleryQuery() {
 
 export function readGalleryPageSize(value: string | null): number {
   const parsed = Number(value)
-  return GALLERY_PAGE_SIZES.includes(parsed as typeof GALLERY_PAGE_SIZES[number]) ? parsed : 24
+  return GALLERY_PAGE_SIZES.includes(parsed as typeof GALLERY_PAGE_SIZES[number]) ? parsed : 10
 }
 
 function readToggle(params: URLSearchParams, key: string): ToggleFilter {
@@ -79,7 +79,7 @@ function syncQuery(filters: GalleryFilters, page: number, pageSize: number): voi
   setWhen(params, 'eslint', filters.eslint === 'all' ? '' : filters.eslint)
   setWhen(params, 'husky', filters.husky === 'all' ? '' : filters.husky)
   setWhen(params, 'page', page === 1 ? '' : String(page))
-  setWhen(params, 'size', pageSize === 24 ? '' : String(pageSize))
+  setWhen(params, 'size', pageSize === 10 ? '' : String(pageSize))
   const query = params.toString()
   window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`)
 }
