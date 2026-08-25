@@ -1,9 +1,11 @@
 import path from 'node:path'
+import { Buffer } from 'node:buffer'
 
 import fs from 'fs-extra'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import type { TemplateGalleryEntry } from '@/core/templateGallery'
+import { createStackBlitzStartCommand } from '@/core/templateGallery'
 import { assembleGallerySite } from '../../../scripts/gallery/assemble'
 import { cleanupTempDir, createTempDir } from '@test/test-utils'
 
@@ -38,9 +40,19 @@ describe('gallery assembler', () => {
       description: 'fixture',
       template: 'node',
       files: {
-        '.env': 'VITE_APP_CODE=\n',
-        '.stackblitzrc': '{"startCommand":"npm run dev"}',
-        'package.json': '{"scripts":{"dev":"vite"}}',
+        '.env.development': 'VITE_APP_ENV=development\n',
+        '.env.production': 'VITE_APP_ENV=production\n',
+        '.stackblitzrc': JSON.stringify({
+          installDependencies: false,
+          startCommand: createStackBlitzStartCommand(
+            Buffer.from('VITE_APP_CODE=\nVITE_APP_TITLE=Fixture\n', 'utf-8').toString('base64'),
+          ),
+        }),
+        'package.json': JSON.stringify({
+          packageManager: 'pnpm@10.8.0',
+          scripts: { dev: 'vite' },
+          devDependencies: { sass: '^1.87.0' },
+        }),
       },
     })
     await fs.outputJson(path.join(entryDir, 'metadata.json'), metadata)

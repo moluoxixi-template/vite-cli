@@ -232,6 +232,7 @@ describe('普通 Vite 项目输出', () => {
     expect(await fs.pathExists(path.join(tempDir, 'src/assets/styles/element/fixQiankun.scss'))).toBe(false)
     const viteConfig = await readGeneratedFile('vite.config.ts')
     expectTransparentViteConfig(viteConfig)
+    expect(viteConfig).toContain('if (env.VITE_STANDALONE !== \'true\')')
     const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
     await expectTransparentAjaxOutput(packageJson)
     expect(packageJson.scripts).not.toHaveProperty('lint:eslint')
@@ -325,6 +326,8 @@ describe('普通 Vite 项目输出', () => {
     const viteConfig = await readGeneratedFile('vite.config.ts')
     expectTransparentViteConfig(viteConfig)
     expect(viteConfig).toContain('import qiankun from \'vite-plugin-qiankun\'')
+    expect(viteConfig).toContain('if (env.VITE_STANDALONE !== \'true\')')
+    expect(viteConfig).toContain('mode !== \'development\' || env.VITE_STANDALONE === \'true\'')
 
     const packageJson = await fs.readJson(path.join(tempDir, 'package.json'))
     await expectTransparentAjaxOutput(packageJson)

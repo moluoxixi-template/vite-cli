@@ -7,6 +7,15 @@ import type { ProjectConfigType } from '../types/index.ts'
 
 export const TEMPLATE_GALLERY_SCHEMA_VERSION = 1 as const
 export const DEFAULT_TEMPLATE_GALLERY_BASE_PATH = '/vite-cli/'
+const STACKBLITZ_PACKAGE_MANAGER_NAME = 'pnpm'
+const STACKBLITZ_PACKAGE_MANAGER_VERSION = '10.8.0'
+export const STACKBLITZ_PACKAGE_MANAGER = `${STACKBLITZ_PACKAGE_MANAGER_NAME}@${STACKBLITZ_PACKAGE_MANAGER_VERSION}`
+const STACKBLITZ_ENV_WRITER = `node -e "const fs=require('node:fs');const encoded=fs.readFileSync('.stackblitz-env.b64','utf8').trim();fs.writeFileSync('.env',Buffer.from(encoded,'base64'));fs.unlinkSync('.stackblitz-env.b64')"`
+const STACKBLITZ_START_COMMAND_SUFFIX = ` > .stackblitz-env.b64 && ${STACKBLITZ_ENV_WRITER} && ${STACKBLITZ_PACKAGE_MANAGER_NAME} install --no-frozen-lockfile && ${STACKBLITZ_PACKAGE_MANAGER_NAME} run dev`
+
+export function createStackBlitzStartCommand(encodedEnvironment: string): string {
+  return `echo ${encodedEnvironment}${STACKBLITZ_START_COMMAND_SUFFIX}`
+}
 
 export type TemplateGalleryConfig = Omit<ProjectConfigType, 'targetDir'>
 
@@ -138,31 +147,95 @@ export function parseStackBlitzProjectPayload(value: unknown): StackBlitzProject
 
 function assertStackBlitzRuntimeContract(files: Record<string, string>): void {
   const packageJsonContent = files['package.json']
-  const envFile = files['.env']
+  const developmentEnv = files['.env.development']
+  const productionEnv = files['.env.production']
   const stackblitzConfig = files['.stackblitzrc']
-  if (packageJsonContent === undefined || envFile === undefined || stackblitzConfig === undefined) {
+  if (packageJsonContent === undefined
+    || developmentEnv === undefined
+    || productionEnv === undefined
+    || stackblitzConfig === undefined) {
     throw new TypeError('StackBlitz 项目缺少运行配置')
   }
 
+  let packageJson: {
+    packageManager?: unknown
+    devDependencies?: Record<string, unknown>
+    scripts?: Record<string, unknown>
+  }
+  let config: { installDependencies?: unknown, startCommand?: unknown }
   try {
-    const packageJson = JSON.parse(packageJsonContent) as { scripts?: Record<string, unknown> }
-    const config = JSON.parse(stackblitzConfig) as { startCommand?: unknown }
-    const appCodeEntries = envFile
-      .split(/\r?\n/)
-      .filter(line => line.startsWith('VITE_APP_CODE='))
-    if (typeof packageJson.scripts?.dev !== 'string'
-      || config.startCommand !== 'npm run dev'
-      || appCodeEntries.length !== 1
-      || appCodeEntries[0] !== 'VITE_APP_CODE=') {
-      throw new TypeError('StackBlitz 项目运行配置无效')
-    }
+    packageJson = JSON.parse(packageJsonContent) as typeof packageJson
+    config = JSON.parse(stackblitzConfig) as typeof config
   }
   catch (error) {
-    if (error instanceof TypeError && error.message === 'StackBlitz 项目运行配置无效') {
-      throw error
-    }
     throw new TypeError('StackBlitz 项目运行配置无法解析', { cause: error })
   }
+
+  const injectedEnvironment = parseStackBlitzInjectedEnvironment(config.startCommand)
+  if (typeof packageJson.scripts?.dev !== 'string'
+    || packageJson.packageManager !== STACKBLITZ_PACKAGE_MANAGER
+    || config.installDependencies !== false
+    || injectedEnvironment === undefined
+    || files['.env'] !== undefined
+    || typeof packageJson.devDependencies?.sass !== 'string'
+    || packageJson.devDependencies['sass-embedded'] !== undefined
+    || hasEnvironmentEntry(developmentEnv, 'VITE_APP_CODE')
+    || hasEnvironmentEntry(productionEnv, 'VITE_APP_CODE')
+    || hasEnvironmentEntry(developmentEnv, 'VITE_APP_TITLE')
+    || hasEnvironmentEntry(productionEnv, 'VITE_APP_TITLE')
+    || hasEnvironmentEntry(developmentEnv, 'VITE_STANDALONE')
+    || hasEnvironmentEntry(productionEnv, 'VITE_STANDALONE')
+    || !hasUniqueEnvironmentEntry(injectedEnvironment, 'VITE_APP_CODE', '')
+    || !hasNonEmptyEnvironmentEntry(injectedEnvironment, 'VITE_APP_TITLE')) {
+    throw new TypeError('StackBlitz 项目运行配置无效')
+  }
+
+  const viteConfig = files['vite.config.ts'] || ''
+  if (viteConfig.includes('vite-plugin-qiankun')
+    && !hasUniqueEnvironmentEntry(injectedEnvironment, 'VITE_STANDALONE', 'true')) {
+    throw new TypeError('StackBlitz qiankun 项目未启用独立预览')
+  }
+}
+
+function parseStackBlitzInjectedEnvironment(value: unknown): string | undefined {
+  if (typeof value !== 'string'
+    || !value.startsWith('echo ')
+    || !value.endsWith(STACKBLITZ_START_COMMAND_SUFFIX)) {
+    return undefined
+  }
+  const encoded = value.slice('echo '.length, -STACKBLITZ_START_COMMAND_SUFFIX.length)
+  if (!/^[a-z0-9+/]+={0,2}$/i.test(encoded)) {
+    return undefined
+  }
+  try {
+    const binary = atob(encoded)
+    const bytes = Uint8Array.from(binary, character => character.charCodeAt(0))
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+  }
+  catch {
+    return undefined
+  }
+}
+
+function hasEnvironmentEntry(content: string, name: string): boolean {
+  return content
+    .split(/\r?\n/)
+    .some(line => line.startsWith(`${name}=`))
+}
+
+function hasUniqueEnvironmentEntry(content: string, name: string, value: string): boolean {
+  const entries = content
+    .split(/\r?\n/)
+    .filter(line => line.startsWith(`${name}=`))
+  return entries.length === 1 && entries[0] === `${name}=${value}`
+}
+
+function hasNonEmptyEnvironmentEntry(content: string, name: string): boolean {
+  const prefix = `${name}=`
+  const entries = content
+    .split(/\r?\n/)
+    .filter(line => line.startsWith(prefix))
+  return entries.length === 1 && entries[0]!.slice(prefix.length).trim().length > 0
 }
 
 function isTemplateGalleryEntry(value: unknown): boolean {

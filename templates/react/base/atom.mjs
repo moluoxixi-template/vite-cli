@@ -21,7 +21,7 @@ export default {
         'plugins.push(react())',
       ],
       'react-qiankun': [
-        `if (mode !== 'development') {
+        `if (mode !== 'development' || env.VITE_STANDALONE === 'true') {
   plugins.push(react())
 }`,
       ],

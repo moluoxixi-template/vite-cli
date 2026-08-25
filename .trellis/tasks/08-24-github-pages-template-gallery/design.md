@@ -66,7 +66,7 @@ manifest.json
 
 ## Gallery Frontend
 
-新增独立 `gallery/` workspace，使用 Vue 3、TypeScript、Vite、Element Plus 和 `@lucide/vue`。页面使用组件库原生控件，应用自身只负责布局、密度、品牌色和响应式，不通过 `.el-*` 选择器修改内部组件样式。
+新增独立 `gallery/` workspace，使用 Vue 3、TypeScript、Vite、Element Plus、Tailwind CSS 和 `@lucide/vue`。页面使用组件库原生控件，应用布局、密度、品牌色和响应式全部通过 Tailwind utility class 表达；CSS 入口只加载 Tailwind，不维护自定义 class 选择器，也不通过 `.el-*` 选择器修改组件内部样式。列表不显示仅供公开 URL 使用的完整 slug，默认每页 10 条，仅提供 10、20、50 三档分页大小。
 
 前端启动后加载 `/vite-cli/manifest.json`。筛选状态由 URL query 驱动，结果采用分页列表；384 条数据不需要虚拟滚动。StackBlitz SDK 按用户首次点击时动态加载；随后 fetch 对应 `stackblitz/<slug>.json` 并调用：
 
@@ -80,7 +80,7 @@ StackBlitzSDK.openProject(project, {
 
 StackBlitz project 使用 `template: 'node'`，`files` 包含生成后的 `package.json`，依赖不重复写入 SDK 的 EngineBlock `dependencies` 字段。
 
-StackBlitz Preview 默认打开服务根路径，因此载荷对生成源码执行专用变换：`.env` 中 `VITE_APP_CODE` 置空，使 Vite base 和 Vue/React router base 都为 `/`；新增 `.stackblitzrc` 并显式设置 `startCommand: npm run dev`。该变换不写回 ZIP 或 Pages Demo。
+StackBlitz Preview 默认打开服务根路径，但平台把根 `.env` 当作特殊加密变量文件，SDK 提交后不会把它作为普通项目文件保留。因此载荷不提交根 `.env`，且 `.env.development`、`.env.production` 与真实生成模板保持一致。导出器读取生成项目的真实根 `.env`，仅覆盖 StackBlitz 必需的 `VITE_APP_CODE=`，并为 qiankun 增加 `VITE_STANDALONE=true`；随后将完整内容编码进 `.stackblitzrc.startCommand`。启动命令先用 echo 写入临时 base64 文件，再由 Node 解码生成根 `.env` 并删除临时文件，最后显式执行 pnpm 安装与 dev。不能使用 echo 管道直接喂给 Node stdin，因为 StackBlitz 启动 shell 会令该文件描述符返回 `EBADF`。载荷内的 `package.json.packageManager` 统一设置为 `pnpm@10.8.0`，移除 WebContainer 无法执行的 `sass-embedded`、保留纯 JS `sass`，并关闭平台自动安装。该变换不写回 ZIP 或 Pages Demo。
 
 ## Workflow Boundaries
 

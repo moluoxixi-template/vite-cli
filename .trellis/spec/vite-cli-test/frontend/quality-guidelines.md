@@ -83,8 +83,11 @@ TEMPLATE_GALLERY_BASE_PATH=/<repository-name>/
 - Test helpers may re-export the production matrix API; they must not copy its Cartesian-product implementation.
 - A matrix entry is exported only after generate, install, type-check, lint, build, and build-output verification succeed.
 - Each concurrent combination writes only to `entries/<slug>/` and produces `demo/`, `source.zip`, `stackblitz.json`, and `metadata.json`.
-- Source ZIP and StackBlitz files use the same sorted source-entry collection. ZIP keeps lockfiles and `.env`; StackBlitz omits package-manager lockfiles because its WebContainer installs from `package.json`. Both exclude `node_modules`, `dist`, `.git`, caches, logs, and generated Husky internals.
-- StackBlitz payloads are runtime-specific derivatives, not byte-for-byte ZIP mirrors. Set `VITE_APP_CODE` to an empty value so Vite and the application router serve from `/`, and include `.stackblitzrc` with `{"startCommand":"npm run dev"}`. Preserve the original `.env` in ZIP downloads.
+- Source ZIP and StackBlitz files use the same sorted source-entry collection. ZIP keeps lockfiles and the original `.env` files. StackBlitz omits source lockfiles, `node_modules`, `dist`, `.git`, caches, logs, and generated Husky internals; its explicit pnpm install produces a fresh runtime lockfile.
+- StackBlitz payloads are runtime-specific derivatives, not byte-for-byte ZIP mirrors. The platform treats root `.env` as a special encrypted-settings file and does not preserve SDK-submitted content as a normal project file. Do not submit root `.env`, and keep `.env.development` / `.env.production` identical to the generated template.
+- Read the generated project's real root `.env`, set `VITE_APP_CODE=` so Vite and the application router serve from `/`, and add `VITE_STANDALONE=true` only for qiankun. Base64-encode that complete root env in `.stackblitzrc.startCommand`; echo it to a temporary file, decode the file with Node into root `.env`, remove the temporary file, then run pnpm install/dev. Do not pipe echo to Node stdin: StackBlitz's startup shell exposes that descriptor as `EBADF`.
+- Overwrite `package.json.packageManager` with `pnpm@10.8.0`, remove `sass-embedded` while keeping pure-JS `sass`, and set `installDependencies:false`. Apply this derivative to every matrix entry, even when the downloadable project uses npm or Yarn; preserve the original package-manager metadata, env files, and dependencies in ZIP downloads.
+- A qiankun StackBlitz payload's injected root env must contain `VITE_STANDALONE=true`. The generated Vite config must skip `vite-plugin-qiankun` in this mode; React qiankun projects must register the React Vite plugin during standalone development.
 - Public URLs use the slug, never shard indexes or random temporary directories.
 - The Pages assembler validates the expected slug set, shard count, commit, artifact presence, artifact sizes, and total site-size threshold before upload.
 
@@ -98,9 +101,13 @@ TEMPLATE_GALLERY_BASE_PATH=/<repository-name>/
 | Entry commit differs from the workflow head SHA | Fail assembly |
 | Demo, ZIP, or StackBlitz payload is missing or empty | Fail assembly |
 | Source file cannot be decoded as UTF-8 for StackBlitz | Fail export and include the relative path |
-| StackBlitz payload lacks `.env`, `package.json`, a string `scripts.dev`, or `.stackblitzrc` | Fail export / assembly |
-| StackBlitz payload keeps a non-empty `VITE_APP_CODE` | Fail validation; the default Preview opens `/`, not the generated subpath |
-| StackBlitz `startCommand` differs from `npm run dev` | Fail validation |
+| StackBlitz payload lacks either mode env, `package.json`, a string `scripts.dev`, or `.stackblitzrc` | Fail export / assembly |
+| StackBlitz payload contains root `.env` | Fail validation; StackBlitz filters it at the platform boundary |
+| Either mode env contains root-only `VITE_APP_CODE`, `VITE_APP_TITLE`, or `VITE_STANDALONE` | Fail validation; mode env files must match the generated template |
+| StackBlitz `packageManager` differs from `pnpm@10.8.0` | Fail validation |
+| StackBlitz enables automatic dependency installation or its command does not generate root `.env` before the explicit pnpm install/start command | Fail validation |
+| StackBlitz keeps `sass-embedded` or lacks pure-JS `sass` | Fail validation; WebContainer cannot execute the embedded Dart binary |
+| The echo-injected root env lacks `VITE_APP_TITLE`, empty `VITE_APP_CODE`, or qiankun `VITE_STANDALONE=true` | Fail validation |
 | Site exceeds the configured Pages size threshold | Fail before `upload-pages-artifact` |
 | `MATRIX_EXPORT_DIR` is absent | Preserve the ordinary matrix test behavior and emit no artifacts |
 
@@ -115,12 +122,14 @@ TEMPLATE_GALLERY_BASE_PATH=/<repository-name>/
 
 - Unit: current combination count, legal normalization, and slug uniqueness.
 - Unit: ZIP exclusions, lockfile preservation, UTF-8 rejection, and metadata without `targetDir`.
-- Unit: StackBlitz `.env` uses an empty app code, `.stackblitzrc` selects `npm run dev`, and `package.json.scripts.dev` remains present.
+- Unit: StackBlitz removes root `.env`, leaves both mode env files unchanged, decodes the echo-injected root env to the expected template values and StackBlitz overrides, explicitly selects pnpm install/start, removes `sass-embedded`, and keeps `sass`.
+- Unit: runtime validation rejects contaminated mode env files, missing injected root values, root `.env`, `sass-embedded`, and the legacy npm runtime contract.
 - Unit: assembler shard count, expected slug set, commit equality, artifact completeness, recomputed sizes, and capacity failure.
 - Unit: parse workflow YAML and assert shard list, unique artifact names, cross-run download inputs, and minimum Pages permissions.
 - Smoke: run one real matrix combination with export enabled and assert Demo, ZIP, StackBlitz, and metadata are produced after a successful build.
-- Browser E2E: on Linux/macOS (the WebContainer-compatible validation runners), materialize a fresh project only from the StackBlitz `files` map, install dependencies, start the payload's dev server, request `/`, and assert a real framework menu/title renders without page or network errors. Opening the StackBlitz editor alone is not sufficient. The payload source and all repository quality gates still run on Windows; only this WebContainer runtime smoke is skipped there because its browser/Vite child-process behavior is platform-specific.
-- Remote: the complete matrix remains the authoritative all-combination validation.
+- Browser E2E: materialize Vue standard, Vue qiankun, and React qiankun projects only from the StackBlitz `files` map; assert root `.env` is initially absent and both mode env files lack root-only values; execute the exact payload `startCommand`; then assert root `.env` was generated from the template env with title/base/standalone values before checking framework DOM. Do not replace the command with separate test-side install/dev calls.
+- Remote StackBlitz: local materialization is necessary but not sufficient. Click the gallery action, confirm the terminal actually runs the explicit pnpm command, inspect the uploaded file tree, and assert the StackBlitz Preview iframe contains framework DOM after the server starts. Opening the editor or observing an open port is not acceptance. Reload Preview once after startup if StackBlitz created the iframe before Vite became ready.
+- Remote: the complete matrix remains the authoritative all-combination build validation; representative real StackBlitz Preview checks remain the authoritative platform-boundary validation.
 
 ### 7. Wrong vs Correct
 
@@ -141,4 +150,25 @@ for (const entry of entries) {
   const slug = createConfigMatrixSlug(entry.config)
   // Export only after this entry's quality gates pass.
 }
+
+const stackblitzFiles = {
+  ...generatedTextFiles,
+  '.env.development': generatedTextFiles['.env.development'],
+  '.env.production': generatedTextFiles['.env.production'],
+  '.stackblitzrc': JSON.stringify({
+    installDependencies: false,
+    startCommand: createStackBlitzStartCommand(
+      Buffer.from(stackblitzRootEnv, 'utf-8').toString('base64'),
+    ),
+  }),
+  'package.json': JSON.stringify({
+    ...generatedPackageJson,
+    packageManager: 'pnpm@10.8.0',
+    devDependencies: {
+      ...generatedPackageJson.devDependencies,
+      'sass-embedded': undefined,
+    },
+  }),
+}
+delete stackblitzFiles['.env']
 ```

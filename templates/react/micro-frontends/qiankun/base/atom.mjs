@@ -12,9 +12,11 @@ export default {
       'import qiankun from \'vite-plugin-qiankun\'',
     ],
     plugins: [
-      `plugins.push(qiankun(appCode || 'app', {
-  useDevMode: mode === 'development',
-}))`,
+      `if (env.VITE_STANDALONE !== 'true') {
+  plugins.push(qiankun(appCode || 'app', {
+    useDevMode: mode === 'development',
+  }))
+}`,
     ],
   },
 }

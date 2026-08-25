@@ -116,6 +116,8 @@ After implementation:
 - [ ] Tested with edge cases (null, empty, invalid)
 - [ ] Verified error handling at each boundary
 - [ ] Checked data survives round-trip
+- [ ] For third-party upload/runtime boundaries, inspected the post-upload filesystem and actual runtime command instead of assuming the submitted payload survives unchanged
+- [ ] Verified platform-specific native dependencies execute in the target runtime; a local install and browser render do not prove WebContainer compatibility
 - [ ] Checked that consumers import shared decoders / projections instead of
       casting payload fields locally
 - [ ] Checked that derived state points back to the source event identifier

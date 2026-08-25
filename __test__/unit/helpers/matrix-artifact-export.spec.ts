@@ -58,11 +58,24 @@ describe('matrix artifact export', () => {
     expect(stackblitz.template).toBe('node')
     expect(stackblitz.files).toHaveProperty('src/main.ts')
     expect(stackblitz.files).not.toHaveProperty('pnpm-lock.yaml')
+    expect(stackblitz.files).not.toHaveProperty('.env')
     expect(stackblitz.files).not.toHaveProperty('dist/index.html')
     expect(stackblitz.files).not.toHaveProperty('tsconfig.app.tsbuildinfo')
-    expect(stackblitz.files['.env']?.match(/^VITE_APP_CODE=.*$/gm)).toEqual(['VITE_APP_CODE='])
-    expect(JSON.parse(stackblitz.files['.stackblitzrc'])).toEqual({ startCommand: 'npm run dev' })
-    expect(JSON.parse(stackblitz.files['package.json']).scripts.dev).toBe('vite')
+    expect(stackblitz.files['.env.development']).toBe('VITE_APP_ENV=development\n')
+    expect(stackblitz.files['.env.production']).toBe('VITE_APP_ENV=production\n')
+    const stackblitzConfig = JSON.parse(stackblitz.files['.stackblitzrc'])
+    expect(stackblitzConfig.installDependencies).toBe(false)
+    expect(stackblitzConfig.startCommand).toContain(' > .stackblitz-env.b64 && node -e ')
+    expect(stackblitzConfig.startCommand).toContain(' && pnpm install --no-frozen-lockfile && pnpm run dev')
+    expect(readInjectedEnvironment(stackblitzConfig.startCommand)).toContain('VITE_APP_CODE=')
+    expect(readInjectedEnvironment(stackblitzConfig.startCommand)).toContain('VITE_APP_TITLE=Fixture')
+    expect(JSON.parse(stackblitz.files['package.json'])).toMatchObject({
+      packageManager: 'pnpm@10.8.0',
+      scripts: { dev: 'vite' },
+    })
+    expect(JSON.parse(stackblitz.files['package.json']).devDependencies).toEqual({
+      sass: '^1.87.0',
+    })
     expect(metadata.config).not.toHaveProperty('targetDir')
     expect(metadata.urls.demo).toBe(`demos/${metadata.slug}/`)
     expect(metadata.urls.download).toBe(`downloads/vite-template-${metadata.slug}.zip`)
@@ -79,7 +92,7 @@ describe('matrix artifact export', () => {
     ).rejects.toThrow('src/binary.dat')
   })
 
-  it('把重复的 app code 归一化为唯一根路径配置', async () => {
+  it('把根 env 合并到 mode env 并归一化 app code', async () => {
     await fs.outputFile(path.join(projectDir, '.env'), [
       'VITE_APP_CODE=legacy',
       'VITE_APP_TITLE=Fixture',
@@ -88,7 +101,42 @@ describe('matrix artifact export', () => {
 
     const stackblitz = await createStackBlitzProject(projectDir, createConfig(projectDir))
 
-    expect(stackblitz.files['.env']?.match(/^VITE_APP_CODE=.*$/gm)).toEqual(['VITE_APP_CODE='])
+    expect(stackblitz.files).not.toHaveProperty('.env')
+    expect(stackblitz.files['.env.development']).toBe('VITE_APP_ENV=development\n')
+    expect(stackblitz.files['.env.production']).toBe('VITE_APP_ENV=production\n')
+    const injectedEnvironment = readInjectedEnvironment(
+      JSON.parse(stackblitz.files['.stackblitzrc']).startCommand,
+    )
+    expect(injectedEnvironment.match(/^VITE_APP_CODE=.*$/gm)).toEqual(['VITE_APP_CODE='])
+    expect(injectedEnvironment.match(/^VITE_APP_TITLE=.*$/gm)).toEqual(['VITE_APP_TITLE=Fixture'])
+  })
+
+  it('为 qiankun 载荷启用独立预览', async () => {
+    await fs.outputFile(path.join(projectDir, 'vite.config.ts'), 'import qiankun from \'vite-plugin-qiankun\'\n')
+    const config = createConfig(projectDir)
+    config.microFrontend = true
+    config.microFrontendEngine = 'qiankun'
+
+    const stackblitz = await createStackBlitzProject(projectDir, config)
+
+    expect(stackblitz.files['.env.development']).toBe('VITE_APP_ENV=development\n')
+    expect(stackblitz.files['.env.production']).toBe('VITE_APP_ENV=production\n')
+    const injectedEnvironment = readInjectedEnvironment(
+      JSON.parse(stackblitz.files['.stackblitzrc']).startCommand,
+    )
+    expect(injectedEnvironment.match(/^VITE_STANDALONE=.*$/gm)).toEqual(['VITE_STANDALONE=true'])
+  })
+
+  it.each(['npm', 'pnpm', 'yarn'] as const)('把 %s 组合的 StackBlitz 运行时统一为 pnpm', async (packageManager) => {
+    const config = createConfig(projectDir)
+    config.packageManager = packageManager
+
+    const stackblitz = await createStackBlitzProject(projectDir, config)
+
+    expect(JSON.parse(stackblitz.files['package.json']).packageManager).toBe('pnpm@10.8.0')
+    const stackblitzConfig = JSON.parse(stackblitz.files['.stackblitzrc'])
+    expect(stackblitzConfig.installDependencies).toBe(false)
+    expect(stackblitzConfig.startCommand).toMatch(/^echo [a-z0-9+/]+={0,2} > \.stackblitz-env\.b64 && node -e /i)
   })
 
   it('稳定排序源码路径并排除安装与构建目录', async () => {
@@ -126,10 +174,20 @@ async function seedProject(rootDir: string): Promise<void> {
     name: 'gallery-export',
     scripts: { dev: 'vite' },
     dependencies: { vue: '^3.5.0' },
+    devDependencies: {
+      'sass': '^1.87.0',
+      'sass-embedded': '^1.87.0',
+    },
   })
   await fs.outputFile(path.join(rootDir, 'src', 'main.ts'), 'console.log("gallery")\n')
   await fs.outputFile(path.join(rootDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9\n')
-  await fs.outputFile(path.join(rootDir, '.env'), 'VITE_APP_CODE=app\n')
+  await fs.outputFile(path.join(rootDir, '.env'), [
+    'VITE_APP_CODE=app',
+    'VITE_APP_TITLE=Fixture',
+    'VITE_APP_PORT=3000',
+  ].join('\n'))
+  await fs.outputFile(path.join(rootDir, '.env.development'), 'VITE_APP_ENV=development\n')
+  await fs.outputFile(path.join(rootDir, '.env.production'), 'VITE_APP_ENV=production\n')
   await fs.outputFile(path.join(rootDir, '.husky', 'pre-commit'), 'pnpm lint\n')
   await fs.outputFile(path.join(rootDir, '.husky', '_', 'h'), 'generated\n')
   await fs.outputFile(path.join(rootDir, 'node_modules', 'pkg', 'index.js'), 'module.exports = {}\n')
@@ -137,4 +195,12 @@ async function seedProject(rootDir: string): Promise<void> {
   await fs.outputFile(path.join(rootDir, 'dist', 'assets', 'app.js'), 'console.log("built")')
   await fs.outputFile(path.join(rootDir, 'debug.log'), 'debug')
   await fs.outputFile(path.join(rootDir, 'tsconfig.app.tsbuildinfo'), 'typescript cache')
+}
+
+function readInjectedEnvironment(startCommand: string): string {
+  const encoded = /^echo ([a-z0-9+/]+={0,2}) > \.stackblitz-env\.b64 &&/i.exec(startCommand)?.[1]
+  if (!encoded) {
+    throw new Error('StackBlitz startCommand 缺少 env echo 注入')
+  }
+  return Buffer.from(encoded, 'base64').toString('utf-8')
 }

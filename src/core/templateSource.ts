@@ -6,9 +6,15 @@
 import type { ProjectConfigType } from '../types/index.ts'
 import type { StackBlitzProjectPayload } from './templateGallery.ts'
 
+import { Buffer } from 'node:buffer'
 import path from 'node:path'
 
 import fs from 'fs-extra'
+
+import {
+  createStackBlitzStartCommand,
+  STACKBLITZ_PACKAGE_MANAGER,
+} from './templateGallery.ts'
 
 const EXCLUDED_DIRECTORY_NAMES = new Set([
   '.cache',
@@ -81,7 +87,7 @@ export async function createStackBlitzProject(
     }
   }
 
-  prepareStackBlitzFiles(files)
+  prepareStackBlitzFiles(files, config)
 
   return {
     title: config.projectName,
@@ -91,32 +97,58 @@ export async function createStackBlitzProject(
   }
 }
 
-function prepareStackBlitzFiles(files: Record<string, string>): void {
+function prepareStackBlitzFiles(files: Record<string, string>, config: ProjectConfigType): void {
   const envFile = files['.env']
   if (envFile === undefined) {
     throw new TypeError('StackBlitz 项目缺少 .env')
   }
+  const environmentFiles = ['.env.development', '.env.production'] as const
+  for (const fileName of environmentFiles) {
+    if (files[fileName] === undefined) {
+      throw new TypeError(`StackBlitz 项目缺少 ${fileName}`)
+    }
+  }
+  let injectedEnvironment = setEnvironmentVariable(envFile, 'VITE_APP_CODE', '')
+  if (config.microFrontend && config.microFrontendEngine === 'qiankun') {
+    injectedEnvironment = setEnvironmentVariable(injectedEnvironment, 'VITE_STANDALONE', 'true')
+  }
+  delete files['.env']
 
   const packageJsonContent = files['package.json']
   if (packageJsonContent === undefined) {
     throw new TypeError('StackBlitz 项目缺少 package.json')
   }
   const packageJson = JSON.parse(packageJsonContent) as {
+    packageManager?: string
+    devDependencies?: Record<string, string>
     scripts?: Record<string, unknown>
   }
   if (typeof packageJson.scripts?.dev !== 'string') {
     throw new TypeError('StackBlitz 项目缺少 dev script')
   }
 
-  files['.env'] = setEnvironmentVariable(envFile, 'VITE_APP_CODE', '')
-  files['.stackblitzrc'] = `${JSON.stringify({ startCommand: 'npm run dev' }, null, 2)}\n`
+  packageJson.packageManager = STACKBLITZ_PACKAGE_MANAGER
+  if (packageJson.devDependencies?.sass) {
+    delete packageJson.devDependencies['sass-embedded']
+  }
+  files['package.json'] = `${JSON.stringify(packageJson, null, 2)}\n`
+  files['.stackblitzrc'] = `${JSON.stringify({
+    installDependencies: false,
+    startCommand: createStackBlitzStartCommand(
+      Buffer.from(injectedEnvironment, 'utf-8').toString('base64'),
+    ),
+  }, null, 2)}\n`
 }
 
 function setEnvironmentVariable(content: string, name: string, value: string): string {
-  const lines = content.split(/\r?\n/).filter(line => !line.startsWith(`${name}=`))
+  const lines = content.split(/\r?\n/).filter(line => getEnvironmentVariableName(line) !== name)
   const entry = `${name}=${value}`
   lines.push(entry)
   return lines.join('\n')
+}
+
+function getEnvironmentVariableName(line: string): string | undefined {
+  return /^\s*([A-Z_][A-Z0-9_]*)\s*=/.exec(line)?.[1]
 }
 
 async function collectDirectoryEntries(

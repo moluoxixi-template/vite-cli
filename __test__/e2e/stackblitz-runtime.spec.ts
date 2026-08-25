@@ -2,7 +2,7 @@ import { createServer as createNetServer } from 'node:net'
 import path from 'node:path'
 import process from 'node:process'
 
-import { execa } from 'execa'
+import { execa, execaCommand } from 'execa'
 import fs from 'fs-extra'
 import { chromium } from 'playwright'
 import type { Browser } from 'playwright'
@@ -14,35 +14,63 @@ import { generateProject } from '@/generators/project'
 import type { ProjectConfigType } from '@/types'
 import { cleanupTempDir, createTempDir } from '@test/test-utils'
 
+const skipWindowsRuntimeSmoke = process.platform === 'win32'
+  && process.env.STACKBLITZ_RUNTIME_FORCE !== 'true'
+
 describe.sequential('stackBlitz 载荷运行契约', () => {
-  it.skipIf(process.platform === 'win32')('从文本载荷重新创建的项目可在根路径运行', async () => {
+  it.skipIf(skipWindowsRuntimeSmoke).each([
+    { framework: 'vue', uiLibrary: 'element-plus', routeMode: 'pageRoutes', microFrontend: false },
+    { framework: 'vue', uiLibrary: 'element-plus', routeMode: 'pageRoutes', microFrontend: true },
+    { framework: 'react', uiLibrary: 'ant-design', routeMode: 'manualRoutes', microFrontend: true },
+  ] as const)('$framework microFrontend=$microFrontend 文本载荷可通过 pnpm 在根路径运行', async (overrides) => {
     const generatedDir = await createTempDir('vite-cli-stackblitz-source-')
     const payloadDir = await createTempDir('vite-cli-stackblitz-payload-')
     let browser: Browser | undefined
-    let devServer: ReturnType<typeof execa> | undefined
+    let devServer: ReturnType<typeof execaCommand> | undefined
 
     try {
-      const config = createConfig(generatedDir)
+      const config = createConfig(generatedDir, overrides)
       await generateProject(config)
+      const port = await getAvailablePort()
+      const sourceEnvPath = path.join(generatedDir, '.env')
+      await fs.writeFile(
+        sourceEnvPath,
+        setEnvironmentVariable(await fs.readFile(sourceEnvPath, 'utf-8'), 'VITE_APP_PORT', String(port)),
+      )
       const payload = parseStackBlitzProjectPayload(
         await createStackBlitzProject(generatedDir, config),
       )
+      expect(JSON.parse(payload.files['package.json']).packageManager).toBe('pnpm@10.8.0')
+      expect(payload.files).not.toHaveProperty('.env')
+      expect(JSON.parse(payload.files['package.json']).devDependencies).not.toHaveProperty('sass-embedded')
+      const stackblitzConfig = JSON.parse(payload.files['.stackblitzrc']) as {
+        installDependencies: boolean
+        startCommand: string
+      }
+      expect(stackblitzConfig.installDependencies).toBe(false)
+      expect(stackblitzConfig.startCommand).toMatch(/^echo [a-z0-9+/]+={0,2} > \.stackblitz-env\.b64 && node -e /i)
+      expect(payload.files['.env.development']).not.toContain('VITE_APP_TITLE=')
+      expect(payload.files['.env.development']).not.toContain('VITE_APP_CODE=')
+      expect(payload.files['.env.development']).not.toContain('VITE_STANDALONE=')
       await materializePayload(payload.files, payloadDir)
+      expect(await fs.pathExists(path.join(payloadDir, '.env'))).toBe(false)
 
-      const install = await execa('npm', ['install', '--prefer-online', '--no-audit', '--no-fund'], {
-        cwd: payloadDir,
-        reject: false,
-      })
-      expect(install.exitCode, `${install.stdout}\n${install.stderr}`).toBe(0)
-
-      const port = await getAvailablePort()
       const serverUrl = `http://127.0.0.1:${port}/`
-      devServer = execa('npm', ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], {
+      devServer = execaCommand(stackblitzConfig.startCommand, {
         cwd: payloadDir,
         detached: process.platform !== 'win32',
         reject: false,
+        shell: true,
       })
       await waitForHttpReady(serverUrl, devServer)
+      expect(await fs.pathExists(path.join(payloadDir, '.env'))).toBe(true)
+      expect(await fs.pathExists(path.join(payloadDir, '.stackblitz-env.b64'))).toBe(false)
+      const generatedEnv = await fs.readFile(path.join(payloadDir, '.env'), 'utf-8')
+      expect(generatedEnv).toContain(`VITE_APP_PORT=${port}`)
+      expect(generatedEnv).toContain('VITE_APP_TITLE=My App')
+      if (overrides.microFrontend) {
+        expect(generatedEnv).toContain('VITE_STANDALONE=true')
+      }
 
       browser = await chromium.launch({ headless: true })
       const page = await browser.newPage()
@@ -59,7 +87,7 @@ describe.sequential('stackBlitz 载荷运行契约', () => {
       })
       await page.goto(serverUrl)
       try {
-        await page.locator('[role="menubar"]').waitFor({ timeout: 30_000 })
+        await page.locator('[role="menubar"], [role="menu"]').first().waitFor({ timeout: 30_000 })
         await page.locator('h1, h2, h3').first().waitFor({ timeout: 30_000 })
       }
       catch (error) {
@@ -73,6 +101,7 @@ describe.sequential('stackBlitz 载荷运行契约', () => {
       }
 
       expect(new URL(page.url()).pathname.startsWith('/app')).toBe(false)
+      expect(await page.title()).toBe('My App')
       expect(pageErrors).toEqual([])
       expect(networkErrors).toEqual([])
     }
@@ -85,19 +114,20 @@ describe.sequential('stackBlitz 载荷运行契约', () => {
   }, 0)
 })
 
-function createConfig(targetDir: string): ProjectConfigType {
+function createConfig(
+  targetDir: string,
+  overrides: Pick<ProjectConfigType, 'framework' | 'uiLibrary' | 'routeMode' | 'microFrontend'>,
+): ProjectConfigType {
   return {
     projectName: 'stackblitz-runtime',
     description: 'StackBlitz runtime validation',
     author: 'test',
-    framework: 'vue',
-    uiLibrary: 'element-plus',
-    routeMode: 'pageRoutes',
+    ...overrides,
     i18n: false,
     sentry: false,
     eslint: false,
     husky: false,
-    microFrontend: false,
+    microFrontendEngine: overrides.microFrontend ? 'qiankun' : undefined,
     packageManager: 'pnpm',
     targetDir,
   }
@@ -127,7 +157,7 @@ async function getAvailablePort(): Promise<number> {
 
 async function waitForHttpReady(
   url: string,
-  processHandle: ReturnType<typeof execa>,
+  processHandle: ReturnType<typeof execaCommand>,
 ): Promise<void> {
   const deadline = Date.now() + 60_000
   while (Date.now() < deadline) {
@@ -149,7 +179,7 @@ async function waitForHttpReady(
   throw new Error(`StackBlitz dev server 启动超时: ${url}`)
 }
 
-async function terminateProcessTree(processHandle?: ReturnType<typeof execa>): Promise<void> {
+async function terminateProcessTree(processHandle?: ReturnType<typeof execaCommand>): Promise<void> {
   if (!processHandle || processHandle.exitCode !== null) {
     return
   }
@@ -177,7 +207,7 @@ function killProcessGroup(pid: number, signal: NodeJS.Signals): void {
 }
 
 async function waitForProcessExit(
-  processHandle: ReturnType<typeof execa>,
+  processHandle: ReturnType<typeof execaCommand>,
   timeoutMs: number,
 ): Promise<boolean> {
   let timeout: ReturnType<typeof setTimeout> | undefined
@@ -194,4 +224,12 @@ async function waitForProcessExit(
       clearTimeout(timeout)
     }
   }
+}
+
+function setEnvironmentVariable(content: string, name: string, value: string): string {
+  const lines = content
+    .split(/\r?\n/)
+    .filter(line => !line.startsWith(`${name}=`))
+  lines.push(`${name}=${value}`)
+  return lines.join('\n')
 }
