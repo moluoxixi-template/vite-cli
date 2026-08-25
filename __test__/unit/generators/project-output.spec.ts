@@ -55,6 +55,7 @@ async function readGeneratedFile(filePath: string): Promise<string> {
 
 function expectTransparentViteConfig(viteConfig: string): void {
   expect(viteConfig).toContain('import { fileURLToPath, URL } from \'node:url\'')
+  expect(viteConfig).toContain('root: envDir')
   expect(viteConfig).not.toContain('import F{')
   expect(viteConfig).not.toContain('@moluoxixi/vite-config')
 }

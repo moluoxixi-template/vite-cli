@@ -522,6 +522,7 @@ export default defineConfig(({ mode }) => {
 ${createVitePlugins(output)}
 
   return {
+    root: envDir,
     base: appCode ? \`/\${appCode}\` : '/',
     plugins,
     resolve: {

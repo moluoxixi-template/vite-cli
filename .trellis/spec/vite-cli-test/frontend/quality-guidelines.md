@@ -82,6 +82,7 @@ TEMPLATE_GALLERY_BASE_PATH=/<repository-name>/
 - `src/core/configMatrix.ts` owns legal combination enumeration and stable public slugs.
 - Test helpers may re-export the production matrix API; they must not copy its Cartesian-product implementation.
 - A matrix entry is exported only after generate, install, type-check, lint, build, and build-output verification succeed.
+- Generated Vite configs must set `root: envDir`, where `envDir` comes from `import.meta.url`. Do not leave root implicit from `process.cwd()`: Windows 8.3 paths, junctions, and symlink aliases can make Vite normalize HTML inputs to a different path identity and emit illegal `../` asset names.
 - Each concurrent combination writes only to `entries/<slug>/` and produces `demo/`, `source.zip`, `stackblitz.json`, and `metadata.json`.
 - Source ZIP and StackBlitz files use the same sorted source-entry collection. ZIP keeps lockfiles and the original `.env` files. StackBlitz omits source lockfiles, `node_modules`, `dist`, `.git`, caches, logs, and generated Husky internals; its explicit pnpm install produces a fresh runtime lockfile.
 - StackBlitz payloads are runtime-specific derivatives, not byte-for-byte ZIP mirrors. The platform treats root `.env` as a special encrypted-settings file and does not preserve SDK-submitted content as a normal project file. Do not submit root `.env`, and keep `.env.development` / `.env.production` identical to the generated template.
@@ -109,6 +110,7 @@ TEMPLATE_GALLERY_BASE_PATH=/<repository-name>/
 | StackBlitz keeps `sass-embedded` or lacks pure-JS `sass` | Fail validation; WebContainer cannot execute the embedded Dart binary |
 | The echo-injected root env lacks `VITE_APP_TITLE`, empty `VITE_APP_CODE`, or qiankun `VITE_STANDALONE=true` | Fail validation |
 | Site exceeds the configured Pages size threshold | Fail before `upload-pages-artifact` |
+| Generated Vite root differs from the config file directory | Fail generation tests; Windows build-html may emit a relative `../index.html` path |
 | `MATRIX_EXPORT_DIR` is absent | Preserve the ordinary matrix test behavior and emit no artifacts |
 
 ### 5. Good / Base / Bad Cases
@@ -121,6 +123,7 @@ TEMPLATE_GALLERY_BASE_PATH=/<repository-name>/
 ### 6. Tests Required
 
 - Unit: current combination count, legal normalization, and slug uniqueness.
+- Unit: every generated Vite config contains `root: envDir`; Windows build smoke covers a qiankun HTML-transform build.
 - Unit: ZIP exclusions, lockfile preservation, UTF-8 rejection, and metadata without `targetDir`.
 - Unit: StackBlitz removes root `.env`, leaves both mode env files unchanged, decodes the echo-injected root env to the expected template values and StackBlitz overrides, explicitly selects pnpm install/start, removes `sass-embedded`, and keeps `sass`.
 - Unit: runtime validation rejects contaminated mode env files, missing injected root values, root `.env`, `sass-embedded`, and the legacy npm runtime contract.
